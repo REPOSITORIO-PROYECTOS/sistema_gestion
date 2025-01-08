@@ -15,7 +15,7 @@ public abstract class ModelClass {
     private LocalDateTime createdAt;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy'T'HH:mm")
-    private LocalDateTime updateAt;
+    private LocalDateTime updatedAt;
 
     private String modifiedBy;
 
