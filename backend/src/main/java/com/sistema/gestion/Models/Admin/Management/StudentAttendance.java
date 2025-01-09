@@ -6,6 +6,8 @@ import java.util.Set;
 
 import org.springframework.data.annotation.Id;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import com.sistema.gestion.Models.ModelClass;
 import com.sistema.gestion.Utils.AttendanceStatus;
 
@@ -29,5 +31,6 @@ public class StudentAttendance extends ModelClass {
     private Map<String, AttendanceStatus> attendanceStatus;
 
     @NotNull(message = "La fecha de asistencia no puede ser nula.")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy'T'HH:mm")
     private LocalDateTime attendanceDate;
 }
