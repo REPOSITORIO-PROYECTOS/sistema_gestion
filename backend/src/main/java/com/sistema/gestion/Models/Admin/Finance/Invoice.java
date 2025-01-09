@@ -1,6 +1,6 @@
 package com.sistema.gestion.Models.Admin.Finance;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import org.springframework.data.annotation.Id;
 
@@ -33,7 +33,7 @@ public class Invoice extends ModelClass {
     private LocalDateTime paymentDueDate;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDateTime lastPaymentDate;
+    private LocalDate lastPaymentDate;
 
     private String providerId;
 }

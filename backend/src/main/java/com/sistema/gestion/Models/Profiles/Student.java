@@ -1,6 +1,6 @@
 package com.sistema.gestion.Models.Profiles;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Set;
 
 import org.springframework.data.annotation.Id;
@@ -39,10 +39,10 @@ public class Student extends ModelClass {
     private String phone;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDateTime dateOfBirth;
+    private LocalDate dateOfBirth;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDateTime ingressDate;
+    private LocalDate ingressDate;
 
     private Set<String> cursesIds;
 }
