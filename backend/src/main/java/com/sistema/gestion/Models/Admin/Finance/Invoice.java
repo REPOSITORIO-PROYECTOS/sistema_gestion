@@ -30,7 +30,7 @@ public class Invoice extends ModelClass {
     private Double PaidAmount;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDateTime paymentDueDate;
+    private LocalDate paymentDueDate;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate lastPaymentDate;
