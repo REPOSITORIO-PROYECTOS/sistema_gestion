@@ -1,6 +1,6 @@
 package com.sistema.gestion.Models.Admin.Finance;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import org.springframework.data.annotation.Id;
 
@@ -40,8 +40,8 @@ public class Payment extends ModelClass {
     private Boolean isPaid;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDateTime paymentDueDate;
+    private LocalDate paymentDueDate;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDateTime lastPaymentDate;
+    private LocalDate lastPaymentDate;
 }
