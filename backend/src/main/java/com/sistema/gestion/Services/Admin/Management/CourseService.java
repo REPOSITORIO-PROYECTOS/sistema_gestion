@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.sistema.gestion.Models.Admin.Management.Course;
 import com.sistema.gestion.Repositories.Admin.Management.CourseRepository;
@@ -28,34 +29,39 @@ public class CourseService {
         return courseRepo.findAll();
     }
 
-    public Mono<Course> findCourseById(String id) {
-        return courseRepo.findById(id)
-                .switchIfEmpty(monoError(HttpStatus.NOT_FOUND, "No hay curso con el ID: " + id));
-    }
-
     public Flux<Course> searchCourses(String keyword) {
         return courseRepo.findByKeyword(keyword);
     }
 
+    public Mono<Course> findCourseById(String id) {
+        return courseRepo.findById(id)
+                .switchIfEmpty(
+                        Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay curso con el ID: " + id)));
+    }
+
     public Mono<Course> saveCourse(Course course, String user) {
 
-        if (course.getId() == null || course.getId().equals("")) {
-            course.setCreatedAt(LocalDateTime.now());
-            course.setCreatedBy(user);
-            return courseRepo.save(course);
+        if (course.getId() != null && !course.getId().isEmpty()) {
+            return monoError(HttpStatus.BAD_REQUEST, "El curso ya tiene un ID resgistrado,"
+                    + " no se puede almacenar un nuevo curso con ID ya registrado");
         }
+        course.setCreatedAt(LocalDateTime.now());
+        course.setCreatedBy(user);
+        return courseRepo.save(course);
 
-        return courseRepo.findById(course.getId())
+    }
+
+    public Mono<Course> updateCourse(Course course, String courseId, String user) {
+        if (!course.getId().equals(courseId)) {
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Los IDs del curso a actualizar " +
+                            "en la base de datos con el del cuerpo de la solicitud no coinciden."));
+        }
+        return courseRepo.findById(courseId)
                 .flatMap(existingCourse -> {
-                    existingCourse.setUpdatedAt(LocalDateTime.now());
-                    existingCourse.setModifiedBy(user);
-                    existingCourse.setTitle(course.getTitle());
-                    existingCourse.setDescription(course.getDescription());
-                    existingCourse.setStatus(course.getStatus());
-                    existingCourse.setMonthlyPrice(course.getMonthlyPrice());
-                    existingCourse.setTeacherId(course.getTeacherId());
-                    return courseRepo.save(existingCourse);
+                    return courseRepo.save(mappingCourseToUpdate(existingCourse, course, user));
                 });
+
     }
 
     public Mono<Void> deleteCourse(String courseId) {
@@ -64,4 +70,15 @@ public class CourseService {
                 .flatMap(courseRepo::delete);
     }
 
+    /** Metodos locales */
+    private Course mappingCourseToUpdate(Course existingCourse, Course course, String user) {
+        existingCourse.setUpdatedAt(LocalDateTime.now());
+        existingCourse.setModifiedBy(user);
+        existingCourse.setTitle(course.getTitle());
+        existingCourse.setDescription(course.getDescription());
+        existingCourse.setStatus(course.getStatus());
+        existingCourse.setMonthlyPrice(course.getMonthlyPrice());
+        existingCourse.setTeacherId(course.getTeacherId());
+        return existingCourse;
+    }
 }
