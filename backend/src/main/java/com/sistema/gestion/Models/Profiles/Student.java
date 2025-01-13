@@ -36,6 +36,8 @@ public class Student extends ModelClass {
     @Indexed(unique = true)
     private String dni;
 
+    private String status;
+
     private String phone;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
