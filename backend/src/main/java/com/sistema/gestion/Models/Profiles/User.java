@@ -26,9 +26,11 @@ public class User extends ModelClass {
     private String surname;
 
     @Email(message = "Ingrese un mail válido.")
+    @NotBlank(message = "El mail no puede estar en blanco.")
     @Indexed(unique = true)
     private String email;
 
+    @NotBlank(message = "El DNI no puede estar en blanco.")
     @Indexed(unique = true)
     private String dni;
 
@@ -36,5 +38,6 @@ public class User extends ModelClass {
 
     private String password;
 
+    @NotBlank(message = "El rol no puede estar en blanco.")
     private String rol;
 }
