@@ -163,4 +163,12 @@ public class PaymentController {
                                                 "Error al editar la información del pago con ID: " + paymentId + "\n"
                                                                 + e));
         }
+
+        @GetMapping("/cuotas-adeudadas")
+        public Mono<ResponseEntity<Long>> countDuePayments() {
+                return paymentService.countPaymentHasDebt()
+                                .map(ResponseEntity::ok)
+                                .defaultIfEmpty(ResponseEntity.notFound().build());
+        }
+
 }

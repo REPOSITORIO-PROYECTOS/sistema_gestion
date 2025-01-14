@@ -256,6 +256,10 @@ public class PaymentService {
                                 });
         }
 
+        public Mono<Long> countPaymentHasDebt() {
+                return paymentRepo.countAllByHasDebt(true);
+        }
+
         /** Metodos Locales */
         private PaymentWithStudentDTO mappingFromPaymentToPaymentWithStudentDTO(PaymentWithStudentDTO dto,
                         Payment payment,
