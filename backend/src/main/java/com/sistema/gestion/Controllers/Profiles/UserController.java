@@ -8,6 +8,7 @@ import com.sistema.gestion.Services.Profiles.UserService;
 
 import jakarta.validation.Valid;
 import reactor.core.publisher.Flux;
+//import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -21,8 +22,9 @@ public class UserController {
     }
 
     @GetMapping("/todos")
-    public Flux<User> findAll() {
-        return userService.findAll();
+    public Flux<User> findAll(@RequestParam(defaultValue = "0") int page, 
+        @RequestParam(defaultValue = "5") int size) {
+        return userService.findAll(page, size);
     }
 
     @GetMapping("/{id}")

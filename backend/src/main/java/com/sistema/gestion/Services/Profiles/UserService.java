@@ -2,37 +2,38 @@ package com.sistema.gestion.Services.Profiles;
 
 import java.time.LocalDateTime;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.sistema.gestion.Models.Profiles.User;
 import com.sistema.gestion.Repositories.Profiles.UserRepository;
 
-import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
 public class UserService {
 
-    @Autowired
     private UserRepository userRepository;
 
-    // Crear un nuevo usuario
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     public Mono<User> createUser(User user) {
         return userRepository.save(user);
     }
 
-    // Obtener todos los usuarios
-    public Flux<User> findAll() {
-        return userRepository.findAll();
+    public Flux<User> findAll(int page, int size) {
+        return userRepository.findAll()
+            .sort((user1, user2) -> user1.getSurname().compareTo(user2.getSurname()))
+            .skip((long) page * size)
+            .take(size);
     }
 
-    // Obtener un usuario por ID
     public Mono<User> findById(String id) {
         return userRepository.findById(id);
     }
 
-    // Actualizar un usuario
     public Mono<User> updateUser(String id, User user) {
         return userRepository.findById(id)
                 .flatMap(existingUsuario -> {
@@ -46,7 +47,6 @@ public class UserService {
                 });
     }
 
-    // Eliminar un usuario
     public Mono<Void> deleteUser(String id) {
         return userRepository.deleteById(id);
     }
