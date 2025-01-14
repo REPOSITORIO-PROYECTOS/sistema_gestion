@@ -22,7 +22,9 @@ public class CashRegister {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy'T'HH:mm")
     private LocalDateTime endDate;
 
-    private BigDecimal totalAmount;
+    private BigDecimal totalIncome; // Total de dinero ingresado
+
+    private BigDecimal totalExpense; // Total de dinero egresado
 
     private String createdBy;
 

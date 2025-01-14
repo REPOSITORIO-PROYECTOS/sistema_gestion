@@ -10,78 +10,118 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.sistema.gestion.Models.Admin.Finance.CashRegister;
 import com.sistema.gestion.Repositories.Admin.Finance.CashRegisterRepository;
+import com.sistema.gestion.Repositories.Admin.Finance.InvoiceRepository;
 import com.sistema.gestion.Repositories.Admin.Finance.PaymentRepository;
 
 import reactor.core.publisher.Mono;
 
 @Service
 public class CashRegisterService {
-    @Autowired
-    private final CashRegisterRepository cashRegisterRepo;
+  @Autowired
+  private final CashRegisterRepository cashRegisterRepo;
 
-    @Autowired
-    private final PaymentRepository paymentRepo;
+  @Autowired
+  private final PaymentRepository paymentRepo;
 
-    public CashRegisterService(CashRegisterRepository cashRegisterRepo, PaymentRepository paymentRepo) {
-        this.cashRegisterRepo = cashRegisterRepo;
-        this.paymentRepo = paymentRepo;
-    }
+  @Autowired
+  private final InvoiceRepository invoiceRepo;
 
-    public Mono<CashRegister> openCashRegister(String user) {
-        return cashRegisterRepo.findFirstByIsClosedFalse()
-                .hasElement() // Verifica si hay elementos
-                .flatMap(hasOpenRegister -> {
-                    if (hasOpenRegister) {
-                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                "Ya existe una caja abierta. Cierre la caja actual antes de abrir una nueva."));
-                    }
-                    // Crear una nueva caja si no hay una abierta
-                    CashRegister newCashRegister = new CashRegister();
-                    newCashRegister.setStartDate(LocalDateTime.now());
-                    newCashRegister.setIsClosed(false);
-                    newCashRegister.setCreatedBy(user);
-                    return cashRegisterRepo.save(newCashRegister);
-                });
-    }
+  public CashRegisterService(CashRegisterRepository cashRegisterRepo, PaymentRepository paymentRepo,
+      InvoiceRepository invoiceRepo) {
+    this.cashRegisterRepo = cashRegisterRepo;
+    this.paymentRepo = paymentRepo;
+    this.invoiceRepo = invoiceRepo;
+  }
 
-    public Mono<CashRegister> closeCashRegister(String user) {
-        return cashRegisterRepo.findFirstByIsClosedFalse()
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "No existe una caja abierta para cerrar.")))
-                .flatMap(cashRegister -> paymentRepo.findAll()
-                        .filter(payment -> payment.getLastPaymentDate().isAfter(cashRegister.getStartDate()))
-                        .filter(payment -> payment.getLastPaymentDate().isBefore(LocalDateTime.now()))
-                        .reduce(BigDecimal.ZERO,
-                                (total, payment) -> total.add(BigDecimal.valueOf(payment.getPaidAmount())))
-                        .flatMap(totalAmount -> {
-                            cashRegister.setEndDate(LocalDateTime.now());
-                            cashRegister.setTotalAmount(totalAmount);
-                            cashRegister.setIsClosed(true);
-                            cashRegister.setClosedBy(user);
-                            return cashRegisterRepo.save(cashRegister);
-                        }));
-    }
+  public Mono<CashRegister> openCashRegister(String user) {
+    return cashRegisterRepo.findFirstByIsClosedFalse()
+        .hasElement() // Verifica si hay elementos
+        .flatMap(hasOpenRegister -> {
+          if (hasOpenRegister) {
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Ya existe una caja abierta. Cierre la caja actual antes de abrir una nueva."));
+          }
+          // Crear una nueva caja si no hay una abierta
+          CashRegister newCashRegister = new CashRegister();
+          newCashRegister.setStartDate(LocalDateTime.now());
+          newCashRegister.setIsClosed(false);
+          newCashRegister.setCreatedBy(user);
+          return cashRegisterRepo.save(newCashRegister);
+        });
+  }
 
-    public Mono<CashRegister> getOpenCashRegister() {
-        return cashRegisterRepo.findFirstByIsClosedFalse()
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "No hay una caja abierta actualmente.")))
-                .flatMap(cashRegister -> paymentRepo.findAll()
-                        .filter(payment -> payment.getLastPaymentDate().isAfter(cashRegister.getStartDate()))
-                        .filter(payment -> payment.getLastPaymentDate().isBefore(LocalDateTime.now()))
-                        .reduce(BigDecimal.ZERO,
-                                (total, payment) -> total.add(BigDecimal.valueOf(payment.getPaidAmount())))
-                        .map(totalAmount -> {
-                            CashRegister provisionalView = new CashRegister();
-                            provisionalView.setId(cashRegister.getId());
-                            provisionalView.setStartDate(cashRegister.getStartDate());
-                            provisionalView.setEndDate(LocalDateTime.now());
-                            provisionalView.setTotalAmount(totalAmount);
-                            provisionalView.setIsClosed(false); // Se cierra solo en la vista
-                            provisionalView.setCreatedBy(cashRegister.getCreatedBy());
-                            provisionalView.setClosedBy("SIN CERRAR");
-                            return provisionalView;
-                        }));
-    }
+  public Mono<CashRegister> closeCashRegister(String user) {
+    return cashRegisterRepo.findFirstByIsClosedFalse()
+        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "No existe una caja abierta para cerrar.")))
+        .flatMap(cashRegister -> {
+          // Calcular ingresos (pagos recibidos)
+          Mono<BigDecimal> totalIncomeMono = paymentRepo.findAll()
+              .filter(payment -> payment.getLastPaymentDate().isAfter(cashRegister.getStartDate()))
+              .filter(payment -> payment.getLastPaymentDate().isBefore(LocalDateTime.now()))
+              .reduce(BigDecimal.ZERO,
+                  (total, payment) -> total.add(BigDecimal.valueOf(payment.getPaidAmount())));
+
+          // Calcular egresos (pagos realizados)
+          Mono<BigDecimal> totalExpenseMono = invoiceRepo.findAll()
+              .filter(invoice -> invoice.getLastPaymentDate().isAfter(cashRegister.getStartDate()))
+              .filter(invoice -> invoice.getLastPaymentDate().isBefore(LocalDateTime.now()))
+              .reduce(BigDecimal.ZERO,
+                  (total, invoice) -> total.add(BigDecimal.valueOf(invoice.getPaidAmount())));
+
+          return Mono.zip(totalIncomeMono, totalExpenseMono)
+              .flatMap(tuple -> {
+                BigDecimal totalIncome = tuple.getT1();
+                BigDecimal totalExpense = tuple.getT2();
+
+                cashRegister.setEndDate(LocalDateTime.now());
+                cashRegister.setTotalIncome(totalIncome);
+                cashRegister.setTotalExpense(totalExpense);
+                cashRegister.setIsClosed(true);
+                cashRegister.setClosedBy(user);
+
+                return cashRegisterRepo.save(cashRegister);
+              });
+        });
+  }
+
+  public Mono<CashRegister> getOpenCashRegister() {
+    return cashRegisterRepo.findFirstByIsClosedFalse()
+        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+            "No hay una caja abierta actualmente.")))
+        .flatMap(cashRegister -> {
+          // Calcular ingresos (pagos recibidos)
+          Mono<BigDecimal> totalIncomeMono = paymentRepo.findAll()
+              .filter(payment -> payment.getLastPaymentDate().isAfter(cashRegister.getStartDate()))
+              .filter(payment -> payment.getLastPaymentDate().isBefore(LocalDateTime.now()))
+              .reduce(BigDecimal.ZERO,
+                  (total, payment) -> total.add(BigDecimal.valueOf(payment.getPaidAmount())));
+
+          // Calcular egresos (pagos realizados)
+          Mono<BigDecimal> totalExpenseMono = invoiceRepo.findAll()
+              .filter(invoice -> invoice.getLastPaymentDate().isAfter(cashRegister.getStartDate()))
+              .filter(invoice -> invoice.getLastPaymentDate().isBefore(LocalDateTime.now()))
+              .reduce(BigDecimal.ZERO,
+                  (total, invoice) -> total.add(BigDecimal.valueOf(invoice.getPaidAmount())));
+
+          // Combinar ingresos y egresos para la vista provisional
+          return Mono.zip(totalIncomeMono, totalExpenseMono)
+              .map(tuple -> {
+                BigDecimal totalIncome = tuple.getT1();
+                BigDecimal totalExpense = tuple.getT2();
+
+                CashRegister provisionalView = new CashRegister();
+                provisionalView.setId(cashRegister.getId());
+                provisionalView.setStartDate(cashRegister.getStartDate());
+                provisionalView.setEndDate(LocalDateTime.now());
+                provisionalView.setTotalIncome(totalIncome);
+                provisionalView.setTotalExpense(totalExpense);
+                provisionalView.setIsClosed(false); // Vista provisional, caja no cerrada
+                provisionalView.setCreatedBy(cashRegister.getCreatedBy());
+                provisionalView.setClosedBy("SIN CERRAR");
+                return provisionalView;
+              });
+        });
+  }
 
 }

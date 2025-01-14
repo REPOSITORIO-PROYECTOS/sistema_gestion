@@ -1,6 +1,7 @@
 package com.sistema.gestion.Models.Admin.Finance;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.Id;
 
@@ -27,13 +28,17 @@ public class Invoice extends ModelClass {
 
     @Min(value = 0, message = "El valor pagado debe ser 0 o mayor.")
     @Positive
-    private Double PaidAmount;
+    private Double paidAmount;
+
+    private Boolean hasDebt;
+
+    private Boolean isPaid;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate paymentDueDate;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDate lastPaymentDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy'T'HH:mm")
+    private LocalDateTime lastPaymentDate;
 
     private String providerId;
 }

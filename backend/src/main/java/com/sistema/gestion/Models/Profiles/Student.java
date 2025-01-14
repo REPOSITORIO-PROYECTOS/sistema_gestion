@@ -18,33 +18,33 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Student extends ModelClass {
-    @Id
-    private String id;
+  @Id
+  private String id;
 
-    @NotBlank(message = "El nombre no puede estar en blanco.")
-    @Size(min = 3, max = 20, message = "El nombre debe contener entre 3 a 20 caracteres.")
-    private String name;
+  @NotBlank(message = "El nombre no puede estar en blanco.")
+  @Size(min = 3, max = 20, message = "El nombre debe contener entre 3 a 20 caracteres.")
+  private String name;
 
-    @NotBlank(message = "El apellido no puede estar en blanco.")
-    @Size(min = 3, max = 20, message = "El apellido debe contener entre 3 a 20 caracteres.")
-    private String surname;
+  @NotBlank(message = "El apellido no puede estar en blanco.")
+  @Size(min = 3, max = 20, message = "El apellido debe contener entre 3 a 20 caracteres.")
+  private String surname;
 
-    @Email(message = "Ingrese un mail válido.")
-    @Indexed(unique = true)
-    private String email;
+  @Email(message = "Ingrese un mail válido.")
+  @Indexed(unique = true)
+  private String email;
 
-    @Indexed(unique = true)
-    private String dni;
+  @Indexed(unique = true)
+  private String dni;
 
-    private String status;
+  private String status;
 
-    private String phone;
+  private String phone;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDate dateOfBirth;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+  private LocalDate dateOfBirth;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDate ingressDate;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+  private LocalDate ingressDate;
 
-    private Set<String> cursesIds;
+  private Set<String> coursesIds;
 }

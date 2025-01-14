@@ -3,6 +3,8 @@ package com.sistema.gestion.Services.Admin.Management;
 import static com.sistema.gestion.Utils.ErrorUtils.monoError;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.sistema.gestion.Models.Admin.Management.Course;
 import com.sistema.gestion.Repositories.Admin.Management.CourseRepository;
+import com.sistema.gestion.Repositories.Admin.Management.StudentRepository;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -21,8 +24,12 @@ public class CourseService {
     @Autowired
     private final CourseRepository courseRepo;
 
-    public CourseService(CourseRepository courseRepo) {
+    @Autowired
+    private final StudentRepository studentRepo;
+
+    public CourseService(CourseRepository courseRepo, StudentRepository studentRepo) {
         this.courseRepo = courseRepo;
+        this.studentRepo = studentRepo;
     }
 
     public Flux<Course> findAllCourses() {
@@ -60,8 +67,61 @@ public class CourseService {
         return courseRepo.findById(courseId)
                 .flatMap(existingCourse -> {
                     return courseRepo.save(mappingCourseToUpdate(existingCourse, course, user));
-                });
+                })
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "No se encontró el curso con ID: " + courseId)));
 
+    }
+
+    public Mono<Course> registerStudentInCourse(String courseId, String studentId) {
+        if (studentId == null) {
+            return monoError(HttpStatus.NOT_FOUND, "No hay estudiante con el ID: " + studentId);
+        }
+
+        return courseRepo.findById(courseId)
+                .switchIfEmpty(monoError(HttpStatus.NOT_FOUND, "No hay estudiante con el ID: " + studentId))
+                .flatMap(existingCourse -> {
+                    Set<String> enrolledStudents = existingCourse.getStudentsIds();
+                    if (enrolledStudents == null) {
+                        enrolledStudents = new HashSet<>();
+                        existingCourse.setStudentsIds(enrolledStudents);
+                    }
+                    enrolledStudents.add(studentId);
+                    return studentRepo.findById(studentId)
+                            .switchIfEmpty(monoError(HttpStatus.NOT_FOUND, "No hay estudiante con el ID: " + studentId))
+                            .flatMap(student -> {
+                                Set<String> studentCourses = student.getCoursesIds();
+                                if (studentCourses == null) {
+                                    studentCourses = new HashSet<>();
+                                    student.setCoursesIds(studentCourses);
+                                }
+                                studentCourses.add(courseId);
+                                return studentRepo.save(student)
+                                        .flatMap(savedStudent -> courseRepo.save(existingCourse));
+                            });
+                });
+    }
+
+    public Mono<Course> removeStudentFromCourse(String courseId, String studentId) {
+        return courseRepo.findById(courseId)
+                .flatMap(existingCourse -> {
+                    Set<String> enrolledStudents = existingCourse.getStudentsIds();
+                    if (enrolledStudents != null && enrolledStudents.contains(studentId)) {
+                        enrolledStudents.remove(studentId);
+                        return studentRepo.findById(studentId)
+                                .flatMap(student -> {
+                                    Set<String> studentCourses = student.getCoursesIds();
+                                    if (studentCourses != null && studentCourses.contains(courseId)) {
+                                        studentCourses.remove(courseId);
+                                        return studentRepo.save(student);
+                                    }
+                                    return Mono.empty();
+                                })
+                                .then(courseRepo.save(existingCourse));
+                    }
+                    return monoError(HttpStatus.NOT_FOUND, "Alumno no inscripto en el curso");
+                })
+                .switchIfEmpty(monoError(HttpStatus.NOT_FOUND, "No hay curso con el ID: " + courseId));
     }
 
     public Mono<Void> deleteCourse(String courseId) {
