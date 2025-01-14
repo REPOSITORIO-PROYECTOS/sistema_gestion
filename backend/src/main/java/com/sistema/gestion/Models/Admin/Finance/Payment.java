@@ -1,16 +1,17 @@
 package com.sistema.gestion.Models.Admin.Finance;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.Id;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sistema.gestion.Models.ModelClass;
+import com.sistema.gestion.Utils.PaymentType;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,26 +23,27 @@ public class Payment extends ModelClass {
 
     @NotBlank
     @NotNull
-    private String curseId;
+    private String courseId;
 
     @NotBlank
     @NotNull
-    private String StudentId;
+    private String studentId;
 
     @Min(value = 0, message = "El valor del pago debe ser 0 o mayor.")
     private Double paymentAmount;
 
     @Min(value = 0, message = "El valor pagado debe ser 0 o mayor.")
-    @Positive
-    private Double PaidAmount;
+    private Double paidAmount;
 
     private Boolean hasDebt;
 
     private Boolean isPaid;
 
+    private PaymentType paymentType;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate paymentDueDate;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDate lastPaymentDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy'T'HH:mm")
+    private LocalDateTime lastPaymentDate;
 }
