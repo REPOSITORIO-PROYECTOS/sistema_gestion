@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sistema.gestion.Models.ModelClass;
+import com.sistema.gestion.Utils.PaymentType;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -37,6 +38,8 @@ public class Payment extends ModelClass {
     private Boolean hasDebt;
 
     private Boolean isPaid;
+
+    private PaymentType paymentType;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate paymentDueDate;

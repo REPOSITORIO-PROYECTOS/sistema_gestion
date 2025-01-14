@@ -226,6 +226,8 @@ public class PaymentService {
                                                                         existingPayment.setUpdatedAt(
                                                                                         LocalDateTime.now());
                                                                         existingPayment.setModifiedBy(user);
+                                                                        existingPayment.setPaymentType(
+                                                                                        payment.getPaymentType());
 
                                                                         existingPayment.setIsPaid(
                                                                                         existingPayment.getPaidAmount() >= existingPayment
@@ -249,6 +251,7 @@ public class PaymentService {
                 }
                 return paymentRepo.findById(paymentId)
                                 .flatMap(existingPayment -> {
+                                        existingPayment.setPaymentType(payment.getPaymentType());
                                         existingPayment.setUpdatedAt(LocalDateTime.now());
                                         existingPayment.setModifiedBy(user);
                                         existingPayment.setPaymentAmount(payment.getPaymentAmount());
