@@ -421,7 +421,7 @@ export default function TableFilter() {
                     strokeWidth={2}
                     aria-hidden="true"
                   />
-                  Delete
+                  Borrar
                   <span className="-me-1 ms-3 inline-flex h-5 max-h-full items-center rounded border border-border bg-background px-1 font-[inherit] text-[0.625rem] font-medium text-muted-foreground/70">
                     {table.getSelectedRowModel().rows.length}
                   </span>
@@ -436,11 +436,11 @@ export default function TableFilter() {
                     <CircleAlert className="opacity-80" size={16} strokeWidth={2} />
                   </div>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogTitle>Estas absolutamente seguro?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete{" "}
-                      {table.getSelectedRowModel().rows.length} selected{" "}
-                      {table.getSelectedRowModel().rows.length === 1 ? "row" : "rows"}.
+                      Esta acción no se puede deshacer. Esto eliminará permanentemente{" "}
+                      {table.getSelectedRowModel().rows.length}{" "}
+                      {table.getSelectedRowModel().rows.length === 1 ? "fila" : "filas"}.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                 </div>
