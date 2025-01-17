@@ -14,13 +14,13 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface PaymentRepository extends ReactiveMongoRepository<Payment, String> {
 
-        Flux<Payment> findAllByStudentId(String studentId);
+  Flux<Payment> findAllByStudentId(String studentId);
 
-        Flux<Payment> findAllByHasDebt(Boolean hasDebt);
+  Flux<Payment> findAllByHasDebt(Boolean hasDebt);
 
-        Mono<Long> countAllByHasDebt(Boolean hasDebt);
+  Mono<Long> countAllByHasDebt(Boolean hasDebt);
 
-        @Query("{ 'hasDebt': true, 'paymentDueDate': { $gte: ?0, $lt: ?1 } }")
-        Flux<Payment> findAllWithDebtInMonth(LocalDate startOfMonth, LocalDate endOfMonth);
+  @Query("{ 'hasDebt': true, 'paymentDueDate': { $gte: ?0, $lt: ?1 } }")
+  Flux<Payment> findAllWithDebtInMonth(LocalDate startOfMonth, LocalDate endOfMonth);
 
 }

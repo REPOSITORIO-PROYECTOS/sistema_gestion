@@ -18,7 +18,7 @@ import com.sistema.gestion.Models.Profiles.Student;
 import com.sistema.gestion.Repositories.Admin.Finance.CashRegisterRepository;
 import com.sistema.gestion.Repositories.Admin.Finance.PaymentRepository;
 import com.sistema.gestion.Repositories.Admin.Management.CourseRepository;
-import com.sistema.gestion.Repositories.Admin.Management.StudentRepository;
+import com.sistema.gestion.Repositories.Profiles.StudentRepository;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

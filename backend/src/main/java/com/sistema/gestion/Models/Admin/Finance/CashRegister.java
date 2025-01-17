@@ -13,22 +13,22 @@ import lombok.Data;
 @Data
 @Document(collection = "cash_registers")
 public class CashRegister {
-    @Id
-    private String id;
+  @Id
+  private String id;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy'T'HH:mm")
-    private LocalDateTime startDate;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy'T'HH:mm")
+  private LocalDateTime startDate;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy'T'HH:mm")
-    private LocalDateTime endDate;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy'T'HH:mm")
+  private LocalDateTime endDate;
 
-    private BigDecimal totalIncome; // Total de dinero ingresado
+  private BigDecimal totalIncome; // Total de dinero ingresado
 
-    private BigDecimal totalExpense; // Total de dinero egresado
+  private BigDecimal totalExpense; // Total de dinero egresado
 
-    private String createdBy;
+  private String createdBy;
 
-    private String closedBy;
+  private String closedBy;
 
-    private Boolean isClosed;
+  private Boolean isClosed;
 }

@@ -1,6 +1,7 @@
 package com.sistema.gestion.Services.Admin.Finance;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import com.sistema.gestion.Models.Admin.Finance.CashRegister;
 import com.sistema.gestion.Repositories.Admin.Finance.CashRegisterRepository;
 import com.sistema.gestion.Repositories.Admin.Finance.InvoiceRepository;
 import com.sistema.gestion.Repositories.Admin.Finance.PaymentRepository;
+import com.sistema.gestion.Utils.MonthlyBalance;
 
 import reactor.core.publisher.Mono;
 
@@ -82,6 +84,47 @@ public class CashRegisterService {
 
                 return cashRegisterRepo.save(cashRegister);
               });
+        });
+  }
+
+  public Mono<MonthlyBalance> getMonthlyBalance(int year, int month) {
+    LocalDate currentDate = LocalDate.now();
+    if (year < 1900 || year > LocalDate.now().getYear() + 1) {
+      return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "El año proporcionado no es válido."));
+    }
+    if (month < 1 || month > 12) {
+      return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "El mes proporcionado no es válido. Debe estar entre 1 y 12."));
+    }
+    if (year > currentDate.getYear() || (year == currentDate.getYear() && month > currentDate.getMonthValue())) {
+      return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "El mes proporcionado no puede ser posterior al mes actual."));
+    }
+
+    LocalDateTime startOfMonth = LocalDateTime.of(year, month, 1, 0, 0);
+    LocalDateTime endOfMonth = startOfMonth.plusMonths(1).minusSeconds(1);
+
+    return cashRegisterRepo.findAll()
+        .filter(cashRegister -> cashRegister.getEndDate() != null)
+        .filter(cashRegister -> !cashRegister.getEndDate().isBefore(startOfMonth)
+            && !cashRegister.getEndDate().isAfter(endOfMonth))
+        .collectList()
+        .flatMap(cashRegisters -> {
+          if (cashRegisters.isEmpty()) {
+            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "No se encontraron cierres de caja para el mes especificado."));
+          }
+
+          BigDecimal totalIncome = BigDecimal.ZERO;
+          BigDecimal totalExpense = BigDecimal.ZERO;
+
+          for (CashRegister cashRegister : cashRegisters) {
+            totalIncome = totalIncome.add(cashRegister.getTotalIncome());
+            totalExpense = totalExpense.add(cashRegister.getTotalExpense());
+          }
+
+          return Mono.just(new MonthlyBalance(cashRegisters, totalIncome, totalExpense));
         });
   }
 

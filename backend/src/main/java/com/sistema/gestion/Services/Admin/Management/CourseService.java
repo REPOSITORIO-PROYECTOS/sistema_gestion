@@ -13,7 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.sistema.gestion.Models.Admin.Management.Course;
 import com.sistema.gestion.Repositories.Admin.Management.CourseRepository;
-import com.sistema.gestion.Repositories.Admin.Management.StudentRepository;
+import com.sistema.gestion.Repositories.Profiles.StudentRepository;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

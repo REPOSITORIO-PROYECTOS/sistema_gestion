@@ -3,14 +3,19 @@ package com.sistema.gestion.Services.Admin.Management;
 import java.time.LocalDate;
 import java.time.YearMonth;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.sistema.gestion.Models.Admin.Management.StudentAttendance;
 import com.sistema.gestion.Repositories.Admin.Management.StudentAttendanceRepository;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@Service
 public class StudentAttendanceService {
-    
+
+    @Autowired
     private final StudentAttendanceRepository studentAttendanceRepository;
 
     public StudentAttendanceService(StudentAttendanceRepository studentAttendanceRepository) {
