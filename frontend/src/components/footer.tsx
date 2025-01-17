@@ -1,3 +1,5 @@
+import { Book, BookOpenIcon, PhoneCall } from "lucide-react";
+import { Button } from "./ui/button";
 
 export default function Footer() {
     return (
@@ -152,30 +154,17 @@ export default function Footer() {
                     </div>
 
                     <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:col-span-2 lg:grid-cols-4">
-                        <div>
+                        <div className="space-y-4">
                             <p className="font-medium text-gray-900">Services</p>
 
-                            <ul className="mt-6 space-y-4 text-sm">
-                                <li>
-                                    <a href="#" className="text-gray-700 transition hover:opacity-75"> 1on1 Coaching </a>
-                                </li>
-
-                                <li>
-                                    <a href="#" className="text-gray-700 transition hover:opacity-75"> Company Review </a>
-                                </li>
-
-                                <li>
-                                    <a href="#" className="text-gray-700 transition hover:opacity-75"> Accounts Review </a>
-                                </li>
-
-                                <li>
-                                    <a href="#" className="text-gray-700 transition hover:opacity-75"> HR Consulting </a>
-                                </li>
-
-                                <li>
-                                    <a href="#" className="text-gray-700 transition hover:opacity-75"> SEO Optimisation </a>
-                                </li>
-                            </ul>
+                            <Button className="bg-blue-600 hover:bg-blue-800">
+                                Manual del Usuario
+                                <BookOpenIcon className="w-5 h-5 ml-2" aria-hidden="true" />
+                            </Button>
+                            <Button className="bg-blue-600 hover:bg-blue-800">
+                                Soporte
+                                <PhoneCall className="w-5 h-5 ml-2" aria-hidden="true" />
+                            </Button>
                         </div>
 
                         <div>
