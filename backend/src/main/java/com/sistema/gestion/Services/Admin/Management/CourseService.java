@@ -4,7 +4,6 @@ import static com.sistema.gestion.Utils.ErrorUtils.monoError;
 
 import java.time.LocalDateTime;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -12,25 +11,28 @@ import org.springframework.web.server.ResponseStatusException;
 import com.sistema.gestion.Models.Admin.Management.Course;
 import com.sistema.gestion.Repositories.Admin.Management.CourseRepository;
 
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class CourseService {
 
-    @Autowired
     private final CourseRepository courseRepo;
 
-    public CourseService(CourseRepository courseRepo) {
-        this.courseRepo = courseRepo;
+    public Flux<Course> findAllCourses(Integer page, Integer size) {
+        return courseRepo.findAll()
+                .sort((course1, course2) -> course1.getTitle().compareTo(course2.getTitle()))
+                .skip((long) page * size)
+                .take(size);
     }
 
-    public Flux<Course> findAllCourses() {
-        return courseRepo.findAll();
-    }
-
-    public Flux<Course> searchCourses(String keyword) {
-        return courseRepo.findByKeyword(keyword);
+    public Flux<Course> searchCourses(String keyword, Integer page, Integer size) {
+        return courseRepo.findByKeyword(keyword)
+                .sort((course1, course2) -> course1.getTitle().compareTo(course2.getTitle()))
+                .skip((long) page * size)                
+                .take(size);
     }
 
     public Mono<Course> findCourseById(String id) {

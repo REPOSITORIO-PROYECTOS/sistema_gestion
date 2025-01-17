@@ -2,19 +2,19 @@ package com.sistema.gestion.Services.Profiles;
 
 import java.time.LocalDateTime;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.sistema.gestion.Models.Profiles.Student;
 import com.sistema.gestion.Repositories.Profiles.StudentRepository;
 
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 
 @Service
+@RequiredArgsConstructor
 public class StudentService {
 
-    @Autowired
     private StudentRepository studentRepository;
 
     public Mono<Student> createStudent(Student student) {

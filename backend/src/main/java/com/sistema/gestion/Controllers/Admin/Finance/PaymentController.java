@@ -1,6 +1,6 @@
 package com.sistema.gestion.Controllers.Admin.Finance;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -22,28 +23,25 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/pagos")
 @Tag(name = "Pagos", description = "Operaciones relacionadas con los pagos de estudiantes")
+@RequiredArgsConstructor
 public class PaymentController {
 
-        @Autowired
         private final PaymentService paymentService;
-
-        public PaymentController(PaymentService paymentService) {
-                this.paymentService = paymentService;
-        }
 
         @Operation(summary = "Obtener todos los pagos", description = "Devuelve un listado de todos los pagos registrados.", responses = {
                         @ApiResponse(responseCode = "200", description = "Lista de pagos obtenida exitosamente."),
                         @ApiResponse(responseCode = "204", description = "No hay pagos registrados.")
         })
         @GetMapping("/todos")
-        public Mono<ResponseEntity<Flux<Payment>>> getAllPayments() {
-                return paymentService.getAllPayments()
+        public Mono<ResponseEntity<Flux<Payment>>> getAllPayments(@RequestParam Integer page, @RequestParam Integer size) {
+                return paymentService.getAllPayments(page, size)
                                 .collectList()
                                 .map(payments -> ResponseEntity.ok().body(Flux.fromIterable(payments)))
                                 .defaultIfEmpty(ResponseEntity.noContent().build());
@@ -54,8 +52,8 @@ public class PaymentController {
                         @ApiResponse(responseCode = "204", description = "No hay pagos registrados.")
         })
         @GetMapping("/todos-con-detalle")
-        public Mono<ResponseEntity<Flux<PaymentWithStudentDTO>>> getAllPaymentsWithDetails() {
-                return paymentService.getAllPaymentsDetails()
+        public Mono<ResponseEntity<Flux<PaymentWithStudentDTO>>> getAllPaymentsWithDetails(@RequestParam Integer page, @RequestParam Integer size) {
+                return paymentService.getAllPaymentsDetails(page, size)
                                 .collectList()
                                 .map(payment -> ResponseEntity.ok().body(Flux.fromIterable(payment)))
                                 .defaultIfEmpty(ResponseEntity.noContent().build());
@@ -82,8 +80,8 @@ public class PaymentController {
                         @ApiResponse(responseCode = "204", description = "No hay pagos que coincidan con el criterio.")
         })
         @GetMapping("/con-deuda/{conDeuda}")
-        public Mono<ResponseEntity<Flux<PaymentWithStudentDTO>>> getPaymentWithDue(@PathVariable Boolean conDeuda) {
-                return paymentService.getPaymentsHasDebt(conDeuda)
+        public Mono<ResponseEntity<Flux<PaymentWithStudentDTO>>> getPaymentWithDue(@PathVariable Boolean conDeuda, @RequestParam Integer page, @RequestParam Integer size) {
+                return paymentService.getPaymentsHasDebt(conDeuda, page, size)
                                 .collectList()
                                 .map(payment -> ResponseEntity.ok().body(Flux.fromIterable(payment)))
                                 .defaultIfEmpty(ResponseEntity.noContent().build());
@@ -96,8 +94,9 @@ public class PaymentController {
         @GetMapping("/con-deuda/{anio}/{mes}")
         public Mono<ResponseEntity<Flux<PaymentWithStudentDTO>>> getPaymentWithDueByMonth(
                         @PathVariable @Parameter(description = "es el numero del año que se desea buscar", required = true) Integer anio,
-                        @PathVariable @Parameter(description = "es el numero de mes que se desea buscar", required = true) Integer mes) {
-                return paymentService.getPaymentsHasDebtByMonth(anio, mes)
+                        @PathVariable @Parameter(description = "es el numero de mes que se desea buscar", required = true) Integer mes,
+                        @RequestParam Integer page, @RequestParam Integer size) {
+                return paymentService.getPaymentsHasDebtByMonth(anio, mes, page, size)
                                 .collectList()
                                 .map(payment -> ResponseEntity.ok().body(Flux.fromIterable(payment)))
                                 .defaultIfEmpty(ResponseEntity.noContent().build());
@@ -109,8 +108,9 @@ public class PaymentController {
         })
         @GetMapping("/estudiante/{studentId}")
         public Mono<ResponseEntity<Flux<PaymentWithStudentDTO>>> getPaymentsByStudentId(
-                        @PathVariable @Parameter(description = "Es el ID del estudiante para buscar sus pagos realizados", required = true) String studentId) {
-                return paymentService.getAllPaymentsByStudentId(studentId)
+                        @PathVariable @Parameter(description = "Es el ID del estudiante para buscar sus pagos realizados", required = true) String studentId,
+                        @RequestParam Integer page, @RequestParam Integer size) {
+                return paymentService.getAllPaymentsByStudentId(studentId, page, size)
                                 .collectList()
                                 .map(payment -> ResponseEntity.ok().body(Flux.fromIterable(payment)))
                                 .onErrorMap(e -> new ResponseStatusException(HttpStatus.NOT_FOUND,

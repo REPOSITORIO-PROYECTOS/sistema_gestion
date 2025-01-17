@@ -1,6 +1,6 @@
 package com.sistema.gestion.Controllers.Admin.Finance;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,19 +16,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/caja")
 @Tag(name = "Cash Register", description = "Endpoints para gestionar las caja")
+@RequiredArgsConstructor
 public class CashRegisterController {
 
-    @Autowired
     private final CashRegisterService cashRegisterService;
-
-    public CashRegisterController(CashRegisterService cashRegisterService) {
-        this.cashRegisterService = cashRegisterService;
-    }
 
     @Operation(summary = "Abrir una caja", description = "Crea una nueva caja si no hay ninguna abierta actualmente.")
     @ApiResponses(value = {
@@ -63,6 +60,7 @@ public class CashRegisterController {
             @ApiResponse(responseCode = "200", description = "Caja abierta obtenida correctamente"),
             @ApiResponse(responseCode = "404", description = "No hay caja abierta")
     })
+
     @GetMapping("/estado")
     public Mono<ResponseEntity<CashRegister>> getOpenCashRegister() {
         return cashRegisterService.getOpenCashRegister()

@@ -7,17 +7,15 @@ import org.springframework.stereotype.Service;
 import com.sistema.gestion.Models.Profiles.User;
 import com.sistema.gestion.Repositories.Profiles.UserRepository;
 
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-    private UserRepository userRepository;
-
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private final UserRepository userRepository;
 
     public Mono<User> createUser(User user) {
         return userRepository.save(user);

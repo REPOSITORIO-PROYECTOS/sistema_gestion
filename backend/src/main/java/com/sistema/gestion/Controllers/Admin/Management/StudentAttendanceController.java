@@ -12,18 +12,16 @@ import com.sistema.gestion.Services.Admin.Management.StudentAttendanceService;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/asistencias")
+@RequiredArgsConstructor
 public class StudentAttendanceController {
     
     private final StudentAttendanceService studentAttendanceService;
-
-    public StudentAttendanceController(StudentAttendanceService studentAttendanceService) {
-        this.studentAttendanceService = studentAttendanceService;
-    }
 
     @GetMapping("/")
     public Flux<StudentAttendance> findByMonth(@PathVariable Integer month, Integer year) {

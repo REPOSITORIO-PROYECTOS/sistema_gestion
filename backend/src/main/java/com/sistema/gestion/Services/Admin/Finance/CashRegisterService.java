@@ -3,7 +3,7 @@ package com.sistema.gestion.Services.Admin.Finance;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -12,20 +12,15 @@ import com.sistema.gestion.Models.Admin.Finance.CashRegister;
 import com.sistema.gestion.Repositories.Admin.Finance.CashRegisterRepository;
 import com.sistema.gestion.Repositories.Admin.Finance.PaymentRepository;
 
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class CashRegisterService {
-    @Autowired
+
     private final CashRegisterRepository cashRegisterRepo;
-
-    @Autowired
     private final PaymentRepository paymentRepo;
-
-    public CashRegisterService(CashRegisterRepository cashRegisterRepo, PaymentRepository paymentRepo) {
-        this.cashRegisterRepo = cashRegisterRepo;
-        this.paymentRepo = paymentRepo;
-    }
 
     public Mono<CashRegister> openCashRegister(String user) {
         return cashRegisterRepo.findFirstByIsClosedFalse()

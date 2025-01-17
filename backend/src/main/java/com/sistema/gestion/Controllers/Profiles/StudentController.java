@@ -7,18 +7,16 @@ import com.sistema.gestion.Models.Profiles.Student;
 import com.sistema.gestion.Services.Profiles.StudentService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/estudiantes")
+@RequiredArgsConstructor
 public class StudentController {
 
     private final StudentService studentService;
-
-    public StudentController(StudentService studentService) {
-        this.studentService = studentService;
-    }
 
     @GetMapping("/todos")
     public Flux<Student> findAll(@RequestParam(defaultValue = "0") int page, 
@@ -34,7 +32,6 @@ public class StudentController {
     @PostMapping("/crear")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<Student> createStudent(@RequestBody @Valid Student student) {
-        System.out.println(student);
         return studentService.createStudent(student);
     }
 

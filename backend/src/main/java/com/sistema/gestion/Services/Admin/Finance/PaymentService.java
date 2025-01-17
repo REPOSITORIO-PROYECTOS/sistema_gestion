@@ -6,9 +6,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.sistema.gestion.DTO.PaymentWithStudentDTO;
@@ -18,38 +19,29 @@ import com.sistema.gestion.Models.Profiles.Student;
 import com.sistema.gestion.Repositories.Admin.Finance.CashRegisterRepository;
 import com.sistema.gestion.Repositories.Admin.Finance.PaymentRepository;
 import com.sistema.gestion.Repositories.Admin.Management.CourseRepository;
-import com.sistema.gestion.Repositories.Admin.Management.StudentRepository;
+import com.sistema.gestion.Repositories.Profiles.StudentRepository;
 
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class PaymentService {
-        @Autowired
+        
         private final PaymentRepository paymentRepo;
-
-        @Autowired
         private final StudentRepository studentRepo;
-
-        @Autowired
         private final CourseRepository courseRepo;
-
-        @Autowired
         private final CashRegisterRepository cashRegisterRepo;
 
-        public PaymentService(PaymentRepository paymentRepo, StudentRepository studentRepo, CourseRepository courseRepo,
-                        CashRegisterRepository cashRegisterRepo) {
-                this.paymentRepo = paymentRepo;
-                this.studentRepo = studentRepo;
-                this.courseRepo = courseRepo;
-                this.cashRegisterRepo = cashRegisterRepo;
+        public Flux<Payment> getAllPayments(Integer page, Integer size) {
+                return paymentRepo.findAll()
+                        .sort((payment1, payment2) -> payment1.getPaidAmount().compareTo(payment2.getPaidAmount()))
+                        .skip((long) page * size)
+                        .take(size);
         }
 
-        public Flux<Payment> getAllPayments() {
-                return paymentRepo.findAll();
-        }
-
-        public Flux<PaymentWithStudentDTO> getAllPaymentsDetails() {
+        public Flux<PaymentWithStudentDTO> getAllPaymentsDetails(Integer page, Integer size) {
                 return paymentRepo.findAll()
                                 .flatMap(payment -> {
                                         Mono<Student> studentMono = studentRepo.findById(payment.getStudentId());
@@ -63,7 +55,10 @@ public class PaymentService {
                                                                                 student, course);
                                                                 return dto;
                                                         });
-                                });
+                                })
+                                .sort((paymentsDetails1, paymentsDetails2) -> paymentsDetails1.getPaidAmount().compareTo(paymentsDetails2.getPaidAmount()))
+                                .skip((long) page * size)
+                                .take(size);
         }
 
         public Mono<PaymentWithStudentDTO> getPaymentWithDetailsById(String paymentId) {
@@ -93,7 +88,8 @@ public class PaymentService {
                                 });
         }
 
-        public Flux<PaymentWithStudentDTO> getPaymentsHasDebt(Boolean hasDebt) {
+        @GetMapping("/hasDebt")
+        public Flux<PaymentWithStudentDTO> getPaymentsHasDebt(Boolean hasDebt, Integer page, Integer size) {
                 return paymentRepo.findAllByHasDebt(hasDebt)
                                 .flatMap(payment -> {
                                         Mono<Student> studentMono = studentRepo.findById(payment.getStudentId())
@@ -116,10 +112,13 @@ public class PaymentService {
                                                                                 student, course);
                                                                 return dto;
                                                         });
-                                });
+                                })
+                                .sort((paymentsDebitDetails1, paymentsDebitDetails2) -> paymentsDebitDetails1.getPaidAmount().compareTo(paymentsDebitDetails2.getPaidAmount()))
+                                .skip((long) page * size)
+                                .take(size);
         }
 
-        public Flux<PaymentWithStudentDTO> getPaymentsHasDebtByMonth(Integer year, Integer month) {
+        public Flux<PaymentWithStudentDTO> getPaymentsHasDebtByMonth(Integer year, Integer month, Integer page, Integer size) {
                 LocalDate startOfMonth = YearMonth.of(year, month).atDay(1);
                 LocalDate endOfMonth = startOfMonth.plusMonths(1);
 
@@ -144,10 +143,13 @@ public class PaymentService {
                                                                                 student, course);
                                                                 return dto;
                                                         });
-                                });
+                                })
+                                .sort((paymentsDebitMonth1, paymentsDebitMonth2) -> paymentsDebitMonth1.getPaidAmount().compareTo(paymentsDebitMonth2.getPaidAmount()))
+                                .skip((long) page * size)
+                                .take(size);
         }
 
-        public Flux<PaymentWithStudentDTO> getAllPaymentsByStudentId(String studentId) {
+        public Flux<PaymentWithStudentDTO> getAllPaymentsByStudentId(String studentId, Integer page, Integer size) {
                 return paymentRepo.findAllByStudentId(studentId)
                                 .flatMap(payment -> {
                                         Mono<Student> studentMono = studentRepo.findById(payment.getStudentId())
@@ -169,7 +171,10 @@ public class PaymentService {
                                                                                 student, course);
                                                                 return dto;
                                                         });
-                                });
+                                })
+                                .sort((paymentsByStudentId1, paymentsByStudentId2) -> paymentsByStudentId1.getPaidAmount().compareTo(paymentsByStudentId2.getPaidAmount()))
+                                .skip((long) page * size)
+                                .take(size);
         }
 
         public Mono<Payment> registerPayment(Payment payment, String user) {

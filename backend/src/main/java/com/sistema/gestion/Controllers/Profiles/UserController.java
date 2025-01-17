@@ -7,19 +7,16 @@ import com.sistema.gestion.Models.Profiles.User;
 import com.sistema.gestion.Services.Profiles.UserService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
-//import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/usuarios")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     @GetMapping("/todos")
     public Flux<User> findAll(@RequestParam(defaultValue = "0") int page, 

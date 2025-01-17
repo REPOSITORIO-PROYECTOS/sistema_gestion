@@ -1,6 +1,5 @@
 package com.sistema.gestion.Controllers.Admin.Management;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,36 +21,34 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/cursos")
 @Tag(name = "Cursos", description = "Operaciones relacionadas con los cursos: altas, bajas, modificaciones, y registro de estudiantes a los cursos existentes")
+@RequiredArgsConstructor
 public class CourseController {
-        @Autowired
+        
         private final CourseService courseService;
 
-        public CourseController(CourseService courseService) {
-                this.courseService = courseService;
-        }
-
         @Operation(summary = "Obtener todos los cursos", description = "Devuelve un listado de todos los cursos registrados.", responses = {
-                        @ApiResponse(responseCode = "200", description = "Lista de cursos obtenida exitosamente."),
-                        @ApiResponse(responseCode = "204", description = "No hay cursos registrados.")
+        @ApiResponse(responseCode = "200", description = "Lista de cursos obtenida exitosamente."),
+        @ApiResponse(responseCode = "204", description = "No hay cursos registrados.")
         })
-        @GetMapping
-        public Mono<ResponseEntity<Flux<Course>>> getAllCourses() {
-                return courseService.findAllCourses()
+        @GetMapping("/todos")
+        public Mono<ResponseEntity<Flux<Course>>> getAllCourses(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "5") Integer size) {
+                return courseService.findAllCourses(page, size)
                                 .collectList()
                                 .map(course -> ResponseEntity.ok().body(Flux.fromIterable(course)))
                                 .defaultIfEmpty(ResponseEntity.noContent().build());
         }
 
         @Operation(summary = "Obtener curso por ID", description = "Devuelve el detalle de un curso específico por su ID.", responses = {
-                        @ApiResponse(responseCode = "200", description = "Curso encontrado exitosamente."),
-                        @ApiResponse(responseCode = "400", description = "Error en la solicitud."),
-                        @ApiResponse(responseCode = "404", description = "No se encontró el curso.")
+        @ApiResponse(responseCode = "200", description = "Curso encontrado exitosamente."),
+        @ApiResponse(responseCode = "400", description = "Error en la solicitud."),
+        @ApiResponse(responseCode = "404", description = "No se encontró el curso.")
         })
         @GetMapping("/{courseId}")
         public Mono<ResponseEntity<Course>> getCourseById(
@@ -65,21 +62,22 @@ public class CourseController {
         }
 
         @Operation(summary = "Buscar cursos", description = "Busca cursos por una palabra clave en su nombre o descripción.", responses = {
-                        @ApiResponse(responseCode = "200", description = "Lista de cursos obtenida exitosamente."),
-                        @ApiResponse(responseCode = "204", description = "No se encontraron cursos que coincidan con la búsqueda.")
+        @ApiResponse(responseCode = "200", description = "Lista de cursos obtenida exitosamente."),
+        @ApiResponse(responseCode = "204", description = "No se encontraron cursos que coincidan con la búsqueda.")
         })
         @GetMapping("/buscar")
         public Mono<ResponseEntity<Flux<Course>>> searchCourses(
-                        @RequestParam @Parameter(description = "Palabra clave para buscar cursos", required = true) String keyword) {
-                return courseService.searchCourses(keyword)
+        @RequestParam @Parameter(description = "Palabra clave para buscar cursos", required = true) String keyword,
+        @RequestParam Integer page, @RequestParam Integer size) {
+                return courseService.searchCourses(keyword, page, size)
                                 .collectList()
                                 .map(course -> ResponseEntity.ok().body(Flux.fromIterable(course)))
                                 .defaultIfEmpty(ResponseEntity.noContent().build());
         }
 
         @Operation(summary = "Registrar un nuevo curso", description = "Registra un nuevo curso en el sistema.", responses = {
-                        @ApiResponse(responseCode = "201", description = "Curso registrado exitosamente."),
-                        @ApiResponse(responseCode = "400", description = "Error en los datos proporcionados.")
+        @ApiResponse(responseCode = "201", description = "Curso registrado exitosamente."),
+        @ApiResponse(responseCode = "400", description = "Error en los datos proporcionados.")
         })
         @PostMapping
         public Mono<ResponseEntity<Course>> createCourse(@RequestBody @Valid Course course) {
@@ -91,14 +89,14 @@ public class CourseController {
         }
 
         @Operation(summary = "Actualizar un curso", description = "Modifica los detalles de un curso existente.", responses = {
-                        @ApiResponse(responseCode = "200", description = "Curso actualizado exitosamente."),
-                        @ApiResponse(responseCode = "400", description = "Error en los datos proporcionados."),
-                        @ApiResponse(responseCode = "404", description = "No se encontró el curso a actualizar.")
+        @ApiResponse(responseCode = "200", description = "Curso actualizado exitosamente."),
+        @ApiResponse(responseCode = "400", description = "Error en los datos proporcionados."),
+        @ApiResponse(responseCode = "404", description = "No se encontró el curso a actualizar.")
         })
         @PutMapping("/{courseId}")
         public Mono<ResponseEntity<Course>> updateCourse(
-                        @PathVariable @Parameter(description = "ID del curso a actualizar", required = true) String courseId,
-                        @RequestBody @Valid Course course) {
+        @PathVariable @Parameter(description = "ID del curso a actualizar", required = true) String courseId,
+        @RequestBody @Valid Course course) {
                 String user = "ADMIN"; // Ejemplo, se debería obtener el usuario actual
                 return courseService.saveCourse(course, user)
                                 .map(savedCourse -> ResponseEntity.status(HttpStatus.CREATED).body(savedCourse))
@@ -107,12 +105,12 @@ public class CourseController {
         }
 
         @Operation(summary = "Eliminar un curso", description = "Elimina un curso por su ID.", responses = {
-                        @ApiResponse(responseCode = "204", description = "Curso eliminado exitosamente."),
-                        @ApiResponse(responseCode = "404", description = "No se encontró el curso.")
+        @ApiResponse(responseCode = "204", description = "Curso eliminado exitosamente."),
+        @ApiResponse(responseCode = "404", description = "No se encontró el curso.")
         })
         @DeleteMapping("/{courseId}")
         public Mono<ResponseEntity<Void>> deleteCourse(
-                        @PathVariable @Parameter(description = "ID del curso a eliminar", required = true) String courseId) {
+        @PathVariable @Parameter(description = "ID del curso a eliminar", required = true) String courseId) {
                 return courseService.deleteCourse(courseId)
                                 .then(Mono.just(ResponseEntity.noContent().<Void>build()))
                                 .onErrorMap(e -> new ResponseStatusException(HttpStatus.NOT_FOUND,
