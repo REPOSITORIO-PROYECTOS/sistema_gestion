@@ -82,6 +82,7 @@ import {
   Trash,
 } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import AgregarPersona from "../agregar-persona";
 
 type Item = {
   id: string;
@@ -452,10 +453,7 @@ export default function TableFilter() {
             </AlertDialog>
           )}
           {/* Add user button */}
-          <Button className="ml-auto" variant="outline">
-            <Plus className="-ms-1 me-2 opacity-60" size={16} strokeWidth={2} aria-hidden="true" />
-            Agregar Usuario
-          </Button>
+          <AgregarPersona />
         </div>
       </div>
 
@@ -576,7 +574,7 @@ export default function TableFilter() {
               {table.getState().pagination.pageIndex * table.getState().pagination.pageSize +
                 table.getState().pagination.pageSize}
             </span>{" "}
-            of <span className="text-foreground">{table.getRowCount().toString()}</span>
+            de <span className="text-foreground">{table.getRowCount().toString()}</span>
           </p>
         </div>
 
