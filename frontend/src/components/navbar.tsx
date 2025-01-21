@@ -9,16 +9,16 @@ export function Navbar() {
                     <Link href="/">Home</Link>
                 </Button>
                 <Button variant="ghost" className='hover:bg-blue-700 hover:text-white' asChild>
-                    <Link href="/inscripcion">Inventario</Link>
+                    <Link href="#">Inventario</Link>
                 </Button>
                 <Button variant="ghost" className='hover:bg-blue-700 hover:text-white' asChild>
-                    <Link href="/login">Cursos</Link>
+                    <Link href="/cursos">Cursos</Link>
                 </Button>
                 <Button variant="ghost" className='hover:bg-blue-700 hover:text-white' asChild>
-                    <Link href="/login">Usuarios</Link>
+                    <Link href="#">Usuarios</Link>
                 </Button>
                 <Button variant="ghost" className='hover:bg-blue-700 hover:text-white' asChild>
-                    <Link href="/login">Historial</Link>
+                    <Link href="#">Historial</Link>
                 </Button>
             </div>
         </nav>
