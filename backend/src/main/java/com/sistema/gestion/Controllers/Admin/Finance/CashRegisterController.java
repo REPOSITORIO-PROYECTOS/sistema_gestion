@@ -3,6 +3,7 @@ package com.sistema.gestion.Controllers.Admin.Finance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +32,11 @@ public class CashRegisterController {
 
   public CashRegisterController(CashRegisterService cashRegisterService) {
     this.cashRegisterService = cashRegisterService;
+  }
+
+  @DeleteMapping("/borrarTodo")
+  public Mono<Void> deleteAll() {
+    return cashRegisterService.deleteAllCashRegisters();
   }
 
   @Operation(summary = "Abrir una caja", description = "Crea una nueva caja si no hay ninguna abierta actualmente.")
@@ -70,7 +76,7 @@ public class CashRegisterController {
   public Mono<ResponseEntity<CashRegister>> getOpenCashRegister() {
     return cashRegisterService.getOpenCashRegister()
         .map(ResponseEntity::ok)
-        .onErrorMap(e -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay caja abierta.", e));
+        .onErrorMap(e -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay caja abierta." + e, e));
   }
 
   @GetMapping("/balance-mensual")

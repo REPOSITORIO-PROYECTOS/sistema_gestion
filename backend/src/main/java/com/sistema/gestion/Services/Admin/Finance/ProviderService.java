@@ -67,6 +67,7 @@ public class ProviderService {
     existingProvider.setPhone(provider.getPhone());
     existingProvider.setCuilCuit(provider.getCuilCuit());
     existingProvider.setModifiedBy(user);
+    existingProvider.setDescription(provider.getDescription());
     existingProvider.setUpdatedAt(LocalDateTime.now());
     existingProvider.setIsActive(provider.getIsActive());
     return existingProvider;

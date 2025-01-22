@@ -11,8 +11,11 @@ import reactor.core.publisher.Mono;
 
 @Repository
 public interface StudentRepository extends ReactiveMongoRepository<Student, String> {
-    @Query("{ $sort: { surname: 1 } }")
-    Flux<Student> findBySurname(String surname);
+    @Query("{ 'coursesIds': ?0 }")
+    Flux<Student> findAllByCourseId(String courseId);
 
     Mono<Student> findByDni(String dni);
+
+    @Query("{ $sort: { surname: 1 } }")
+    Flux<Student> findBySurname(String surname);
 }

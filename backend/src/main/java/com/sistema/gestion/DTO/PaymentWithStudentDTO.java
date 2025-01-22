@@ -3,6 +3,7 @@ package com.sistema.gestion.DTO;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.sistema.gestion.Utils.PaymentType;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +20,8 @@ public class PaymentWithStudentDTO {
   private Double paidAmount;
   private Boolean hasDebt;
   private Boolean isPaid;
+
+  private PaymentType paymentType;
 
   private String modifiedBy;
 

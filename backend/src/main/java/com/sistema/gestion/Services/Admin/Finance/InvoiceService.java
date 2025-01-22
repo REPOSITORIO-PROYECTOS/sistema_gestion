@@ -62,6 +62,7 @@ public class InvoiceService {
       return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "La factura ya tiene un ID registrado" +
           " No se puede almacenar un proveedor con Id ya registrado."));
     }
+    invoice.setPaidAmount(0.0);
     invoice.setCreatedAt(LocalDateTime.now());
     invoice.setCreatedBy(user);
     return invoiceRepo.save(invoice);
