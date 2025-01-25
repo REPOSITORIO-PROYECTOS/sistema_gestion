@@ -17,7 +17,8 @@ public class StudentService {
 
     private StudentRepository studentRepository;
 
-    public Mono<Student> createStudent(Student student) {
+    public Mono<Student> createStudent(Student student, String user) {
+        student.setCreatedBy(user);
         return studentRepository.save(student);
     }
 
@@ -32,13 +33,13 @@ public class StudentService {
         return studentRepository.findById(id);
     }
 
-    public Mono<Student> updateStudent(String id, Student student) {
+    public Mono<Student> updateStudent(String id, Student student, String user) {
         return studentRepository.findById(id)
                 .flatMap(existingStudent -> {
                     existingStudent.setName(student.getName());
                     existingStudent.setSurname(student.getSurname());
                     existingStudent.setUpdatedAt(LocalDateTime.now());
-                    existingStudent.setModifiedBy(null); //TODO: Colocar nombre del usuario que realizo la modificacion
+                    existingStudent.setModifiedBy(user);
                     existingStudent.setEmail(student.getEmail());
                     existingStudent.setPhone(student.getPhone());
                     return studentRepository.save(existingStudent);

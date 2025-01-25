@@ -17,7 +17,8 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public Mono<User> createUser(User user) {
+    public Mono<User> createUser(User user, String createdBy) {
+        user.setCreatedBy(createdBy);
         return userRepository.save(user);
     }
 
@@ -32,13 +33,13 @@ public class UserService {
         return userRepository.findById(id);
     }
 
-    public Mono<User> updateUser(String id, User user) {
+    public Mono<User> updateUser(String id, User user, String updatedBy) {
         return userRepository.findById(id)
                 .flatMap(existingUsuario -> {
                     existingUsuario.setName(user.getName());
                     existingUsuario.setSurname(user.getSurname());
                     existingUsuario.setUpdatedAt(LocalDateTime.now());
-                    existingUsuario.setModifiedBy(null); //TODO: Colocar nombre del usuario que realizo la modificacion
+                    existingUsuario.setModifiedBy(updatedBy); //TODO: Colocar nombre del usuario que realizo la modificacion
                     existingUsuario.setEmail(user.getEmail());
                     existingUsuario.setPhone(user.getPhone());
                     return userRepository.save(existingUsuario);

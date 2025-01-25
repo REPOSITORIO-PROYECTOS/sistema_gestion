@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/usuarios")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -32,13 +33,14 @@ public class UserController {
     @PostMapping("/crear")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<User> createUser(@RequestBody @Valid User user) {
-        System.out.println(user);
-        return userService.createUser(user);
+        String createdByUser = "Pepe Hongo - admin";
+        return userService.createUser(user, createdByUser);
     }
 
     @PutMapping("/actualizar/{id}")
     public Mono<User> actualizarUsuario(@PathVariable String id, @RequestBody @Valid User user) {
-        return userService.updateUser(id, user);
+        String updatedByUser = "Pepe Hongo - admin";
+        return userService.updateUser(id, user, updatedByUser);
     }
 
     @DeleteMapping("/eliminar/{id}")

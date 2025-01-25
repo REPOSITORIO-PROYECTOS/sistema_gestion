@@ -13,10 +13,12 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/estudiantes")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class StudentController {
 
     private final StudentService studentService;
+    String user = "Pepe Hongo - admin";
 
     @GetMapping("/todos")
     public Flux<Student> findAll(@RequestParam(defaultValue = "0") int page, 
@@ -32,12 +34,12 @@ public class StudentController {
     @PostMapping("/crear")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<Student> createStudent(@RequestBody @Valid Student student) {
-        return studentService.createStudent(student);
+        return studentService.createStudent(student, user);
     }
 
     @PutMapping("/actualizar/{id}")
     public Mono<Student> actualizarUsuario(@PathVariable String id, @RequestBody @Valid Student student) {
-        return studentService.updateStudent(id, student);
+        return studentService.updateStudent(id, student, user);
     }
 
     @DeleteMapping("/eliminar/{id}")
