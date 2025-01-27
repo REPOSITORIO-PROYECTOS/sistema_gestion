@@ -23,11 +23,14 @@ public class StudentAttendance extends ModelClass {
     @Id
     private String id;
 
+    @NotNull
+    private String courseId;
+
     @NotEmpty(message = "El conjunto de IDs de estudiantes no puede estar vacío.")
     private Set<String> studentsIds;
 
     @NotNull(message = "El mapa de estado de asistencia no puede ser nulo.")
-    @Valid // Valida los valores dentro del mapa, que deberían ser de tipo AttendanceStatus
+    @Valid
     private Map<String, AttendanceStatus> attendanceStatus;
 
     @NotNull(message = "La fecha de asistencia no puede ser nula.")

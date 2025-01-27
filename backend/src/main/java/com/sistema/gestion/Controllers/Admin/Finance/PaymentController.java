@@ -73,8 +73,7 @@ public class PaymentController {
                 return paymentService.getPaymentWithDetailsById(paymentId)
                                 .map(ResponseEntity::ok)
                                 .onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                                "Error al tratar de obtener el pago con el ID: " + paymentId + "\n"
-                                                                + e))
+                                                "Error al tratar de obtener el pago con el ID: " + paymentId))
                                 .defaultIfEmpty(ResponseEntity.notFound().build());
         }
 
@@ -116,7 +115,7 @@ public class PaymentController {
                                 .map(payment -> ResponseEntity.ok().body(Flux.fromIterable(payment)))
                                 .onErrorMap(e -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                                                 "Error al obtener los datos del pago para el Id del estudiante: "
-                                                                + studentId + "\n" + e))
+                                                                + studentId))
                                 .defaultIfEmpty(ResponseEntity.noContent().build());
         }
 
@@ -130,8 +129,8 @@ public class PaymentController {
                 return paymentService.registerPayment(payment, user)
                                 .map(savedPayment -> ResponseEntity.status(HttpStatus.CREATED).body(savedPayment))
                                 .onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                                "Error al registrar el pago para el curso ID: " + payment.getCourseId()
-                                                                + "\n" + e));
+                                                "Error al registrar el pago para el curso ID: "
+                                                                + payment.getCourseId()));
         }
 
         @Operation(summary = "Realizar un pago parcial", description = "Permite realizar un abono parcial a un pago existente.", responses = {
@@ -146,7 +145,7 @@ public class PaymentController {
                 return paymentService.doPayment(paymentId, payment, user)
                                 .map(updatedPayment -> ResponseEntity.ok(updatedPayment))
                                 .onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                                "Error al realizar el pago con el ID: " + paymentId + "\n" + e));
+                                                "Error al realizar el pago con el ID: " + paymentId));
         }
 
         @Operation(summary = "Actualizar información de un pago", description = "Actualiza los datos principales de un pago existente.", responses = {
@@ -161,8 +160,7 @@ public class PaymentController {
                 return paymentService.updatePaymentInfo(paymentId, payment, usuario)
                                 .map(pagoActualizado -> ResponseEntity.ok(pagoActualizado))
                                 .onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                                "Error al editar la información del pago con ID: " + paymentId + "\n"
-                                                                + e));
+                                                "Error al editar la información del pago con ID: " + paymentId));
         }
 
         @Operation(summary = "Contar cuotas adeudadas", description = "Devuelve el número total de cuotas adeudadas en el sistema.", responses = {

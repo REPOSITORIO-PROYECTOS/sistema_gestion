@@ -57,7 +57,7 @@ public class CashRegisterService {
         .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
             "No existe una caja abierta para cerrar.")))
         .flatMap(cashRegister -> {
-          // Calcular ingresos (pagos recibidos)
+          // Calcular ingresos
           Mono<BigDecimal> totalIncomeMono = paymentRepo.findAll()
               .filter(payment -> payment.getLastPaymentDate() != null)
               .filter(payment -> payment.getLastPaymentDate().isAfter(cashRegister.getStartDate()))
@@ -65,7 +65,7 @@ public class CashRegisterService {
               .reduce(BigDecimal.ZERO,
                   (total, payment) -> total.add(BigDecimal.valueOf(payment.getPaidAmount())));
 
-          // Calcular egresos (pagos realizados)
+          // Calcular egresos
           Mono<BigDecimal> totalExpenseMono = invoiceRepo.findAll()
               .filter(invoice -> invoice.getLastPaymentDate() != null)
               .filter(invoice -> invoice.getLastPaymentDate().isAfter(cashRegister.getStartDate()))
@@ -135,7 +135,7 @@ public class CashRegisterService {
         .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
             "No hay una caja abierta actualmente.")))
         .flatMap(cashRegister -> {
-          // Calcular ingresos (pagos recibidos)
+          // Calcular ingresos
           cashRegister.getStartDate();
           System.out.println("caja: " + cashRegister.getStartDate());
           Mono<BigDecimal> totalIncomeMono = paymentRepo.findAll()
@@ -145,16 +145,11 @@ public class CashRegisterService {
               .reduce(BigDecimal.ZERO,
                   (total, payment) -> total.add(BigDecimal.valueOf(payment.getPaidAmount())));
 
-          // Calcular egresos (pagos realizados)
+          // Calcular egresos
           Mono<BigDecimal> totalExpenseMono = invoiceRepo.findAll()
-              .doOnNext(invoice -> System.out.println("Antes de filtrar: " + invoice.getLastPaymentDate())) // Inspección
-                                                                                                            // antes de
-              // los filtros
               .filter(invoice -> invoice.getLastPaymentDate() != null)
               .filter(invoice -> invoice.getLastPaymentDate().isAfter(cashRegister.getStartDate()))
-              .filter(invoice -> invoice.getLastPaymentDate().isBefore(LocalDateTime.now()))
-              .doOnNext(invoice -> System.out.println("Después de filtrar: " + invoice.getId())) // Inspección después
-                                                                                                 // de los filtros
+              .filter(invoice -> invoice.getLastPaymentDate().isBefore(LocalDateTime.now())) // de los filtros
               .reduce(BigDecimal.ZERO,
                   (total, invoice) -> total.add(BigDecimal.valueOf(invoice.getPaidAmount())));
 
@@ -173,7 +168,7 @@ public class CashRegisterService {
                 provisionalView.setEndDate(LocalDateTime.now());
                 provisionalView.setTotalIncome(totalIncome);
                 provisionalView.setTotalExpense(totalExpense);
-                provisionalView.setIsClosed(false); // Vista provisional, caja no cerrada
+                provisionalView.setIsClosed(false); // Vista provisional, NO CIERRA LA CAJA
                 provisionalView.setCreatedBy(cashRegister.getCreatedBy());
                 provisionalView.setClosedBy("SIN CERRAR");
                 return provisionalView;

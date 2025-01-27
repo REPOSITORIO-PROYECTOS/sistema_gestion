@@ -50,7 +50,7 @@ public class CashRegisterController {
 
     return cashRegisterService.openCashRegister(user)
         .map(ResponseEntity::ok)
-        .onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error al abrir la caja.", e));
+        .onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error al abrir la caja."));
   }
 
   @Operation(summary = "Cerrar una caja", description = "Cierra la caja abierta actualmente y calcula el total acumulado.")
@@ -64,7 +64,8 @@ public class CashRegisterController {
 
     return cashRegisterService.closeCashRegister(user)
         .map(ResponseEntity::ok)
-        .onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error al cerrar la caja.", e));
+        .onErrorResume(e -> Mono.error(new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "Error al cerrar la caja")));
   }
 
   @Operation(summary = "Consultar caja abierta", description = "Obtiene los detalles de la caja abierta actualmente, incluyendo un cálculo provisional de los pagos realizados.")
@@ -76,7 +77,7 @@ public class CashRegisterController {
   public Mono<ResponseEntity<CashRegister>> getOpenCashRegister() {
     return cashRegisterService.getOpenCashRegister()
         .map(ResponseEntity::ok)
-        .onErrorMap(e -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay caja abierta." + e, e));
+        .onErrorMap(e -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay caja abierta."));
   }
 
   @GetMapping("/balance-mensual")
@@ -91,7 +92,7 @@ public class CashRegisterController {
       @Parameter(description = "Año del balance, debe ser menor o igual al año actual", example = "2024") @RequestParam int year,
       @Parameter(description = "Mes del balance, debe estar entre 1 y 12 y no puede ser posterior al mes actual", example = "1") @RequestParam int month) {
     return cashRegisterService.getMonthlyBalance(year, month)
-        .onErrorMap(e -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Error al obtener el balance mensual.", e));
+        .onErrorMap(e -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Error al obtener el balance mensual."));
   }
 
 }
