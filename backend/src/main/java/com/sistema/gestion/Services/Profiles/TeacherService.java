@@ -17,7 +17,8 @@ public class TeacherService {
 
     private TeacherRepository teacherRepository;
 
-    public Mono<Teacher> create(Teacher teacher) {
+    public Mono<Teacher> create(Teacher teacher, String user) {
+        teacher.setCreatedBy(user);
         return teacherRepository.save(teacher);
     }
 
@@ -32,13 +33,13 @@ public class TeacherService {
         return teacherRepository.findById(id);
     }
 
-    public Mono<Teacher> update(String id, Teacher teacher) {
+    public Mono<Teacher> update(String id, Teacher teacher, String user) {
         return teacherRepository.findById(id)
                 .flatMap(existingTeacher -> {
                     existingTeacher.setName(teacher.getName());
                     existingTeacher.setSurname(teacher.getSurname());
                     existingTeacher.setUpdatedAt(LocalDateTime.now());
-                    existingTeacher.setModifiedBy(null); //TODO: Colocar nombre del usuario que realizo la modificacion
+                    existingTeacher.setModifiedBy(user);
                     existingTeacher.setEmail(teacher.getEmail());
                     existingTeacher.setPhone(teacher.getPhone());
                     return teacherRepository.save(existingTeacher);

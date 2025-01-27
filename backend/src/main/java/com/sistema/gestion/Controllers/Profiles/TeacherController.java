@@ -1,6 +1,7 @@
 package com.sistema.gestion.Controllers.Profiles;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +23,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/profesores")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class TeacherController {
     
@@ -41,12 +43,14 @@ public class TeacherController {
     @PostMapping("/crear")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<Teacher> crear(@RequestBody @Valid Teacher teacher) {
-        return teacherService.create(teacher);
+        String user = "Pepe Hongo - admin";
+        return teacherService.create(teacher, user);
     }
 
     @PutMapping("/actualizar/{id}")
     public Mono<Teacher> actualizar(@PathVariable String id, @RequestBody @Valid Teacher teacher) {
-        return teacherService.update(id, teacher);
+        String user = "Pepe Hongo - admin";
+        return teacherService.update(id, teacher, user);
     }
 
     @DeleteMapping("/eliminar/{id}")

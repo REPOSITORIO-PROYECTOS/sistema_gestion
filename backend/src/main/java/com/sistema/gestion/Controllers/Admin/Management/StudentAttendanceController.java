@@ -1,5 +1,6 @@
 package com.sistema.gestion.Controllers.Admin.Management;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/asistencias")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class StudentAttendanceController {
     
