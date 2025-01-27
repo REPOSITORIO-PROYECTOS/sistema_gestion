@@ -1,14 +1,9 @@
-import AgregarCurso from '@/components/agregar-curso'
-import Panel from '@/components/interfaces/panel'
-import TableFilter from '@/components/interfaces/table-filter'
-import React from 'react'
+import TableCursos from '@/components/interfaces/table-cursos'
 
 export default function Page() {
     return (
         <>
-            <Panel />
-            <AgregarCurso />
-            <TableFilter />
+            <TableCursos />
         </>
     )
 }
