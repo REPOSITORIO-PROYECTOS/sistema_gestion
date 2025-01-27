@@ -22,6 +22,8 @@ import * as z from "zod"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "./ui/form"
 import MultipleSelector from "@/components/ui/multiselect";
 import { Textarea } from "./ui/textarea"
+import { useFetch } from "@/hooks/useFetch"
+import { useLoading } from "@/hooks/useLoading"
 
 const formSchema = z.object({
     title: z.string().min(2, {
@@ -58,8 +60,15 @@ const teacherOptions = [
     { value: "teacher3", label: "Profesor 3" },
 ]
 
-export default function AgregarCurso() {
+interface AgregarCursoProps {
+    // Propiedades
+    mutate: () => void
+}
+
+export default function AgregarCurso(props: AgregarCursoProps) {
     const [open, setOpen] = useState(false)
+    const { finishLoading, isLoading, startLoading } = useLoading()
+    const fetch = useFetch()
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -72,9 +81,16 @@ export default function AgregarCurso() {
         },
     })
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values)
+    async function onSubmit(formData: z.infer<typeof formSchema>) {
+        console.log(formData)
+        startLoading()
         // Aquí puedes manejar el envío del formulario
+        await fetch({
+            endpoint: 'cursos',
+            formData
+        })
+        await props.mutate()
+        finishLoading()
         setOpen(false)
     }
 
