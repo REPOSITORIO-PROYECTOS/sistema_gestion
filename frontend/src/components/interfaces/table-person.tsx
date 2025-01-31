@@ -83,20 +83,21 @@ import {
 } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import AgregarPersona from "../agregar-persona";
+import useSWR from "swr";
 
 type Item = {
   id: string;
   name: string;
+  surname: string;
   email: string;
-  location: string;
-  flag: string;
+  dni: string;
+  phone: string;
   status: "Active" | "Inactive" | "Pending";
-  balance: number;
 };
 
 // Custom filter function for multi-column searching
 const multiColumnFilterFn: FilterFn<Item> = (row, columnId, filterValue) => {
-  const searchableRowContent = `${row.original.name} ${row.original.email}`.toLowerCase();
+  const searchableRowContent = `${row.original.name} ${row.original.surname} ${row.original.email}`.toLowerCase();
   const searchTerm = (filterValue ?? "").toLowerCase();
   return searchableRowContent.includes(searchTerm);
 };
@@ -131,12 +132,25 @@ const columns: ColumnDef<Item>[] = [
     enableHiding: false,
   },
   {
-    header: "Name",
+    header: "Nombre",
     accessorKey: "name",
-    cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
-    size: 180,
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <div className="flex-shrink-0 w-9 h-9 rounded-full overflow-hidden">
+          <img
+            src={`https://randomuser.me/api/portraits/women/${row.original.id}.jpg`}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div>
+          <div className="">{row.getValue("name")}</div>
+          <div className="text-sm text-muted-foreground">{row.original.surname}</div>
+        </div>
+      </div>
+    ),
+    size: 220,
     filterFn: multiColumnFilterFn,
-    enableHiding: false,
   },
   {
     header: "Email",
@@ -144,17 +158,18 @@ const columns: ColumnDef<Item>[] = [
     size: 220,
   },
   {
-    header: "Location",
-    accessorKey: "location",
-    cell: ({ row }) => (
-      <div>
-        <span className="text-lg leading-none">{row.original.flag}</span> {row.getValue("location")}
-      </div>
-    ),
-    size: 180,
+    header: "DNI",
+    accessorKey: "dni",
+    size: 160,
+    filterFn: multiColumnFilterFn,
   },
   {
-    header: "Status",
+    header: "Teléfono",
+    accessorKey: "phone",
+    size: 160,
+  },
+  {
+    header: "Estado",
     accessorKey: "status",
     cell: ({ row }) => (
       <Badge
@@ -167,10 +182,6 @@ const columns: ColumnDef<Item>[] = [
     ),
     size: 100,
     filterFn: statusFilterFn,
-  },
-  {
-    header: "Performance",
-    accessorKey: "performance",
   },
   {
     header: "Balance",
@@ -194,7 +205,9 @@ const columns: ColumnDef<Item>[] = [
   },
 ];
 
-export default function TableFilter() {
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+export default function TablePerson() {
   const id = useId();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -212,16 +225,20 @@ export default function TableFilter() {
   ]);
 
   const [data, setData] = useState<Item[]>([]);
+
+  const swrUrl = useMemo(() => {
+    return `https://sistema-gestion-bovz.onrender.com/api/estudiantes/todos?page=${pagination.pageIndex}&size=${pagination.pageSize}`;
+  }, [pagination.pageIndex, pagination.pageSize]);
+
+  const { data: swrData, error } = useSWR(swrUrl, fetcher, {
+    revalidateOnFocus: false,
+  });
+
   useEffect(() => {
-    async function fetchPosts() {
-      const res = await fetch(
-        "https://res.cloudinary.com/dlzlfasou/raw/upload/users-01_fertyx.json",
-      );
-      const data = await res.json();
-      setData(data);
+    if (swrData) {
+      setData(swrData);
     }
-    fetchPosts();
-  }, []);
+  }, [swrData]);
 
   const handleDeleteRows = () => {
     const selectedRows = table.getSelectedRowModel().rows;
@@ -403,7 +420,7 @@ export default function TableFilter() {
                       onCheckedChange={(value) => column.toggleVisibility(!!value)}
                       onSelect={(event) => event.preventDefault()}
                     >
-                      {column.id}
+                      {column.columnDef.header?.toString()}
                     </DropdownMenuCheckboxItem>
                   );
                 })}
@@ -655,40 +672,40 @@ function RowActions({ row }: { row: Row<Item> }) {
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <span>Edit</span>
+            <span>Editar</span>
             <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <span>Duplicate</span>
+            <span>Duplicar</span>
             <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <span>Archive</span>
+            <span>Archivar</span>
             <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuSub>
-            <DropdownMenuSubTrigger>More</DropdownMenuSubTrigger>
+            <DropdownMenuSubTrigger>Mas</DropdownMenuSubTrigger>
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
-                <DropdownMenuItem>Move to project</DropdownMenuItem>
-                <DropdownMenuItem>Move to folder</DropdownMenuItem>
+                <DropdownMenuItem>Ejemplo 1</DropdownMenuItem>
+                <DropdownMenuItem>Ejemplo 2</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Advanced options</DropdownMenuItem>
+                <DropdownMenuItem>Ejemplo 3</DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>Share</DropdownMenuItem>
-          <DropdownMenuItem>Add to favorites</DropdownMenuItem>
+          <DropdownMenuItem>Enviar</DropdownMenuItem>
+          <DropdownMenuItem>Imprimir</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="text-destructive focus:text-destructive">
-          <span>Delete</span>
+          <span>Borrar</span>
           <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>
