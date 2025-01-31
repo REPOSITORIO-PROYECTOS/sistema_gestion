@@ -38,16 +38,23 @@ public class AuthController {
   @Autowired
   private AuthService authService;
 
-  // TODO: refactorizar, generar errores, generar DTO sin passwoerd desde consulta
+  // TODO: refactorizar, generar errores, generar DTO sin password desde consulta
   // mongo
   @GetMapping
-  public Flux<User> getAllUsers() {
-    return userRepository.findAll();
+  public Mono<ResponseEntity<Flux<User>>> getAllUsers() {
+    return userRepository.findAll()
+        .collectList()
+        .map(course -> ResponseEntity.ok().body(Flux.fromIterable(course)))
+        .defaultIfEmpty(ResponseEntity.noContent().build());
   }
 
   @GetMapping("/{userId}")
-  public Mono<User> getUserById(@PathVariable String userId) {
-    return userRepository.findById(userId);
+  public Mono<ResponseEntity<User>> getUserById(@PathVariable String userId) {
+    return userRepository.findById(userId)
+        .map(ResponseEntity::ok)
+        .onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Error al tratar de obtener el usuario con el ID: " + userId))
+        .defaultIfEmpty(ResponseEntity.notFound().build());
   }
 
   // TODO end
@@ -90,12 +97,11 @@ public class AuthController {
               .httpOnly(true)
               .secure(true)
               .path("/")
-              .maxAge(Duration.ofDays(7))
+              .maxAge(Duration.ofHours(8))
               .sameSite("Strict")
               .build();
 
           System.out.println("TOKEN COOKIE: " + tokenCookie.toString());
-          System.out.println("TOKEN: " + credentialsDTO.getToken());
 
           // Retornar el ResponseEntity con el body
           return Mono.just(ResponseEntity.status(HttpStatus.ACCEPTED)
