@@ -2,6 +2,7 @@ package com.sistema.gestion.Controllers.Admin.Management;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,23 +31,35 @@ public class StudentAttendanceController {
     this.studentAttendanceService = studentAttendanceService;
   }
 
-  @GetMapping("/")
+  @GetMapping
   public Flux<StudentAttendance> findByMonth(@RequestParam Integer month, @RequestParam Integer year) {
     return studentAttendanceService.findByMonth(month, year)
         .onErrorResume(e -> Mono.error(new ResponseStatusException(
             HttpStatus.INTERNAL_SERVER_ERROR, "Error al obtener asistencias para el mes " + month + " anio:" + year)));
   }
 
-  @PostMapping
-  public Mono<StudentAttendance> takeAttendance(@RequestBody @Valid StudentAttendance studentAttendance) {
-    return studentAttendanceService.takeAttendance(studentAttendance)
+  @GetMapping("/{courseId}")
+  public Flux<StudentAttendance> findByMonthAndCourseId(@RequestParam Integer month, @RequestParam Integer year,
+      @PathVariable String courseId) {
+    return studentAttendanceService.findByMonthAndCourseId(month, year, courseId)
         .onErrorResume(e -> Mono.error(new ResponseStatusException(
-            HttpStatus.BAD_REQUEST, "Error al tomar asistencia." + e.getMessage())));
+            HttpStatus.INTERNAL_SERVER_ERROR, "Error al obtener asistencias para el mes " + month + " anio:" + year)));
+  }
+
+  @PostMapping
+  public Mono<StudentAttendance> takeAttendance(@RequestBody @Valid StudentAttendance studentAttendance,
+      Authentication authentication) {
+    String user = authentication.getName();
+    return studentAttendanceService.takeAttendance(studentAttendance, user)
+        .onErrorResume(e -> Mono.error(new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "Error al tomar asistencia.")));
   }
 
   @PutMapping("/modificar-asistencia")
-  public Mono<StudentAttendance> updateAttendance(@RequestBody @Valid StudentAttendance studentAttendance) {
-    return studentAttendanceService.updateAttendance(studentAttendance)
+  public Mono<StudentAttendance> updateAttendance(@RequestBody @Valid StudentAttendance studentAttendance,
+      Authentication authentication) {
+    String user = authentication.getName();
+    return studentAttendanceService.updateAttendance(studentAttendance, user)
         .switchIfEmpty(Mono.error(new ResponseStatusException(
             HttpStatus.NOT_FOUND, "No se encontró asistencia para actualizar.")))
         .onErrorResume(e -> Mono.error(new ResponseStatusException(

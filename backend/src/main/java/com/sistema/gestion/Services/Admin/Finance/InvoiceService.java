@@ -13,6 +13,7 @@ import com.sistema.gestion.Models.Admin.Finance.Provider;
 import com.sistema.gestion.Repositories.Admin.Finance.CashRegisterRepository;
 import com.sistema.gestion.Repositories.Admin.Finance.InvoiceRepository;
 import com.sistema.gestion.Repositories.Admin.Finance.ProviderRepository;
+import com.sistema.gestion.Services.Profiles.UserService;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,11 +29,17 @@ public class InvoiceService {
   @Autowired
   private CashRegisterRepository cashRegisterRepo;
 
-  public InvoiceService(InvoiceRepository invoiceRepo, ProviderRepository providerRepo,
+  @Autowired
+  private final UserService userService;
+
+  public InvoiceService(InvoiceRepository invoiceRepo,
+      ProviderRepository providerRepo,
+      UserService userService,
       CashRegisterRepository cashRegisterRepo) {
     this.invoiceRepo = invoiceRepo;
     this.providerRepo = providerRepo;
     this.cashRegisterRepo = cashRegisterRepo;
+    this.userService = userService;
   }
 
   public Flux<Invoice> getAllInvoices() {
@@ -57,29 +64,35 @@ public class InvoiceService {
             .flatMap(provider -> mappingFromInvoiceToInvoiceWithProviderDTO(invoice, provider)));
   }
 
-  public Mono<Invoice> saveInvoice(Invoice invoice, String user) {
+  public Mono<Invoice> saveInvoice(Invoice invoice, String username) {
     if (invoice.getId() != null && !invoice.getId().isEmpty()) {
       return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "La factura ya tiene un ID registrado" +
           " No se puede almacenar un proveedor con Id ya registrado."));
     }
-    invoice.setPaidAmount(0.0);
-    invoice.setCreatedAt(LocalDateTime.now());
-    invoice.setCreatedBy(user);
-    return invoiceRepo.save(invoice);
+    return userService.getFullName(username)
+        .flatMap(name -> {
+          invoice.setPaidAmount(0.0);
+          invoice.setCreatedAt(LocalDateTime.now());
+          invoice.setCreatedBy(name);
+          return invoiceRepo.save(invoice);
+        });
   }
 
-  public Mono<Invoice> updateInvoice(Invoice invoice, String invoiceId, String user) {
+  public Mono<Invoice> updateInvoice(Invoice invoice, String invoiceId, String username) {
     if (!invoice.getId().equals(invoiceId)) {
       return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Los IDs del proveedor a actualizar " +
           "en la base de datos con el del cuerpo de la solicitud no coinciden."));
     }
-    return invoiceRepo.findById(invoiceId)
-        .flatMap(existingInvoice -> {
-          return invoiceRepo.save(mappingInvoiceToUpdate(existingInvoice, invoice, user));
+    return userService.getFullName(username)
+        .flatMap(name -> {
+          return invoiceRepo.findById(invoiceId)
+              .flatMap(existingInvoice -> {
+                return invoiceRepo.save(mappingInvoiceToUpdate(existingInvoice, invoice, name));
+              });
         });
   }
 
-  public Mono<Invoice> doInvoicePayment(String invoiceId, Invoice invoice, String user) {
+  public Mono<Invoice> doInvoicePayment(String invoiceId, Invoice invoice, String username) {
     if (!invoice.getId().equals(invoiceId)) {
       return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
           "Los IDs del Pago a efectuar " +
@@ -87,29 +100,32 @@ public class InvoiceService {
               +
               "ID solicitud: " + invoice.getId() + "\nID base de datos: " + invoiceId));
     }
+    return userService.getFullName(username)
+        .flatMap(name -> {
+          return cashRegisterRepo.findFirstByIsClosedFalse()
+              .hasElement() // Verifica si hay elementos
+              .flatMap(hasOpenRegister -> {
+                if (hasOpenRegister) {
+                  return invoiceRepo.findById(invoiceId)
+                      .flatMap(existingInvoice -> {
+                        if (existingInvoice
+                            .getDueAmount() < (existingInvoice.getPaidAmount() + invoice.getPaidAmount())) {
+                          return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                              "El pago a realizar exedera la deuda total."));
+                        }
+                        existingInvoice.setPaidAmount(existingInvoice.getPaidAmount() + invoice.getPaidAmount());
+                        existingInvoice.setLastPaymentDate(LocalDateTime.now());
+                        existingInvoice.setUpdatedAt(LocalDateTime.now());
+                        existingInvoice.setModifiedBy(name);
 
-    return cashRegisterRepo.findFirstByIsClosedFalse()
-        .hasElement() // Verifica si hay elementos
-        .flatMap(hasOpenRegister -> {
-          if (hasOpenRegister) {
-            return invoiceRepo.findById(invoiceId)
-                .flatMap(existingInvoice -> {
-                  if (existingInvoice.getDueAmount() < (existingInvoice.getPaidAmount() + invoice.getPaidAmount())) {
-                    return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "El pago a realizar exedera la deuda total."));
-                  }
-                  existingInvoice.setPaidAmount(existingInvoice.getPaidAmount() + invoice.getPaidAmount());
-                  existingInvoice.setLastPaymentDate(LocalDateTime.now());
-                  existingInvoice.setUpdatedAt(LocalDateTime.now());
-                  existingInvoice.setModifiedBy(user);
-
-                  existingInvoice.setHasDebt(existingInvoice.getPaidAmount() < existingInvoice.getDueAmount());
-                  existingInvoice.setIsPaid(existingInvoice.getPaidAmount() >= existingInvoice.getDueAmount());
-                  return invoiceRepo.save(existingInvoice);
-                });
-          }
-          return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-              "No existe una caja abierta, para guarar un pago necesita abrir la caja primero."));
+                        existingInvoice.setHasDebt(existingInvoice.getPaidAmount() < existingInvoice.getDueAmount());
+                        existingInvoice.setIsPaid(existingInvoice.getPaidAmount() >= existingInvoice.getDueAmount());
+                        return invoiceRepo.save(existingInvoice);
+                      });
+                }
+                return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "No existe una caja abierta, para guarar un pago necesita abrir la caja primero."));
+              });
         });
   }
 

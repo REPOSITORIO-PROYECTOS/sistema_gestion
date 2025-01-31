@@ -3,6 +3,7 @@ package com.sistema.gestion.Controllers.Admin.Finance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.sistema.gestion.Models.Admin.Finance.Provider;
 import com.sistema.gestion.Services.Admin.Finance.ProviderService;
@@ -38,8 +40,11 @@ public class ProviderController {
   @Operation(summary = "Obtener todos los proveedores", description = "Retorna una lista de todos los proveedores registrados")
   @ApiResponse(responseCode = "200", description = "Lista de proveedores obtenida exitosamente")
   @GetMapping
-  public Flux<Provider> getAllProviders() {
-    return providerService.getAllProviders();
+  public Mono<ResponseEntity<Flux<Provider>>> getAllProviders() {
+    return providerService.getAllProviders()
+        .collectList()
+        .map(provider -> ResponseEntity.ok().body(Flux.fromIterable(provider)))
+        .defaultIfEmpty(ResponseEntity.noContent().build());
   }
 
   @Operation(summary = "Obtener proveedor por ID", description = "Retorna la información de un proveedor específico por su ID")
@@ -51,7 +56,10 @@ public class ProviderController {
   public Mono<ResponseEntity<Provider>> getProviderById(
       @Parameter(description = "ID del proveedor a buscar", required = true) @PathVariable String providerId) {
     return providerService.getProviderById(providerId)
-        .map(ResponseEntity::ok);
+        .map(ResponseEntity::ok)
+        .onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Error al tratar de obtener el proveedor con el ID: " + providerId))
+        .defaultIfEmpty(ResponseEntity.notFound().build());
   }
 
   @Operation(summary = "Registrar un nuevo proveedor", description = "Crea un nuevo proveedor en el sistema")
@@ -60,10 +68,12 @@ public class ProviderController {
       @ApiResponse(responseCode = "400", description = "Solicitud inválida")
   })
   @PostMapping
-  public Mono<ResponseEntity<Provider>> saveProvider(@RequestBody Provider provider) {
-    String user = "ADMIN"; // Se cambia cuando se implemente la seguridad
+  public Mono<ResponseEntity<Provider>> saveProvider(@RequestBody Provider provider, Authentication authentication) {
+    String user = authentication.getName();
     return providerService.saveProvider(provider, user)
-        .map(savedProvider -> ResponseEntity.status(HttpStatus.CREATED).body(savedProvider));
+        .map(savedProvider -> ResponseEntity.status(HttpStatus.CREATED).body(savedProvider))
+        .onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Error al registrar el proveedor"));
   }
 
   @Operation(summary = "Actualizar proveedor por ID", description = "Actualiza los datos de un proveedor existente")
@@ -74,10 +84,12 @@ public class ProviderController {
   })
   @PutMapping("/{providerId}")
   public Mono<ResponseEntity<Provider>> updateProvider(@RequestBody Provider provider,
-      @PathVariable String providerId) {
-    String user = "ADMIN"; // Se cambia cuando se implemente la seguridad
+      @PathVariable String providerId, Authentication authentication) {
+    String user = authentication.getName();
     return providerService.updateProvider(provider, providerId, user)
-        .map(updatedProvider -> ResponseEntity.ok(updatedProvider));
+        .map(updatedProvider -> ResponseEntity.ok(updatedProvider))
+        .onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Error al modificar o actualizar el proveedor"));
   }
 
   @Operation(summary = "Eliminar proveedor por ID", description = "Elimina un proveedor del sistema")

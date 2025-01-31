@@ -8,13 +8,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sistema.gestion.DTO.InvoiceWithProviderDTO;
 import com.sistema.gestion.Models.Admin.Finance.Invoice;
 import com.sistema.gestion.Services.Admin.Finance.InvoiceService;
+import org.springframework.security.core.Authentication;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -39,7 +39,7 @@ public class InvoiceController {
   @Operation(summary = "Obtener todas las facturas", description = "Retorna una lista de todas las facturas registradas")
   @ApiResponse(responseCode = "200", description = "Lista de facturas obtenida exitosamente")
   @GetMapping
-  public Flux<Invoice> getAllInvoices() {
+  public Flux<Invoice> getAllInvoices(Authentication authentication) {
     return invoiceService.getAllInvoices();
   }
 
@@ -69,8 +69,8 @@ public class InvoiceController {
   })
   @PostMapping
   public Mono<ResponseEntity<Invoice>> saveInvoice(
-      @RequestBody Invoice invoice) {
-    String user = "ADMIN"; // Se cambia cuando se implemente la seguridad
+      @RequestBody Invoice invoice, Authentication authentication) {
+    String user = authentication.getName();
     return invoiceService.saveInvoice(invoice, user)
         .map(savedInvoice -> ResponseEntity.status(HttpStatus.CREATED).body(savedInvoice));
   }
@@ -82,8 +82,9 @@ public class InvoiceController {
       @ApiResponse(responseCode = "404", description = "Factura no encontrada")
   })
   @PutMapping("/{invoiceId}")
-  public Mono<ResponseEntity<Invoice>> updateInvoice(@RequestBody Invoice invoice, @PathVariable String invoiceId) {
-    String user = "ADMIN"; // Se cambia cuando se implemente la seguridad
+  public Mono<ResponseEntity<Invoice>> updateInvoice(@RequestBody Invoice invoice, @PathVariable String invoiceId,
+      Authentication authentication) {
+    String user = authentication.getName();
     return invoiceService.updateInvoice(invoice, invoiceId, user)
         .map(updatedInvoice -> ResponseEntity.ok(updatedInvoice));
   }
@@ -95,8 +96,9 @@ public class InvoiceController {
       @ApiResponse(responseCode = "404", description = "Factura no encontrada")
   })
   @PutMapping("/pagar/{invoiceId}")
-  public Mono<ResponseEntity<Invoice>> doInvoicePayment(@RequestBody Invoice invoice, @PathVariable String invoiceId) {
-    String user = "ADMIN"; // Se cambia cuando se implemente la seguridad
+  public Mono<ResponseEntity<Invoice>> doInvoicePayment(@RequestBody Invoice invoice, @PathVariable String invoiceId,
+      Authentication authentication) {
+    String user = authentication.getName();
     return invoiceService.doInvoicePayment(invoiceId, invoice, user)
         .map(paidInvoice -> ResponseEntity.ok(paidInvoice));
   }

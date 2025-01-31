@@ -9,6 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.sistema.gestion.Models.Admin.Finance.Provider;
 import com.sistema.gestion.Repositories.Admin.Finance.ProviderRepository;
+import com.sistema.gestion.Services.Profiles.UserService;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -18,8 +19,12 @@ public class ProviderService {
   @Autowired
   private ProviderRepository providerRepo;
 
-  public ProviderService(ProviderRepository providerRepo) {
+  @Autowired
+  private final UserService userService;
+
+  public ProviderService(ProviderRepository providerRepo, UserService userService) {
     this.providerRepo = providerRepo;
+    this.userService = userService;
   }
 
   public Flux<Provider> getAllProviders() {
@@ -37,9 +42,12 @@ public class ProviderService {
       return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "El proveedor ya tiene un ID registrado" +
           " No se puede almacenar un proveedor con Id ya registrado."));
     }
-    provider.setCreatedAt(LocalDateTime.now());
-    provider.setCreatedBy(user);
-    return providerRepo.save(provider);
+    return userService.getFullName(user)
+        .flatMap(name -> {
+          provider.setCreatedAt(LocalDateTime.now());
+          provider.setCreatedBy(name);
+          return providerRepo.save(provider);
+        });
   }
 
   public Mono<Provider> updateProvider(Provider provider, String providerId, String user) {
@@ -47,9 +55,12 @@ public class ProviderService {
       return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Los IDs del proveedor a actualizar " +
           "en la base de datos con el del cuerpo de la solicitud no coinciden."));
     }
-    return providerRepo.findById(providerId)
-        .flatMap(existingProvider -> {
-          return providerRepo.save(mappingProviderToUpdate(existingProvider, provider, user));
+    return userService.getFullName(user)
+        .flatMap(name -> {
+          return providerRepo.findById(providerId)
+              .flatMap(existingProvider -> {
+                return providerRepo.save(mappingProviderToUpdate(existingProvider, provider, name));
+              });
         });
   }
 

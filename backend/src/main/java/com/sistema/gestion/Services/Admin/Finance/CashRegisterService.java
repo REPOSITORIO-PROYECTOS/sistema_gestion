@@ -13,6 +13,7 @@ import com.sistema.gestion.Models.Admin.Finance.CashRegister;
 import com.sistema.gestion.Repositories.Admin.Finance.CashRegisterRepository;
 import com.sistema.gestion.Repositories.Admin.Finance.InvoiceRepository;
 import com.sistema.gestion.Repositories.Admin.Finance.PaymentRepository;
+import com.sistema.gestion.Services.Profiles.UserService;
 import com.sistema.gestion.Utils.MonthlyBalance;
 
 import reactor.core.publisher.Mono;
@@ -28,63 +29,74 @@ public class CashRegisterService {
   @Autowired
   private final InvoiceRepository invoiceRepo;
 
-  public CashRegisterService(CashRegisterRepository cashRegisterRepo, PaymentRepository paymentRepo,
+  @Autowired
+  private final UserService userService;
+
+  public CashRegisterService(CashRegisterRepository cashRegisterRepo,
+      PaymentRepository paymentRepo, UserService userService,
       InvoiceRepository invoiceRepo) {
     this.cashRegisterRepo = cashRegisterRepo;
     this.paymentRepo = paymentRepo;
     this.invoiceRepo = invoiceRepo;
+    this.userService = userService;
   }
 
-  public Mono<CashRegister> openCashRegister(String user) {
-    return cashRegisterRepo.findFirstByIsClosedFalse()
-        .hasElement() // Verifica si hay elementos
-        .flatMap(hasOpenRegister -> {
-          if (hasOpenRegister) {
-            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                "Ya existe una caja abierta. Cierre la caja actual antes de abrir una nueva."));
-          }
-          // Crear una nueva caja si no hay una abierta
-          CashRegister newCashRegister = new CashRegister();
-          newCashRegister.setStartDate(LocalDateTime.now());
-          newCashRegister.setIsClosed(false);
-          newCashRegister.setCreatedBy(user);
-          return cashRegisterRepo.save(newCashRegister);
+  public Mono<CashRegister> openCashRegister(String username) {
+    return userService.getFullName(username)
+        .flatMap(name -> {
+          return cashRegisterRepo.findFirstByIsClosedFalse()
+              .hasElement() // Verifica si hay elementos
+              .flatMap(hasOpenRegister -> {
+                if (hasOpenRegister) {
+                  return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                      "Ya existe una caja abierta. Cierre la caja actual antes de abrir una nueva."));
+                }
+                // Crear una nueva caja si no hay una abierta
+                CashRegister newCashRegister = new CashRegister();
+                newCashRegister.setStartDate(LocalDateTime.now());
+                newCashRegister.setIsClosed(false);
+                newCashRegister.setCreatedBy(name);
+                return cashRegisterRepo.save(newCashRegister);
+              });
         });
   }
 
-  public Mono<CashRegister> closeCashRegister(String user) {
-    return cashRegisterRepo.findFirstByIsClosedFalse()
-        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "No existe una caja abierta para cerrar.")))
-        .flatMap(cashRegister -> {
-          // Calcular ingresos
-          Mono<BigDecimal> totalIncomeMono = paymentRepo.findAll()
-              .filter(payment -> payment.getLastPaymentDate() != null)
-              .filter(payment -> payment.getLastPaymentDate().isAfter(cashRegister.getStartDate()))
-              .filter(payment -> payment.getLastPaymentDate().isBefore(LocalDateTime.now()))
-              .reduce(BigDecimal.ZERO,
-                  (total, payment) -> total.add(BigDecimal.valueOf(payment.getPaidAmount())));
+  public Mono<CashRegister> closeCashRegister(String username) {
+    return userService.getFullName(username)
+        .flatMap(name -> {
+          return cashRegisterRepo.findFirstByIsClosedFalse()
+              .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                  "No existe una caja abierta para cerrar.")))
+              .flatMap(cashRegister -> {
+                // Calcular ingresos
+                Mono<BigDecimal> totalIncomeMono = paymentRepo.findAll()
+                    .filter(payment -> payment.getLastPaymentDate() != null)
+                    .filter(payment -> payment.getLastPaymentDate().isAfter(cashRegister.getStartDate()))
+                    .filter(payment -> payment.getLastPaymentDate().isBefore(LocalDateTime.now()))
+                    .reduce(BigDecimal.ZERO,
+                        (total, payment) -> total.add(BigDecimal.valueOf(payment.getPaidAmount())));
 
-          // Calcular egresos
-          Mono<BigDecimal> totalExpenseMono = invoiceRepo.findAll()
-              .filter(invoice -> invoice.getLastPaymentDate() != null)
-              .filter(invoice -> invoice.getLastPaymentDate().isAfter(cashRegister.getStartDate()))
-              .filter(invoice -> invoice.getLastPaymentDate().isBefore(LocalDateTime.now()))
-              .reduce(BigDecimal.ZERO,
-                  (total, invoice) -> total.add(BigDecimal.valueOf(invoice.getPaidAmount())));
+                // Calcular egresos
+                Mono<BigDecimal> totalExpenseMono = invoiceRepo.findAll()
+                    .filter(invoice -> invoice.getLastPaymentDate() != null)
+                    .filter(invoice -> invoice.getLastPaymentDate().isAfter(cashRegister.getStartDate()))
+                    .filter(invoice -> invoice.getLastPaymentDate().isBefore(LocalDateTime.now()))
+                    .reduce(BigDecimal.ZERO,
+                        (total, invoice) -> total.add(BigDecimal.valueOf(invoice.getPaidAmount())));
 
-          return Mono.zip(totalIncomeMono, totalExpenseMono)
-              .flatMap(tuple -> {
-                BigDecimal totalIncome = tuple.getT1();
-                BigDecimal totalExpense = tuple.getT2();
+                return Mono.zip(totalIncomeMono, totalExpenseMono)
+                    .flatMap(tuple -> {
+                      BigDecimal totalIncome = tuple.getT1();
+                      BigDecimal totalExpense = tuple.getT2();
 
-                cashRegister.setEndDate(LocalDateTime.now());
-                cashRegister.setTotalIncome(totalIncome);
-                cashRegister.setTotalExpense(totalExpense);
-                cashRegister.setIsClosed(true);
-                cashRegister.setClosedBy(user);
+                      cashRegister.setEndDate(LocalDateTime.now());
+                      cashRegister.setTotalIncome(totalIncome);
+                      cashRegister.setTotalExpense(totalExpense);
+                      cashRegister.setIsClosed(true);
+                      cashRegister.setClosedBy(name);
 
-                return cashRegisterRepo.save(cashRegister);
+                      return cashRegisterRepo.save(cashRegister);
+                    });
               });
         });
   }

@@ -21,6 +21,7 @@ import com.sistema.gestion.Repositories.Admin.Finance.CashRegisterRepository;
 import com.sistema.gestion.Repositories.Admin.Finance.PaymentRepository;
 import com.sistema.gestion.Repositories.Admin.Management.CourseRepository;
 import com.sistema.gestion.Repositories.Profiles.StudentRepository;
+import com.sistema.gestion.Services.Profiles.UserService;
 import com.sistema.gestion.Utils.CourseStatus;
 import com.sistema.gestion.Utils.PaymentType;
 
@@ -41,12 +42,16 @@ public class PaymentService {
   @Autowired
   private final CashRegisterRepository cashRegisterRepo;
 
+  @Autowired
+  private final UserService userService;
+
   public PaymentService(PaymentRepository paymentRepo, StudentRepository studentRepo, CourseRepository courseRepo,
-      CashRegisterRepository cashRegisterRepo) {
+      CashRegisterRepository cashRegisterRepo, UserService userService) {
     this.paymentRepo = paymentRepo;
     this.studentRepo = studentRepo;
     this.courseRepo = courseRepo;
     this.cashRegisterRepo = cashRegisterRepo;
+    this.userService = userService;
   }
 
   public Flux<Payment> getAllPayments() {
@@ -188,26 +193,70 @@ public class PaymentService {
               return monoError(HttpStatus.CONFLICT,
                   "Ya existe una cuota registrada para este estudiante y curso en el mes actual.");
             }
-            return savePayment(payment, startOfMonth, user);
+            return userService.getFullName(user)
+                .flatMap(name -> {
+                  return savePayment(payment, startOfMonth, name);
+                });
           });
     }
     return savePayment(payment, startOfMonth, user);
   }
+
+  /*
+   * public Flux<Payment> registerMonthlyPayments(String user) {
+   * YearMonth currentMonth = YearMonth.now();
+   * LocalDate startOfMonth = currentMonth.atDay(1);
+   * LocalDate endOfMonth = currentMonth.atEndOfMonth();
+   * return paymentRepo.findByPaymentDueDateBetween(startOfMonth, endOfMonth)
+   * .filter(payment -> payment.getPaymentType() == PaymentType.CUOTE)
+   * .collectList()
+   * .flatMapMany(existingPayments -> {
+   * return studentRepo.findAll()
+   * .filter(student -> "Activo".equalsIgnoreCase(student.getStatus()))
+   * .collectList()
+   * .flatMapMany(students -> {
+   * return courseRepo.findAll()
+   * .filter(course -> course.getStatus() == CourseStatus.ACTIVE)
+   * .collectList()
+   * .flatMapMany(courses -> {
+   * List<Payment> paymentsToSave = new ArrayList<>();
+   * 
+   * for (Course course : courses) {
+   * for (Student student : students) {
+   * boolean paymentExists = existingPayments.stream()
+   * .anyMatch(payment -> payment.getStudentId().equals(student.getId()) &&
+   * payment.getCourseId().equals(course.getId()));
+   * 
+   * if (!paymentExists && student.getCoursesIds().contains(course.getId())) {
+   * Payment newPayment = mappingPaymentToMontlyPayment(
+   * course, student, startOfMonth.atStartOfDay(), user);
+   * newPayment.setPaymentType(PaymentType.CUOTE);
+   * paymentsToSave.add(newPayment);
+   * }
+   * }
+   * }
+   * return Flux.fromIterable(paymentsToSave)
+   * .flatMap(paymentRepo::save);
+   * });
+   * });
+   * });
+   * 
+   * }
+   */
 
   public Flux<Payment> registerMonthlyPayments(String user) {
     YearMonth currentMonth = YearMonth.now();
     LocalDate startOfMonth = currentMonth.atDay(1);
     LocalDate endOfMonth = currentMonth.atEndOfMonth();
 
-    return paymentRepo.findByPaymentDueDateBetween(startOfMonth, endOfMonth)
-        .filter(payment -> payment.getPaymentType() == PaymentType.CUOTE)
-        .collectList()
-        .flatMapMany(existingPayments -> {
-          return studentRepo.findAll()
-              .filter(student -> "Activo".equalsIgnoreCase(student.getStatus()))
-              .collectList()
-              .flatMapMany(students -> {
-                return courseRepo.findAll()
+    return userService.getFullName(user)
+        .flatMapMany(name -> paymentRepo.findByPaymentDueDateBetween(startOfMonth, endOfMonth)
+            .filter(payment -> payment.getPaymentType() == PaymentType.CUOTE)
+            .collectList()
+            .flatMapMany(existingPayments -> studentRepo.findAll()
+                .filter(student -> "Activo".equalsIgnoreCase(student.getStatus()))
+                .collectList()
+                .flatMapMany(students -> courseRepo.findAll()
                     .filter(course -> course.getStatus() == CourseStatus.ACTIVE)
                     .collectList()
                     .flatMapMany(courses -> {
@@ -221,7 +270,7 @@ public class PaymentService {
 
                           if (!paymentExists && student.getCoursesIds().contains(course.getId())) {
                             Payment newPayment = mappingPaymentToMontlyPayment(
-                                course, student, startOfMonth.atStartOfDay(), user);
+                                course, student, startOfMonth.atStartOfDay(), name);
                             newPayment.setPaymentType(PaymentType.CUOTE);
                             paymentsToSave.add(newPayment);
                           }
@@ -229,9 +278,7 @@ public class PaymentService {
                       }
                       return Flux.fromIterable(paymentsToSave)
                           .flatMap(paymentRepo::save);
-                    });
-              });
-        });
+                    }))));
   }
 
   public Mono<Payment> doPayment(String paymentId, Payment payment, String user) {
@@ -241,22 +288,26 @@ public class PaymentService {
               "en la base de datos con el del cuerpo de la solicitud no coinciden." +
               "ID solicitud: " + payment.getId() + "\nID base de datos: " + paymentId));
     }
-    return cashRegisterRepo.findFirstByIsClosedFalse()
-        .hasElement() // Verifica si hay elementos
-        .flatMap(hasOpenRegister -> {
-          if (hasOpenRegister) {
-            return paymentRepo.findById(payment.getId())
-                .flatMap(existingPayment -> {
-                  if (existingPayment
-                      .getPaymentAmount() < (existingPayment.getPaidAmount() + payment.getPaidAmount())) {
-                    return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "El pago a realizar exedera el saldo total."));
-                  }
-                  return paymentRepo.save(mappingPaymentToDoPayment(existingPayment, payment, user));
-                });
-          }
-          return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-              "No existe una caja abierta, para guarar un pago necesita abrir la caja primero."));
+
+    return userService.getFullName(user)
+        .flatMap(name -> {
+          return cashRegisterRepo.findFirstByIsClosedFalse()
+              .hasElement() // Verifica si hay elementos
+              .flatMap(hasOpenRegister -> {
+                if (hasOpenRegister) {
+                  return paymentRepo.findById(payment.getId())
+                      .flatMap(existingPayment -> {
+                        if (existingPayment
+                            .getPaymentAmount() < (existingPayment.getPaidAmount() + payment.getPaidAmount())) {
+                          return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                              "El pago a realizar exedera el saldo total."));
+                        }
+                        return paymentRepo.save(mappingPaymentToDoPayment(existingPayment, payment, name));
+                      });
+                }
+                return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "No existe una caja abierta, para guarar un pago necesita abrir la caja primero."));
+              });
         });
   }
 
@@ -269,14 +320,19 @@ public class PaymentService {
               "ID solicitud: " + payment.getId() +
               "\nID base de datos: " + paymentId));
     }
-    return paymentRepo.findById(paymentId)
-        .flatMap(existingPayment -> {
-          existingPayment.setPaymentType(payment.getPaymentType());
-          existingPayment.setUpdatedAt(LocalDateTime.now());
-          existingPayment.setModifiedBy(user);
-          existingPayment.setPaidAmount(payment.getPaidAmount());
-          existingPayment.setPaymentAmount(payment.getPaymentAmount());
-          return paymentRepo.save(existingPayment);
+    return userService.getFullName(user)
+        .flatMap(name -> {
+          return paymentRepo.findById(paymentId)
+              .flatMap(existingPayment -> {
+                existingPayment.setPaymentType(payment.getPaymentType());
+                existingPayment.setUpdatedAt(LocalDateTime.now());
+                existingPayment.setModifiedBy(name);
+                existingPayment.setPaidAmount(payment.getPaidAmount());
+                existingPayment.setPaymentAmount(payment.getPaymentAmount());
+                existingPayment.setHasDebt(payment.getPaidAmount() < payment.getPaymentAmount());
+                payment.setIsPaid(payment.getPaidAmount() >= payment.getPaymentAmount());
+                return paymentRepo.save(existingPayment);
+              });
         });
   }
 

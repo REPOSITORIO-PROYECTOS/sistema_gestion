@@ -3,6 +3,7 @@ package com.sistema.gestion.Controllers.Admin.Finance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,21 +35,15 @@ public class CashRegisterController {
     this.cashRegisterService = cashRegisterService;
   }
 
-  @DeleteMapping("/borrarTodo")
-  public Mono<Void> deleteAll() {
-    return cashRegisterService.deleteAllCashRegisters();
-  }
-
   @Operation(summary = "Abrir una caja", description = "Crea una nueva caja si no hay ninguna abierta actualmente.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Caja abierta correctamente"),
       @ApiResponse(responseCode = "400", description = "Ya existe una caja abierta o error al abrirla")
   })
   @PostMapping("/abrir")
-  public Mono<ResponseEntity<CashRegister>> openCashRegister() {
-    String user = "ADMIN"; // Se cambia cuando se implemente la seguridad
-
-    return cashRegisterService.openCashRegister(user)
+  public Mono<ResponseEntity<CashRegister>> openCashRegister(Authentication auth) {
+    String username = auth.getName();
+    return cashRegisterService.openCashRegister(username)
         .map(ResponseEntity::ok)
         .onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error al abrir la caja."));
   }
@@ -93,6 +88,11 @@ public class CashRegisterController {
       @Parameter(description = "Mes del balance, debe estar entre 1 y 12 y no puede ser posterior al mes actual", example = "1") @RequestParam int month) {
     return cashRegisterService.getMonthlyBalance(year, month)
         .onErrorMap(e -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Error al obtener el balance mensual."));
+  }
+
+  @DeleteMapping("/borrarTodo")
+  public Mono<Void> deleteAll() {
+    return cashRegisterService.deleteAllCashRegisters();
   }
 
 }

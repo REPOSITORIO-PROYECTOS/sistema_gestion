@@ -1,6 +1,7 @@
 package com.sistema.gestion.Controllers.Profiles;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -40,15 +41,18 @@ public class StudentController {
 
   @PostMapping("/crear")
   @ResponseStatus(HttpStatus.CREATED)
-  public Mono<Student> createStudent(@RequestBody @Valid Student student) {
-    return studentService.createStudent(student)
+  public Mono<Student> createStudent(@RequestBody @Valid Student student, Authentication authentication) {
+    String user = authentication.getName();
+    return studentService.createStudent(student, user)
         .onErrorResume(e -> Mono.error(new ResponseStatusException(
             HttpStatus.BAD_REQUEST, "Error al crear estudiante")));
   }
 
   @PutMapping("/actualizar/{id}")
-  public Mono<Student> actualizarUsuario(@PathVariable String id, @RequestBody @Valid Student student) {
-    return studentService.updateStudent(id, student)
+  public Mono<Student> actualizarUsuario(@PathVariable String id, @RequestBody @Valid Student student,
+      Authentication authentication) {
+    String user = authentication.getName();
+    return studentService.updateStudent(id, student, user)
         .switchIfEmpty(Mono.error(new ResponseStatusException(
             HttpStatus.NOT_FOUND, "No se pudo actualizar. Estudiante no encontrado con ID: " + id)))
         .onErrorResume(e -> Mono.error(new ResponseStatusException(

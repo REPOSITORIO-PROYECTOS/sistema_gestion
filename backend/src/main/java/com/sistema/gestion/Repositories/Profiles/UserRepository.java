@@ -13,7 +13,8 @@ import reactor.core.publisher.Mono;
 public interface UserRepository extends ReactiveMongoRepository<User, String> {
     @Query("{ $sort: { surname: 1 } }")
     Flux<User> findBySurname(String surname);
-    
+
+    Mono<User> findByEmail(String email);
+
     Mono<User> findByDni(String dni);
 }
-
