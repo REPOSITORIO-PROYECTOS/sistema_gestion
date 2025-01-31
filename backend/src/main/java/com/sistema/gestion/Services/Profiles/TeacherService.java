@@ -22,6 +22,10 @@ public class TeacherService {
         return teacherRepository.save(teacher);
     }
 
+    public Mono<Long> findAllCount() {
+        return teacherRepository.count();
+    }
+
     public Flux<Teacher> findAll(int page, int size) {
         return teacherRepository.findAll()
             .sort((teacher1, teacher2) -> teacher1.getSurname().compareTo(teacher2.getSurname()))

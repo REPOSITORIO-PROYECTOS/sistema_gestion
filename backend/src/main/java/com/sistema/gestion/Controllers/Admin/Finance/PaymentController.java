@@ -49,6 +49,11 @@ public class PaymentController {
                                 .defaultIfEmpty(ResponseEntity.noContent().build());
         }
 
+        @GetMapping("/contar-todos")
+        public Mono<Long> findAllCount() {
+                return paymentService.findAllCount();
+        }
+
         @Operation(summary = "Obtener todos los pagos con detalles", description = "Devuelve un listado de todos los pagos registrados junto con detalles de estudiantes y cursos.", responses = {
                         @ApiResponse(responseCode = "200", description = "Lista de pagos con detalles obtenida exitosamente."),
                         @ApiResponse(responseCode = "204", description = "No hay pagos registrados.")

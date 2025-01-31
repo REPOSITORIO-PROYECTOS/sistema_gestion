@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.sistema.gestion.DTO.CourseDTO;
 import com.sistema.gestion.Models.Admin.Management.Course;
 import com.sistema.gestion.Services.Admin.Management.CourseService;
 
@@ -27,7 +28,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/cursos")
+@RequestMapping("/api/cursos")
 @Tag(name = "Cursos", description = "Operaciones relacionadas con los cursos: altas, bajas, modificaciones, y registro de estudiantes a los cursos existentes")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
@@ -40,11 +41,16 @@ public class CourseController {
         @ApiResponse(responseCode = "204", description = "No hay cursos registrados.")
         })
         @GetMapping("/todos")
-        public Mono<ResponseEntity<Flux<Course>>> getAllCourses(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "5") Integer size) {
+        public Mono<ResponseEntity<Flux<CourseDTO>>> getAllCourses(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "5") Integer size) {
                 return courseService.findAllCourses(page, size)
                                 .collectList()
                                 .map(course -> ResponseEntity.ok().body(Flux.fromIterable(course)))
                                 .defaultIfEmpty(ResponseEntity.noContent().build());
+        }
+
+        @GetMapping("/contar-todos")
+        public Mono<Long> findAllCount() {
+                return courseService.findAllCount();
         }
 
         @Operation(summary = "Obtener curso por ID", description = "Devuelve el detalle de un curso específico por su ID.", responses = {
@@ -68,7 +74,7 @@ public class CourseController {
         @ApiResponse(responseCode = "204", description = "No se encontraron cursos que coincidan con la búsqueda.")
         })
         @GetMapping("/buscar")
-        public Mono<ResponseEntity<Flux<Course>>> searchCourses(
+        public Mono<ResponseEntity<Flux<CourseDTO>>> searchCourses(
         @RequestParam @Parameter(description = "Palabra clave para buscar cursos", required = true) String keyword,
         @RequestParam Integer page, @RequestParam Integer size) {
                 return courseService.searchCourses(keyword, page, size)

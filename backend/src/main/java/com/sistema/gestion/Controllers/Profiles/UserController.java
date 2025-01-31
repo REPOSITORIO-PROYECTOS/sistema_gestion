@@ -25,6 +25,11 @@ public class UserController {
         return userService.findAll(page, size);
     }
 
+    @GetMapping("/contar-todos")
+    public Mono<Long> findAllCount() {
+        return userService.findAllCount();
+    }
+
     @GetMapping("/{id}")
     public Mono<User> findById(@PathVariable String id) {
         return userService.findById(id);

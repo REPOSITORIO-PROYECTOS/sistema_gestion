@@ -22,6 +22,10 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public Mono<Long> findAllCount() {
+        return userRepository.count();
+    }
+
     public Flux<User> findAll(int page, int size) {
         return userRepository.findAll()
             .sort((user1, user2) -> user1.getSurname().compareTo(user2.getSurname()))

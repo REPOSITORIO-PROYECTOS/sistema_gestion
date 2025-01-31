@@ -41,6 +41,10 @@ public class PaymentService {
                         .take(size);
         }
 
+        public Mono<Long> findAllCount() {
+                return paymentRepo.count();
+        }
+
         public Flux<PaymentWithStudentDTO> getAllPaymentsDetails(Integer page, Integer size) {
                 return paymentRepo.findAll()
                                 .flatMap(payment -> {

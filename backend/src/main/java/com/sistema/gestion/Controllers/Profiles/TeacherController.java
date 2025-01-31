@@ -35,6 +35,11 @@ public class TeacherController {
         return teacherService.findAll(page, size);
     }
 
+    @GetMapping("/contar-todos")
+    public Mono<Long> contarTodos() {
+        return teacherService.findAllCount();
+    }
+
     @GetMapping("/{id}")
     public Mono<Teacher> findById(@PathVariable String id) {
         return teacherService.findById(id);

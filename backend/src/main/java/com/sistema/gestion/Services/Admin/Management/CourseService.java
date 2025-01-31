@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.sistema.gestion.DAO.CourseDAO;
+import com.sistema.gestion.DTO.CourseDTO;
 import com.sistema.gestion.Models.Admin.Management.Course;
 import com.sistema.gestion.Repositories.Admin.Management.CourseRepository;
 
@@ -20,19 +22,18 @@ import reactor.core.publisher.Mono;
 public class CourseService {
 
     private final CourseRepository courseRepo;
+    private final CourseDAO courseDAO;
 
-    public Flux<Course> findAllCourses(Integer page, Integer size) {
-        return courseRepo.findAll()
-                .sort((course1, course2) -> course1.getTitle().compareTo(course2.getTitle()))
-                .skip((long) page * size)
-                .take(size);
+    public Flux<CourseDTO> findAllCourses(Integer page, Integer size) {
+        return courseDAO.findAll(page, size);
     }
 
-    public Flux<Course> searchCourses(String keyword, Integer page, Integer size) {
-        return courseRepo.findByKeyword(keyword)
-                .sort((course1, course2) -> course1.getTitle().compareTo(course2.getTitle()))
-                .skip((long) page * size)                
-                .take(size);
+    public Mono<Long> findAllCount() {
+        return courseRepo.count();
+    }
+
+    public Flux<CourseDTO> searchCourses(String keyword, Integer page, Integer size) {
+        return courseDAO.searchCourses(keyword, page, size);
     }
 
     public Mono<Course> findCourseById(String id) {

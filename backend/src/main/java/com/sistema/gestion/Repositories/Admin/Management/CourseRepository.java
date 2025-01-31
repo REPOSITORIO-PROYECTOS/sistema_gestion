@@ -13,4 +13,6 @@ import reactor.core.publisher.Flux;
 public interface CourseRepository extends ReactiveMongoRepository<Course, String> {
     @Query("{ $or: [ { 'title': { $regex: ?0, $options: 'i' } }, { 'description': { $regex: ?0, $options: 'i' } } ] }")
     Flux<Course> findByKeyword(String keyword);
+
+    
 }

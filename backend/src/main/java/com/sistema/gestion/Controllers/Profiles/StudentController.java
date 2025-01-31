@@ -1,6 +1,7 @@
 package com.sistema.gestion.Controllers.Profiles;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.sistema.gestion.Models.Profiles.Student;
@@ -21,9 +22,14 @@ public class StudentController {
     String user = "Pepe Hongo - admin";
 
     @GetMapping("/todos")
-    public Flux<Student> findAll(@RequestParam(defaultValue = "0") int page, 
+    public ResponseEntity<Flux<Student>> findAll(@RequestParam(defaultValue = "0") int page, 
     @RequestParam(defaultValue = "5") int size) {
-        return studentService.findAll(page, size);
+        return new ResponseEntity<>(studentService.findAll(page, size), HttpStatus.OK);
+    }
+
+    @GetMapping("/contar-todos")
+    public Mono<Long> findAllCount() {
+        return studentService.findAllCount();
     }
 
     @GetMapping("/{id}")
