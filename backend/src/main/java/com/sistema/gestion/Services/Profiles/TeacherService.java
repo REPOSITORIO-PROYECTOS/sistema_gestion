@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class TeacherService {
 
-    private TeacherRepository teacherRepository;
+    private final TeacherRepository teacherRepository;
 
     public Mono<Teacher> create(Teacher teacher, String user) {
         teacher.setCreatedBy(user);
@@ -28,9 +28,9 @@ public class TeacherService {
 
     public Flux<Teacher> findAll(int page, int size) {
         return teacherRepository.findAll()
-            .sort((teacher1, teacher2) -> teacher1.getSurname().compareTo(teacher2.getSurname()))
-            .skip((long) page * size)
-            .take(size);
+                .sort((teacher1, teacher2) -> teacher1.getSurname().compareTo(teacher2.getSurname()))
+                .skip((long) page * size)
+                .take(size);
     }
 
     public Mono<Teacher> findById(String id) {
