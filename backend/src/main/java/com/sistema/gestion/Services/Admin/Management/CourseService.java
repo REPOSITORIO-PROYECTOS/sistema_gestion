@@ -36,10 +36,9 @@ public class CourseService {
         return courseDAO.searchCourses(keyword, page, size);
     }
 
-    public Mono<Course> findCourseById(String id) {
-        return courseRepo.findById(id)
-                .switchIfEmpty(
-                        Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay curso con el ID: " + id)));
+    public Mono<CourseDTO> findCourseById(String id) {
+        return courseDAO.findById(id).switchIfEmpty(
+            Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay curso con el ID: " + id)));
     }
 
     public Mono<Course> saveCourse(Course course, String user) {

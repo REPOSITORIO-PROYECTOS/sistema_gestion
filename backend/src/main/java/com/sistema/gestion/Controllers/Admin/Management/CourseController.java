@@ -59,7 +59,7 @@ public class CourseController {
         @ApiResponse(responseCode = "404", description = "No se encontró el curso.")
         })
         @GetMapping("/{courseId}")
-        public Mono<ResponseEntity<Course>> getCourseById(
+        public Mono<ResponseEntity<CourseDTO>> getCourseById(
                         @PathVariable @Parameter(description = "El ID del curso que se desea obtener", required = true) String courseId) {
                 return courseService.findCourseById(courseId)
                                 .map(ResponseEntity::ok)
