@@ -24,6 +24,7 @@ import MultipleSelector from "@/components/ui/multiselect";
 import { Textarea } from "./ui/textarea"
 import { useFetch } from "@/hooks/useFetch"
 import { useLoading } from "@/hooks/useLoading"
+import { he } from "date-fns/locale"
 
 const formSchema = z.object({
     title: z.string().min(2, {
@@ -87,7 +88,13 @@ export default function AgregarCurso(props: AgregarCursoProps) {
         // Aquí puedes manejar el envío del formulario
         await fetch({
             endpoint: 'cursos',
-            formData
+            formData,
+            options: {
+                headers: {
+                    auth: 'Bearer ' + localStorage.getItem('token'),
+                    'Content-Type': 'application/json'
+                }
+            }
         })
         await props.mutate()
         finishLoading()

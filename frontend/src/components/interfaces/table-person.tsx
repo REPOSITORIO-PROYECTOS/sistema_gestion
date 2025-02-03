@@ -56,6 +56,7 @@ import {
   PaginationState,
   Row,
   SortingState,
+  Updater,
   VisibilityState,
   flexRender,
   getCoreRowModel,
@@ -81,9 +82,12 @@ import {
   Plus,
   Trash,
 } from "lucide-react";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import AgregarPersona from "../agregar-persona";
 import useSWR from "swr";
+import React from "react";
+import { useFetch } from "@/hooks/useFetch";
+import { useLoading } from "@/hooks/useLoading";
 
 type Item = {
   id: string;
@@ -209,11 +213,13 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function TablePerson() {
   const id = useId();
+  const { finishLoading, isLoading, startLoading } = useLoading()
+  const fetch = useFetch()
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 5,
   });
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -230,8 +236,8 @@ export default function TablePerson() {
     return `https://sistema-gestion-bovz.onrender.com/api/estudiantes/todos?page=${pagination.pageIndex}&size=${pagination.pageSize}`;
   }, [pagination.pageIndex, pagination.pageSize]);
 
-  const { data: swrData, error } = useSWR(swrUrl, fetcher, {
-    revalidateOnFocus: false,
+  const { data: swrData, error, mutate } = useSWR(swrUrl, fetcher, {
+    keepPreviousData: true,
   });
 
   useEffect(() => {
@@ -240,14 +246,29 @@ export default function TablePerson() {
     }
   }, [swrData]);
 
-  const handleDeleteRows = () => {
+  const handleDeleteRows = async () => {
+    startLoading()
     const selectedRows = table.getSelectedRowModel().rows;
     const updatedData = data.filter(
       (item) => !selectedRows.some((row) => row.original.id === item.id),
     );
     setData(updatedData);
+    selectedRows.forEach(async (row) => {
+      // Delete row
+      console.log("Deleting row", row.original.id);
+      await fetch({
+        endpoint: `cursos/${row.original.id}`,
+        method: 'delete'
+      });
+    });
+    await mutate();
     table.resetRowSelection();
+    finishLoading()
   };
+
+  const handlePaginationChange = useCallback((updater: Updater<PaginationState>) => {
+    setPagination(updater);
+  }, []);
 
   const table = useReactTable({
     data,
@@ -273,11 +294,9 @@ export default function TablePerson() {
   // Get unique status values
   const uniqueStatusValues = useMemo(() => {
     const statusColumn = table.getColumn("status");
-
+    console.log(statusColumn)
     if (!statusColumn) return [];
-
     const values = Array.from(statusColumn.getFacetedUniqueValues().keys());
-
     return values.sort();
   }, [table.getColumn("status")?.getFacetedUniqueValues()]);
 
@@ -309,6 +328,8 @@ export default function TablePerson() {
     table.getColumn("status")?.setFilterValue(newFilterValue.length ? newFilterValue : undefined);
   };
 
+  console.log(uniqueStatusValues)
+
   return (
     <div className="container mx-auto my-10 space-y-4">
       {/* Filters */}
@@ -325,9 +346,9 @@ export default function TablePerson() {
               )}
               value={(table.getColumn("name")?.getFilterValue() ?? "") as string}
               onChange={(e) => table.getColumn("name")?.setFilterValue(e.target.value)}
-              placeholder="Filtrar por nombre o email..."
+              placeholder="Filtrar por nombre del curso..."
               type="text"
-              aria-label="Filter by name or email"
+              aria-label="Filtrar por nombre del curso"
             />
             <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
               <ListFilter size={16} strokeWidth={2} aria-hidden="true" />
@@ -470,7 +491,7 @@ export default function TablePerson() {
             </AlertDialog>
           )}
           {/* Add user button */}
-          <AgregarPersona />
+          <AgregarPersona mutate={mutate} />
         </div>
       </div>
 
@@ -659,7 +680,7 @@ export default function TablePerson() {
   );
 }
 
-function RowActions({ row }: { row: Row<Item> }) {
+const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -711,4 +732,4 @@ function RowActions({ row }: { row: Row<Item> }) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+});

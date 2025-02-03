@@ -25,6 +25,8 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form"
 import MultipleSelector from "@/components/ui/multiselect";
+import { useFetch } from "@/hooks/useFetch"
+import { useLoading } from "@/hooks/useLoading"
 
 const formSchema = z.object({
     name: z.string().min(2, {
@@ -62,9 +64,15 @@ const courseOptions = [
     { label: "Literatura", value: "lit101" },
     { label: "Programación", value: "cs101" },
 ]
+interface AgregarPersonaProps {
+    // Propiedades
+    mutate: () => void
+}
 
-export default function AgregarPersona() {
+export default function AgregarPersona(props: AgregarPersonaProps) {
     const [open, setOpen] = useState(false)
+    const { finishLoading, isLoading, startLoading } = useLoading()
+    const fetch = useFetch()
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -80,9 +88,16 @@ export default function AgregarPersona() {
         },
     })
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values)
+    async function onSubmit(formData: z.infer<typeof formSchema>) {
+        console.log(formData)
+        startLoading()
         // Aquí puedes manejar el envío del formulario
+        await fetch({
+            endpoint: 'api/estudiantes/crear',
+            formData
+        })
+        await props.mutate()
+        finishLoading()
         setOpen(false)
     }
 

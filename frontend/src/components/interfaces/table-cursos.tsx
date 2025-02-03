@@ -88,6 +88,7 @@ import AgregarCurso from "../agregar-curso";
 import React from 'react';
 import { useLoading } from '@/hooks/useLoading';
 import { useFetch } from '@/hooks/useFetch';
+import Link from 'next/link';
 
 type Item = {
     id: string;
@@ -216,6 +217,18 @@ export default function TableFilter() {
             setData(swrData);
         }
     }, [swrData]);
+
+    const handleDeleteRow = async (row: Row<Item>) => {
+        startLoading()
+        const updatedData = data.filter((item) => item.id !== row.original.id);
+        setData(updatedData);
+        await fetch({
+            endpoint: `cursos/${row.original.id}`,
+            method: 'delete'
+        });
+        await mutate();
+        finishLoading()
+    }
 
     const handleDeleteRows = async () => {
         startLoading()
@@ -651,6 +664,7 @@ export default function TableFilter() {
     );
 }
 
+
 const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
     return (
         <DropdownMenu>
@@ -668,8 +682,12 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                         <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                        <span>Duplicar</span>
-                        <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
+                        {
+                            <Link href={`/cursos/${row.original.id}/asistencias`}>
+                                <span>Ver asistencias</span>
+                            </Link>
+                        }
+                        <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
@@ -697,7 +715,9 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-destructive focus:text-destructive">
-                    <span>Borrar</span>
+                    <span
+
+                    >Borrar</span>
                     <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
                 </DropdownMenuItem>
             </DropdownMenuContent>
