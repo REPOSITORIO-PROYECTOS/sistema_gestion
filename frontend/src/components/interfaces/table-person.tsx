@@ -140,13 +140,6 @@ const columns: ColumnDef<Item>[] = [
     accessorKey: "name",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <div className="flex-shrink-0 w-9 h-9 rounded-full overflow-hidden">
-          <img
-            src={`https://randomuser.me/api/portraits/women/${row.original.id}.jpg`}
-            alt=""
-            className="w-full h-full object-cover"
-          />
-        </div>
         <div>
           <div className="">{row.getValue("name")}</div>
           <div className="text-sm text-muted-foreground">{row.original.surname}</div>
@@ -186,19 +179,6 @@ const columns: ColumnDef<Item>[] = [
     ),
     size: 100,
     filterFn: statusFilterFn,
-  },
-  {
-    header: "Balance",
-    accessorKey: "balance",
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("balance"));
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount);
-      return formatted;
-    },
-    size: 120,
   },
   {
     id: "actions",
