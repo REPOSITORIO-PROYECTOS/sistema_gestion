@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sistema.gestion.Models.Profiles.Teacher;
 import com.sistema.gestion.Services.Profiles.TeacherService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
@@ -23,16 +24,22 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/profesores")
+@Tag(name = "Teacher Controller", description = "Controlador para la gestión de profesores")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class TeacherController {
-    
+
     private final TeacherService teacherService;
 
     @GetMapping("/todos")
-    public Flux<Teacher> todos(@RequestParam(defaultValue = "0") int page, 
-    @RequestParam(defaultValue = "5") int size) {
+    public Flux<Teacher> todos(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
         return teacherService.findAll(page, size);
+    }
+
+    @GetMapping("/contar-todos")
+    public Mono<Long> contarTodos() {
+        return teacherService.findAllCount();
     }
 
     @GetMapping("/{id}")

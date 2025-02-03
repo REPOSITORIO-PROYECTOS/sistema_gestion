@@ -15,7 +15,7 @@ import reactor.core.publisher.Flux;
 @RequiredArgsConstructor
 public class StudentService {
 
-    private StudentRepository studentRepository;
+    private final StudentRepository studentRepository;
 
     public Mono<Student> createStudent(Student student, String user) {
         student.setCreatedBy(user);
@@ -27,6 +27,10 @@ public class StudentService {
             .sort((student1, student2) -> student1.getSurname().compareTo(student2.getSurname()))
             .skip((long) page * size)
             .take(size);
+    }
+
+    public Mono<Long> findAllCount() {
+        return studentRepository.count();
     }
 
     public Mono<Student> findById(String id) {

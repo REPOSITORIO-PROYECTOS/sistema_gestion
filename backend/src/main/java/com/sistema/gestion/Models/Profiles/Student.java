@@ -46,5 +46,5 @@ public class Student extends ModelClass {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate ingressDate;
 
-    private Set<String> cursesIds;
+    private Set<String> coursesIds;
 }
