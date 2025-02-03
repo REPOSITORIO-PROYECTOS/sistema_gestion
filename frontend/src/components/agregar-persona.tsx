@@ -1,6 +1,6 @@
 "use client"
 
-import { CircleAlert, Plus } from "lucide-react"
+import { CircleAlert, Loader2Icon, Plus } from "lucide-react"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -27,6 +27,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import MultipleSelector from "@/components/ui/multiselect";
 import { useFetch } from "@/hooks/useFetch"
 import { useLoading } from "@/hooks/useLoading"
+import { toast } from "sonner"
 
 const formSchema = z.object({
     name: z.string().min(2, {
@@ -91,14 +92,29 @@ export default function AgregarPersona(props: AgregarPersonaProps) {
     async function onSubmit(formData: z.infer<typeof formSchema>) {
         console.log(formData)
         startLoading()
-        // Aquí puedes manejar el envío del formulario
-        await fetch({
-            endpoint: 'api/estudiantes/crear',
-            formData
-        })
-        await props.mutate()
-        finishLoading()
-        setOpen(false)
+        try {
+            // Envío del formulario
+            const response = await fetch({
+                endpoint: 'api/estudiantes/crear',
+                formData
+            })
+            if (response) {
+                console.log(response)
+                await props.mutate()
+                toast.success("Usuario creado correctamente.")
+                setOpen(false)
+            }
+            return response
+        } catch (error: any) {
+            const errorMessage =
+                error?.response?.data?.message ||
+                error?.message ||
+                "Error al crear el usuario. Inténtalo de nuevo."
+            console.error("Error en onSubmit: ", errorMessage)
+            toast.error(errorMessage)
+        } finally {
+            finishLoading()
+        }
     }
 
     return (
@@ -314,7 +330,14 @@ export default function AgregarPersona(props: AgregarPersonaProps) {
                     </Form>
                     <AlertDialogFooter>
                         <AlertDialogCancel onClick={() => setOpen(false)}>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={form.handleSubmit(onSubmit)}>Crear</AlertDialogAction>
+                        <AlertDialogAction onClick={form.handleSubmit(onSubmit)}>
+                            {
+                                isLoading ? <Loader2Icon className="animate-spin" size={16} strokeWidth={2} /> : <Plus className="-ms-1 me-2 opacity-60" size={16} strokeWidth={2} aria-hidden="true" />
+                            }
+                            {
+                                isLoading ? "Creando..." : "Crear"
+                            }
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
