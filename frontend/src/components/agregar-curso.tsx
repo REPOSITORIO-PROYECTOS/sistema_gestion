@@ -24,7 +24,6 @@ import MultipleSelector from "@/components/ui/multiselect";
 import { Textarea } from "./ui/textarea"
 import { useFetch } from "@/hooks/useFetch"
 import { useLoading } from "@/hooks/useLoading"
-import { he } from "date-fns/locale"
 
 const formSchema = z.object({
     title: z.string().min(2, {
@@ -68,7 +67,7 @@ interface AgregarCursoProps {
 
 export default function AgregarCurso(props: AgregarCursoProps) {
     const [open, setOpen] = useState(false)
-    const { finishLoading, isLoading, startLoading } = useLoading()
+    const { finishLoading, loading, startLoading } = useLoading()
     const fetch = useFetch()
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -89,12 +88,6 @@ export default function AgregarCurso(props: AgregarCursoProps) {
         await fetch({
             endpoint: 'cursos',
             formData,
-            options: {
-                headers: {
-                    auth: 'Bearer ' + localStorage.getItem('token'),
-                    'Content-Type': 'application/json'
-                }
-            }
         })
         await props.mutate()
         finishLoading()
