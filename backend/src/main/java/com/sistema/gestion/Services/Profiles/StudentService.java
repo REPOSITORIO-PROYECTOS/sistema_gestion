@@ -21,8 +21,20 @@ public class StudentService {
 
   private final StudentRepository studentRepository;
 
-  public Mono<PagedResponse<Student>> findAll(int page, int size) {
+  public Mono<PagedResponse<Student>> findAll(int page, int size, String keyword) {
     PageRequest pageRequest = PageRequest.of(page, size);
+
+    if (keyword != null && !keyword.isEmpty()) {
+      Mono<Long> totalElementsMono = studentRepository.countByDniOrSurname(keyword);
+      Flux<Student> studentFlux = studentRepository.findByDniOrSurname(keyword, pageRequest);
+
+      return Mono.zip(totalElementsMono, studentFlux.collectList())
+          .map(tuple -> new PagedResponse<>(
+              tuple.getT2(), // Lista de cursos filtrados
+              tuple.getT1(), // Total de registros filtrados
+              page,
+              size));
+    }
 
     Mono<Long> totalElementsMono = studentRepository.countAll();
     Flux<Student> studentsFlux = studentRepository.findAllBy(pageRequest);

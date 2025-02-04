@@ -27,22 +27,11 @@ public class StudentController {
   @GetMapping("/todos")
   public Mono<ResponseEntity<PagedResponse<Student>>> findAll(
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size) {
-    return studentService.findAll(page, size)
+      @RequestParam(defaultValue = "10") int size,
+      @RequestParam(required = false) String keyword) {
+    return studentService.findAll(page, size, keyword)
         .map(ResponseEntity::ok)
         .defaultIfEmpty(ResponseEntity.noContent().build());
-  }
-
-  @GetMapping("/buscar")
-  public Mono<ResponseEntity<PagedResponse<Student>>> searchStudents(
-      @RequestParam String query,
-      @RequestParam int page,
-      @RequestParam int size) {
-    return studentService.searchStudents(query, page, size)
-        .map(ResponseEntity::ok)
-        .onErrorResume(e -> Mono.error(new ResponseStatusException(
-            HttpStatus.INTERNAL_SERVER_ERROR,
-            "Error al realizar la búsqueda de estudiantes")));
   }
 
   @GetMapping("/{id}")
