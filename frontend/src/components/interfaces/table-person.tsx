@@ -106,6 +106,13 @@ type Item = {
   cursesIds: string[];
 };
 
+type Data = {
+  content: Item[];
+  totalElements: number;
+  pages: number;
+  size: number;
+};
+
 // Custom filter function for multi-column searching
 const multiColumnFilterFn: FilterFn<Item> = (row, columnId, filterValue) => {
   const searchableRowContent = `${row.original.name} ${row.original.surname} ${row.original.email}`.toLowerCase();
@@ -229,7 +236,7 @@ export default function TablePerson() {
 
   useEffect(() => {
     if (swrData) {
-      setData(swrData);
+      setData(swrData.content);
     }
   }, [swrData]);
   const handleDeleteRows = async () => {
@@ -488,7 +495,7 @@ export default function TablePerson() {
             </AlertDialog>
           )}
           {/* Add user button */}
-          {/* <AgregarPersona mutate={mutate} /> */}
+          <AgregarPersona mutate={mutate} />
         </div>
       </div>
 
