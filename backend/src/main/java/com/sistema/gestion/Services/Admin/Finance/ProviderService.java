@@ -2,11 +2,12 @@ package com.sistema.gestion.Services.Admin.Finance;
 
 import java.time.LocalDateTime;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.sistema.gestion.DTO.PagedResponse;
 import com.sistema.gestion.Models.Admin.Finance.Provider;
 import com.sistema.gestion.Repositories.Admin.Finance.ProviderRepository;
 
@@ -19,8 +20,17 @@ import reactor.core.publisher.Mono;
 public class ProviderService {
   private final ProviderRepository providerRepo;
 
-  public Flux<Provider> getAllProviders() {
-    return providerRepo.findAll();
+  public Mono<PagedResponse<Provider>> getProvidersPaged(int page, int size) {
+    PageRequest pageRequest = PageRequest.of(page, size);
+    Mono<Long> totalElementsMono = providerRepo.count();
+    Flux<Provider> invoicesFlux = providerRepo.findProvidersPaged(pageRequest);
+
+    return Mono.zip(totalElementsMono, invoicesFlux.collectList())
+        .map(tuple -> new PagedResponse<>(
+            tuple.getT2(), // Lista de facturas
+            tuple.getT1(), // Total de registros
+            page,
+            size));
   }
 
   public Mono<Provider> getProviderById(String providerId) {

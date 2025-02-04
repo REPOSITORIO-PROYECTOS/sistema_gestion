@@ -12,6 +12,7 @@ D:\Trabajo\liceo-sj\sistema_gestion\backend\src\main\java\com\sistema\gestion\DA
 D:\Trabajo\liceo-sj\sistema_gestion\backend\src\main\java\com\sistema\gestion\DTO\CourseDTO.java
 D:\Trabajo\liceo-sj\sistema_gestion\backend\src\main\java\com\sistema\gestion\DTO\IdAndNameDTO.java
 D:\Trabajo\liceo-sj\sistema_gestion\backend\src\main\java\com\sistema\gestion\DTO\InvoiceWithProviderDTO.java
+D:\Trabajo\liceo-sj\sistema_gestion\backend\src\main\java\com\sistema\gestion\DTO\PagedResponse.java
 D:\Trabajo\liceo-sj\sistema_gestion\backend\src\main\java\com\sistema\gestion\DTO\PaymentWithStudentDTO.java
 D:\Trabajo\liceo-sj\sistema_gestion\backend\src\main\java\com\sistema\gestion\Exceptions\GlobalExceptionHandler.java
 D:\Trabajo\liceo-sj\sistema_gestion\backend\src\main\java\com\sistema\gestion\GestionApplication.java

@@ -1,11 +1,14 @@
 package com.sistema.gestion.Services.Admin.Finance;
 
 import java.time.LocalDateTime;
+
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.sistema.gestion.DTO.InvoiceWithProviderDTO;
+import com.sistema.gestion.DTO.PagedResponse;
 import com.sistema.gestion.Models.Admin.Finance.Invoice;
 import com.sistema.gestion.Models.Admin.Finance.Provider;
 import com.sistema.gestion.Repositories.Admin.Finance.CashRegisterRepository;
@@ -23,8 +26,17 @@ public class InvoiceService {
   private final ProviderRepository providerRepo;
   private final CashRegisterRepository cashRegisterRepo;
 
-  public Flux<Invoice> getAllInvoices() {
-    return invoiceRepo.findAll();
+  public Mono<PagedResponse<Invoice>> getInvoicesPaged(int page, int size) {
+    PageRequest pageRequest = PageRequest.of(page, size);
+    Mono<Long> totalElementsMono = invoiceRepo.count();
+    Flux<Invoice> invoicesFlux = invoiceRepo.findInvoicesPaged(pageRequest);
+
+    return Mono.zip(totalElementsMono, invoicesFlux.collectList())
+        .map(tuple -> new PagedResponse<>(
+            tuple.getT2(), // Lista de facturas
+            tuple.getT1(), // Total de registros
+            page,
+            size));
   }
 
   public Flux<InvoiceWithProviderDTO> getAllInvoicesWithDetails() {
