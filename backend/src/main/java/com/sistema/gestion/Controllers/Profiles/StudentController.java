@@ -1,16 +1,17 @@
 package com.sistema.gestion.Controllers.Profiles;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.sistema.gestion.DTO.PagedResponse;
 import com.sistema.gestion.Models.Profiles.Student;
 import com.sistema.gestion.Services.Profiles.StudentService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -24,12 +25,24 @@ public class StudentController {
   String user = "Pepe Hongo - admin";
 
   @GetMapping("/todos")
-  public Flux<Student> findAll(@RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "5") int size) {
+  public Mono<ResponseEntity<PagedResponse<Student>>> findAll(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
     return studentService.findAll(page, size)
+        .map(ResponseEntity::ok)
+        .defaultIfEmpty(ResponseEntity.noContent().build());
+  }
+
+  @GetMapping("/buscar")
+  public Mono<ResponseEntity<PagedResponse<Student>>> searchStudents(
+      @RequestParam String query,
+      @RequestParam int page,
+      @RequestParam int size) {
+    return studentService.searchStudents(query, page, size)
+        .map(ResponseEntity::ok)
         .onErrorResume(e -> Mono.error(new ResponseStatusException(
             HttpStatus.INTERNAL_SERVER_ERROR,
-            "Error al obtener la lista de estudiantes.")));
+            "Error al realizar la búsqueda de estudiantes")));
   }
 
   @GetMapping("/{id}")

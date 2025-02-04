@@ -1,6 +1,5 @@
 package com.sistema.gestion.Controllers.Admin.Finance;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -11,8 +10,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sistema.gestion.DTO.PagedResponse;
 import com.sistema.gestion.Models.Admin.Finance.Provider;
 import com.sistema.gestion.Services.Admin.Finance.ProviderService;
 
@@ -22,7 +23,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -33,11 +33,11 @@ import reactor.core.publisher.Mono;
 public class ProviderController {
   private final ProviderService providerService;
 
-  @Operation(summary = "Obtener todos los proveedores", description = "Retorna una lista de todos los proveedores registrados")
-  @ApiResponse(responseCode = "200", description = "Lista de proveedores obtenida exitosamente")
-  @GetMapping
-  public Flux<Provider> getAllProviders() {
-    return providerService.getAllProviders();
+  @GetMapping("/paged")
+  public Mono<PagedResponse<Provider>> getInvoicesPaged(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    return providerService.getProvidersPaged(page, size);
   }
 
   @Operation(summary = "Obtener proveedor por ID", description = "Retorna la información de un proveedor específico por su ID")

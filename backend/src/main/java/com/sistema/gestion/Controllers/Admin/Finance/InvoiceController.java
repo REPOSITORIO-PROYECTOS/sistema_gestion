@@ -1,6 +1,5 @@
 package com.sistema.gestion.Controllers.Admin.Finance;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -10,9 +9,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sistema.gestion.DTO.InvoiceWithProviderDTO;
+import com.sistema.gestion.DTO.PagedResponse;
 import com.sistema.gestion.Models.Admin.Finance.Invoice;
 import com.sistema.gestion.Services.Admin.Finance.InvoiceService;
 
@@ -22,7 +23,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -34,18 +34,11 @@ public class InvoiceController {
 
   private final InvoiceService invoiceService;
 
-  @Operation(summary = "Obtener todas las facturas", description = "Retorna una lista de todas las facturas registradas")
-  @ApiResponse(responseCode = "200", description = "Lista de facturas obtenida exitosamente")
-  @GetMapping
-  public Flux<Invoice> getAllInvoices() {
-    return invoiceService.getAllInvoices();
-  }
-
-  @Operation(summary = "Obtener todas las facturas con detalles", description = "Retorna una lista de facturas con detalles de proveedor")
-  @ApiResponse(responseCode = "200", description = "Lista de facturas con detalles obtenida exitosamente")
-  @GetMapping("/detalles")
-  public Flux<InvoiceWithProviderDTO> getAllInvoicesWithDetails() {
-    return invoiceService.getAllInvoicesWithDetails();
+  @GetMapping("/paged")
+  public Mono<PagedResponse<Invoice>> getInvoicesPaged(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    return invoiceService.getInvoicesPaged(page, size);
   }
 
   @Operation(summary = "Obtener una factura con detalles", description = "Retorna los detalles de una factura específica por su ID")
@@ -67,7 +60,7 @@ public class InvoiceController {
   })
   @PostMapping
   public Mono<ResponseEntity<Invoice>> saveInvoice(
-      @RequestBody Invoice invoice) {
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos de la factura") @RequestBody Invoice invoice) {
     String user = "ADMIN"; // Se cambia cuando se implemente la seguridad
     return invoiceService.saveInvoice(invoice, user)
         .map(savedInvoice -> ResponseEntity.status(HttpStatus.CREATED).body(savedInvoice));

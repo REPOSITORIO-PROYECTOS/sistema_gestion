@@ -2,6 +2,7 @@ com\sistema\gestion\DTO\IdAndNameDTO.class
 com\sistema\gestion\DTO\InvoiceWithProviderDTO.class
 com\sistema\gestion\Services\Admin\Finance\InvoiceService.class
 com\sistema\gestion\Utils\MonthlyBalance.class
+com\sistema\gestion\DTO\PagedResponse.class
 com\sistema\gestion\Models\Admin\Management\StudentAttendance.class
 com\sistema\gestion\Repositories\Profiles\TeacherRepository.class
 com\sistema\gestion\Services\Admin\Finance\ProviderService.class

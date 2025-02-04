@@ -15,6 +15,7 @@ import com.sistema.gestion.Models.Admin.Management.StudentAttendance;
 import com.sistema.gestion.Services.Admin.Management.StudentAttendanceService;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
@@ -22,18 +23,23 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/asistencias")
+@Tag(name = "Asistencias", description = "Registro de asistencias")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class StudentAttendanceController {
 
   private final StudentAttendanceService studentAttendanceService;
 
-  @GetMapping("/")
-  public Flux<StudentAttendance> findByMonth(@RequestParam Integer month, @RequestParam Integer year) {
-    return studentAttendanceService.findByMonth(month, year)
+  @GetMapping("/{courseId}")
+  public Flux<StudentAttendance> findByMonthAndCourse(
+      @RequestParam Integer month,
+      @RequestParam Integer year,
+      @PathVariable String courseId) {
+    return studentAttendanceService.findByMonthAndCourse(month, year, courseId)
         .onErrorResume(e -> Mono.error(new ResponseStatusException(
             HttpStatus.INTERNAL_SERVER_ERROR,
-            "Error al obtener asistencias para el mes " + month + " anio:" + year)));
+            "Error al obtener asistencias del curso " + courseId +
+                " para el mes " + month + " del año " + year)));
   }
 
   @PostMapping

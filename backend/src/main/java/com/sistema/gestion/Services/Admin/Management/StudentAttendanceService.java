@@ -25,10 +25,10 @@ public class StudentAttendanceService {
     private final CourseRepository courseRepo;
     private final StudentRepository studentRepo;
 
-    public Flux<StudentAttendance> findByMonth(Integer month, Integer year) {
+    public Flux<StudentAttendance> findByMonthAndCourse(Integer month, Integer year, String courseId) {
         LocalDate startMonth = YearMonth.of(year, month).atDay(1);
         LocalDate endMonth = startMonth.plusMonths(1);
-        return studentAttendanceRepository.findByMonth(startMonth, endMonth);
+        return studentAttendanceRepository.findByMonthAndCourse(startMonth, endMonth, courseId);
     }
 
     public Mono<StudentAttendance> takeAttendance(StudentAttendance studentAttendance) {

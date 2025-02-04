@@ -8,11 +8,12 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.sistema.gestion.DTO.PagedResponse;
 import com.sistema.gestion.DTO.PaymentWithStudentDTO;
 import com.sistema.gestion.Models.Admin.Finance.Payment;
 import com.sistema.gestion.Models.Admin.Management.Course;
@@ -36,25 +37,17 @@ public class PaymentService {
   private final CourseRepository courseRepo;
   private final CashRegisterRepository cashRegisterRepo;
 
-  public Flux<Payment> getAllPayments() {
-    return paymentRepo.findAll();
-  }
+  public Mono<PagedResponse<Payment>> getPaymentsPaged(int page, int size) {
+    PageRequest pageRequest = PageRequest.of(page, size);
+    Mono<Long> totalElementsMono = paymentRepo.count();
+    Flux<Payment> paymenteFlux = paymentRepo.findPaymentsPaged(pageRequest);
 
-  public Flux<PaymentWithStudentDTO> getAllPaymentsDetails() {
-    return paymentRepo.findAll()
-        .flatMap(payment -> {
-          Mono<Student> studentMono = studentRepo.findById(payment.getStudentId());
-          Mono<Course> courseMono = courseRepo.findById(payment.getCourseId());
-          return Mono.zip(studentMono, courseMono)
-              .map(tuple -> {
-                Student student = tuple.getT1();
-                Course course = tuple.getT2();
-                PaymentWithStudentDTO dto = new PaymentWithStudentDTO();
-                mappingFromPaymentToPaymentWithStudentDTO(dto, payment,
-                    student, course);
-                return dto;
-              });
-        });
+    return Mono.zip(totalElementsMono, paymenteFlux.collectList())
+        .map(tuple -> new PagedResponse<>(
+            tuple.getT2(), // Lista de facturas
+            tuple.getT1(), // Total de registros
+            page,
+            size));
   }
 
   public Mono<PaymentWithStudentDTO> getPaymentWithDetailsById(String paymentId) {
@@ -84,84 +77,102 @@ public class PaymentService {
         });
   }
 
-  public Flux<PaymentWithStudentDTO> getPaymentsHasDebt(Boolean hasDebt) {
-    return paymentRepo.findAllByHasDebt(hasDebt)
+  public Mono<PagedResponse<PaymentWithStudentDTO>> getPaymentsHasDebt(Boolean hasDebt, int page, int size) {
+    PageRequest pageRequest = PageRequest.of(page, size);
+
+    Mono<Long> totalElementsMono = paymentRepo.countByHasDebt(hasDebt);
+    Flux<PaymentWithStudentDTO> paymentsFlux = paymentRepo.findAllByHasDebt(hasDebt, pageRequest)
         .flatMap(payment -> {
           Mono<Student> studentMono = studentRepo.findById(payment.getStudentId())
               .switchIfEmpty(Mono.error(new ResponseStatusException(
-                  HttpStatus.NOT_FOUND,
-                  "No se encontró el estudiante con el ID: "
-                      + payment.getStudentId())));
+                  HttpStatus.NOT_FOUND, "No se encontró el estudiante con ID: " + payment.getStudentId())));
           Mono<Course> courseMono = courseRepo.findById(payment.getCourseId())
               .switchIfEmpty(Mono.error(new ResponseStatusException(
-                  HttpStatus.NOT_FOUND,
-                  "No se encontró el curso con ID: "
-                      + payment.getCourseId())));
+                  HttpStatus.NOT_FOUND, "No se encontró el curso con ID: " + payment.getCourseId())));
+
           return Mono.zip(studentMono, courseMono)
               .map(tuple -> {
                 Student student = tuple.getT1();
                 Course course = tuple.getT2();
-
                 PaymentWithStudentDTO dto = new PaymentWithStudentDTO();
-                mappingFromPaymentToPaymentWithStudentDTO(dto, payment,
-                    student, course);
+                mappingFromPaymentToPaymentWithStudentDTO(dto, payment, student, course);
                 return dto;
               });
         });
+
+    return Mono.zip(totalElementsMono, paymentsFlux.collectList())
+        .map(tuple -> new PagedResponse<>(
+            tuple.getT2(), // Lista de pagos con deuda
+            tuple.getT1(), // Total de registros
+            page,
+            size));
   }
 
-  public Flux<PaymentWithStudentDTO> getPaymentsHasDebtByMonth(Integer year, Integer month) {
+  public Mono<PagedResponse<PaymentWithStudentDTO>> getPaymentsHasDebtByMonth(Integer year, Integer month, int page,
+      int size) {
     LocalDate startOfMonth = YearMonth.of(year, month).atDay(1);
     LocalDate endOfMonth = startOfMonth.plusMonths(1);
+    PageRequest pageRequest = PageRequest.of(page, size);
 
-    return paymentRepo.findAllWithDebtInMonth(startOfMonth, endOfMonth)
+    Mono<Long> totalElementsMono = paymentRepo.countWithDebtInMonth(startOfMonth, endOfMonth);
+    Flux<PaymentWithStudentDTO> paymentsFlux = paymentRepo.findAllWithDebtInMonth(startOfMonth, endOfMonth, pageRequest)
         .flatMap(payment -> {
           Mono<Student> studentMono = studentRepo.findById(payment.getStudentId())
               .switchIfEmpty(Mono.error(new ResponseStatusException(
-                  HttpStatus.NOT_FOUND,
-                  "No se encontró el estudiante con el ID: "
-                      + payment.getStudentId())));
+                  HttpStatus.NOT_FOUND, "No se encontró el estudiante con ID: " + payment.getStudentId())));
           Mono<Course> courseMono = courseRepo.findById(payment.getCourseId())
               .switchIfEmpty(Mono.error(new ResponseStatusException(
-                  HttpStatus.NOT_FOUND,
-                  "No se encontró el curso con ID: "
-                      + payment.getCourseId())));
+                  HttpStatus.NOT_FOUND, "No se encontró el curso con ID: " + payment.getCourseId())));
+
           return Mono.zip(studentMono, courseMono)
               .map(tuple -> {
                 Student student = tuple.getT1();
                 Course course = tuple.getT2();
                 PaymentWithStudentDTO dto = new PaymentWithStudentDTO();
-                mappingFromPaymentToPaymentWithStudentDTO(dto, payment,
-                    student, course);
+                mappingFromPaymentToPaymentWithStudentDTO(dto, payment, student, course);
                 return dto;
               });
         });
+
+    return Mono.zip(totalElementsMono, paymentsFlux.collectList())
+        .map(tuple -> new PagedResponse<>(
+            tuple.getT2(), // Lista de pagos con deuda
+            tuple.getT1(), // Total de registros
+            page,
+            size));
   }
 
-  public Flux<PaymentWithStudentDTO> getAllPaymentsByStudentId(String studentId) {
-    return paymentRepo.findAllByStudentId(studentId)
+  public Mono<PagedResponse<PaymentWithStudentDTO>> getAllPaymentsByStudentId(String studentId, int page, int size) {
+    PageRequest pageRequest = PageRequest.of(page, size);
+
+    Mono<Long> totalElementsMono = paymentRepo.countByStudentId(studentId);
+    Flux<PaymentWithStudentDTO> paymentsFlux = paymentRepo.findAllByStudentId(studentId, pageRequest)
         .flatMap(payment -> {
           Mono<Student> studentMono = studentRepo.findById(payment.getStudentId())
-              .switchIfEmpty(Mono
-                  .error(new ResponseStatusException(
-                      HttpStatus.NOT_FOUND,
-                      "No se encontró el estudiante con el ID: "
-                          + studentId)));
+              .switchIfEmpty(Mono.error(new ResponseStatusException(
+                  HttpStatus.NOT_FOUND,
+                  "No se encontró el estudiante con el ID: " + studentId)));
           Mono<Course> courseMono = courseRepo.findById(payment.getCourseId())
               .switchIfEmpty(Mono.error(new ResponseStatusException(
                   HttpStatus.NOT_FOUND,
-                  "No se encontró el curso con el ID: "
-                      + payment.getCourseId())));
+                  "No se encontró el curso con el ID: " + payment.getCourseId())));
+
           return Mono.zip(studentMono, courseMono)
               .map(tuple -> {
                 Student student = tuple.getT1();
                 Course course = tuple.getT2();
                 PaymentWithStudentDTO dto = new PaymentWithStudentDTO();
-                mappingFromPaymentToPaymentWithStudentDTO(dto, payment,
-                    student, course);
+                mappingFromPaymentToPaymentWithStudentDTO(dto, payment, student, course);
                 return dto;
               });
         });
+
+    return Mono.zip(totalElementsMono, paymentsFlux.collectList())
+        .map(tuple -> new PagedResponse<>(
+            tuple.getT2(), // Lista de pagos con información de estudiante y curso
+            tuple.getT1(), // Total de registros
+            page,
+            size));
   }
 
   public Mono<Payment> registerPayment(Payment payment, String user) {
