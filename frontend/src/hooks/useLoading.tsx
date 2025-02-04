@@ -3,13 +3,13 @@
 import { useState } from 'react'
 
 interface LoaderState {
-    isLoading: boolean
+    loading: boolean
     startLoading: () => void
     finishLoading: () => void
 }
 
 export function useLoading(): LoaderState {
-    const [isLoading, setIsLoading] = useState(false)
+    const [loading, setIsLoading] = useState(false)
 
     const startLoading = () => {
         setIsLoading(true)
@@ -20,7 +20,7 @@ export function useLoading(): LoaderState {
     }
 
     return {
-        isLoading,
+        loading,
         startLoading,
         finishLoading
     }
