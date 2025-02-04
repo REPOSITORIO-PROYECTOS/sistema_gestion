@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class TeacherService {
 
-    private TeacherRepository teacherRepository;
+    private final TeacherRepository teacherRepository;
 
     public Mono<Teacher> create(Teacher teacher, String user) {
         teacher.setCreatedBy(user);
