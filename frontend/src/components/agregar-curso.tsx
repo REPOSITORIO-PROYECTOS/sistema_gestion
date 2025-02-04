@@ -67,7 +67,7 @@ interface AgregarCursoProps {
 
 export default function AgregarCurso(props: AgregarCursoProps) {
     const [open, setOpen] = useState(false)
-    const { finishLoading, isLoading, startLoading } = useLoading()
+    const { finishLoading, loading, startLoading } = useLoading()
     const fetch = useFetch()
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -87,7 +87,7 @@ export default function AgregarCurso(props: AgregarCursoProps) {
         // Aquí puedes manejar el envío del formulario
         await fetch({
             endpoint: 'cursos',
-            formData
+            formData,
         })
         await props.mutate()
         finishLoading()

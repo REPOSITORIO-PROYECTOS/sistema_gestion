@@ -56,6 +56,7 @@ import {
   PaginationState,
   Row,
   SortingState,
+  Updater,
   VisibilityState,
   flexRender,
   getCoreRowModel,
@@ -78,12 +79,19 @@ import {
   Ellipsis,
   Filter,
   ListFilter,
+  Loader2Icon,
   Plus,
   Trash,
 } from "lucide-react";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import AgregarPersona from "../agregar-persona";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
+import React from "react";
+import { useFetch } from "@/hooks/useFetch";
+import { useLoading } from "@/hooks/useLoading";
+import { toast } from "sonner";
+import EditarPersona from "../editar-persona";
+import { ro } from "date-fns/locale";
 
 type Item = {
   id: string;
@@ -92,7 +100,10 @@ type Item = {
   email: string;
   dni: string;
   phone: string;
-  status: "Active" | "Inactive" | "Pending";
+  status: 'activo' | 'inactivo' | 'pendiente';
+  dateOfBirth: Date;      // Se agrega esta propiedad
+  ingressDate: Date;      // Se agrega esta propiedad
+  cursesIds: string[];
 };
 
 // Custom filter function for multi-column searching
@@ -136,13 +147,6 @@ const columns: ColumnDef<Item>[] = [
     accessorKey: "name",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <div className="flex-shrink-0 w-9 h-9 rounded-full overflow-hidden">
-          <img
-            src={`https://randomuser.me/api/portraits/women/${row.original.id}.jpg`}
-            alt=""
-            className="w-full h-full object-cover"
-          />
-        </div>
         <div>
           <div className="">{row.getValue("name")}</div>
           <div className="text-sm text-muted-foreground">{row.original.surname}</div>
@@ -184,19 +188,6 @@ const columns: ColumnDef<Item>[] = [
     filterFn: statusFilterFn,
   },
   {
-    header: "Balance",
-    accessorKey: "balance",
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("balance"));
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount);
-      return formatted;
-    },
-    size: 120,
-  },
-  {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
     cell: ({ row }) => <RowActions row={row} />,
@@ -209,11 +200,13 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function TablePerson() {
   const id = useId();
+  const { finishLoading, loading, startLoading } = useLoading()
+  const fetch = useFetch()
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 5,
   });
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -230,8 +223,8 @@ export default function TablePerson() {
     return `https://sistema-gestion-bovz.onrender.com/api/estudiantes/todos?page=${pagination.pageIndex}&size=${pagination.pageSize}`;
   }, [pagination.pageIndex, pagination.pageSize]);
 
-  const { data: swrData, error } = useSWR(swrUrl, fetcher, {
-    revalidateOnFocus: false,
+  const { data: swrData, error, isLoading, mutate } = useSWR(swrUrl, fetcher, {
+    keepPreviousData: true,
   });
 
   useEffect(() => {
@@ -239,15 +232,40 @@ export default function TablePerson() {
       setData(swrData);
     }
   }, [swrData]);
+  const handleDeleteRows = async () => {
+    try {
+      startLoading();
+      const selectedRows = table.getSelectedRowModel().rows;
+      const updatedData = data.filter(
+        (item) => !selectedRows.some((row) => row.original.id === item.id)
+      );
+      setData(updatedData);
 
-  const handleDeleteRows = () => {
-    const selectedRows = table.getSelectedRowModel().rows;
-    const updatedData = data.filter(
-      (item) => !selectedRows.some((row) => row.original.id === item.id),
-    );
-    setData(updatedData);
-    table.resetRowSelection();
+      for (const row of selectedRows) {
+        try {
+          console.log("Deleting row", row.original.id);
+          await fetch({
+            endpoint: `cursos/${row.original.id}`,
+            method: "delete",
+          });
+        } catch (error: any) {
+          console.error(`Error deleting row ${row.original.id}:`, error);
+          toast.error(`Error al eliminar el curso ${row.original.id}.`);
+        }
+      }
+      await mutate();
+      table.resetRowSelection();
+    } catch (error: any) {
+      console.error("Error al procesar la eliminación:", error);
+      toast.error("Error al eliminar los cursos. Inténtalo de nuevo.");
+    } finally {
+      finishLoading();
+    }
   };
+
+  const handlePaginationChange = useCallback((updater: Updater<PaginationState>) => {
+    setPagination(updater);
+  }, []);
 
   const table = useReactTable({
     data,
@@ -273,11 +291,9 @@ export default function TablePerson() {
   // Get unique status values
   const uniqueStatusValues = useMemo(() => {
     const statusColumn = table.getColumn("status");
-
+    // console.log(statusColumn)
     if (!statusColumn) return [];
-
     const values = Array.from(statusColumn.getFacetedUniqueValues().keys());
-
     return values.sort();
   }, [table.getColumn("status")?.getFacetedUniqueValues()]);
 
@@ -309,6 +325,8 @@ export default function TablePerson() {
     table.getColumn("status")?.setFilterValue(newFilterValue.length ? newFilterValue : undefined);
   };
 
+  // console.log(uniqueStatusValues)
+
   return (
     <div className="container mx-auto my-10 space-y-4">
       {/* Filters */}
@@ -325,9 +343,9 @@ export default function TablePerson() {
               )}
               value={(table.getColumn("name")?.getFilterValue() ?? "") as string}
               onChange={(e) => table.getColumn("name")?.setFilterValue(e.target.value)}
-              placeholder="Filtrar por nombre o email..."
+              placeholder="Filtrar por nombre del curso..."
               type="text"
-              aria-label="Filter by name or email"
+              aria-label="Filtrar por nombre del curso"
             />
             <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
               <ListFilter size={16} strokeWidth={2} aria-hidden="true" />
@@ -470,7 +488,7 @@ export default function TablePerson() {
             </AlertDialog>
           )}
           {/* Add user button */}
-          <AgregarPersona />
+          {/* <AgregarPersona mutate={mutate} /> */}
         </div>
       </div>
 
@@ -536,22 +554,37 @@ export default function TablePerson() {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="last:py-0">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
+            {isLoading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No hay resultados.
+                <TableCell colSpan={columns.length}>
+                  <div className="flex justify-center items-center h-24">
+                    <Loader2Icon className="animate-spin" />
+                    <p className="ms-2 text-muted-foreground">
+                      Cargando...
+                    </p>
+                  </div>
                 </TableCell>
               </TableRow>
+            ) : (
+              <>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id} className="last:py-0">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                      No hay resultados.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </>
             )}
           </TableBody>
         </Table>
@@ -659,7 +692,9 @@ export default function TablePerson() {
   );
 }
 
-function RowActions({ row }: { row: Row<Item> }) {
+
+const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
+  console.log("row", row.original)
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -672,7 +707,7 @@ function RowActions({ row }: { row: Row<Item> }) {
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <span>Editar</span>
+            <EditarPersona datos={row.original} mutate={mutate} />
             <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem>
@@ -711,4 +746,4 @@ function RowActions({ row }: { row: Row<Item> }) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+});

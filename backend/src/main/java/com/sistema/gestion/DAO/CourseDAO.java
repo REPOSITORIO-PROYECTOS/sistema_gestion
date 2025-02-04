@@ -32,74 +32,86 @@ public class CourseDAO {
     private final TeacherRepository teacherRepository;
 
     public Flux<CourseDTO> findAll(Integer page, Integer size) {
-    return courseRepository.findAll()
-        .sort(Comparator.comparing(Course::getTitle))
-        .skip((long) page * size)
-        .take(size)
-        .flatMap(course -> {
-            List<String> studentIds = new ArrayList<>(course.getStudentsIds());
+        return courseRepository.findAll()
+                .sort(Comparator.comparing(Course::getTitle))
+                .skip((long) page * size)
+                .take(size)
+                .flatMap(course -> {
+                    List<String> studentIds = new ArrayList<>(course.getStudentsIds());
 
-            Mono<Set<IdAndNameDTO>> studentsMono = studentRepository.findAllById(studentIds)
-                .map(student -> new IdAndNameDTO(student.getId(), student.getSurname() + " " + student.getName()))
-                .collectList()
-                .map(HashSet::new);
+                    Mono<Set<IdAndNameDTO>> studentsMono = studentRepository.findAllById(studentIds)
+                            .map(student -> new IdAndNameDTO(student.getId(),
+                                    student.getSurname() + " " + student.getName()))
+                            .collectList()
+                            .map(HashSet::new);
 
-            Mono<IdAndNameDTO> teacherMono = teacherRepository.findById(course.getTeacherId())
-                .map(teacher -> new IdAndNameDTO(teacher.getId(), teacher.getSurname() + " " + teacher.getName()))
-                .defaultIfEmpty(new IdAndNameDTO("", ""));
+                    Mono<IdAndNameDTO> teacherMono = teacherRepository.findById(course.getTeacherId())
+                            .map(teacher -> new IdAndNameDTO(teacher.getId(),
+                                    teacher.getSurname() + " " + teacher.getName()))
+                            .defaultIfEmpty(new IdAndNameDTO("", ""));
 
-            return Mono.zip(studentsMono, teacherMono)
-                .map(tuple -> new CourseDTO(
-                    course.getId(), course.getTitle(), course.getDescription(),
-                    course.getStatus(), course.getMonthlyPrice(), tuple.getT1(), tuple.getT2()
-                ));
-        });
+                    return Mono.zip(studentsMono, teacherMono)
+                            .map(tuple -> new CourseDTO(
+                                    course.getId(), course.getTitle(), course.getDescription(),
+                                    course.getStatus(), course.getMonthlyPrice(), tuple.getT1(), tuple.getT2()));
+                });
     }
 
-    public Flux<CourseDTO> searchCourses(String keyword, Integer page, Integer size) {
-        return courseRepository.findByKeyword(keyword)
-            .sort(Comparator.comparing(Course::getTitle))
-            .skip((long) page * size)
-            .take(size)
-            .flatMap(course -> {
-                List<String> studentIds = new ArrayList<>(course.getStudentsIds());
-    
-                Mono<Set<IdAndNameDTO>> studentsMono = studentRepository.findAllById(studentIds)
-                    .map(student -> new IdAndNameDTO(student.getId(), student.getSurname() + " " + student.getName()))
-                    .collectList()
-                    .map(HashSet::new);
-    
-                Mono<IdAndNameDTO> teacherMono = teacherRepository.findById(course.getTeacherId())
-                    .map(teacher -> new IdAndNameDTO(teacher.getId(), teacher.getSurname() + " " + teacher.getName()))
-                    .defaultIfEmpty(new IdAndNameDTO("", ""));
-    
-                return Mono.zip(studentsMono, teacherMono)
-                    .map(tuple -> new CourseDTO(
-                        course.getId(), course.getTitle(), course.getDescription(),
-                        course.getStatus(), course.getMonthlyPrice(), tuple.getT1(), tuple.getT2()
-                    ));
-            });
-        }
-
-        public Mono<CourseDTO> findById(String id) {
-            return courseRepository.findById(id).flatMap(course -> {
-                List<String> studentIds = new ArrayList<>(course.getStudentsIds());
-    
-                Mono<Set<IdAndNameDTO>> studentsMono = studentRepository.findAllById(studentIds)
-                    .map(student -> new IdAndNameDTO(student.getId(), student.getSurname() + " " + student.getName()))
-                    .collectList()
-                    .map(HashSet::new);
-    
-                Mono<IdAndNameDTO> teacherMono = teacherRepository.findById(course.getTeacherId())
-                    .map(teacher -> new IdAndNameDTO(teacher.getId(), teacher.getSurname() + " " + teacher.getName()))
-                    .defaultIfEmpty(new IdAndNameDTO("", ""));
-    
-                return Mono.zip(studentsMono, teacherMono)
-                    .map(tuple -> new CourseDTO(
-                        course.getId(), course.getTitle(), course.getDescription(),
-                        course.getStatus(), course.getMonthlyPrice(), tuple.getT1(), tuple.getT2()
-                    ));
-            });
-        }
+    /*
+     * public Flux<CourseDTO> searchCourses(String keyword, Integer page, Integer
+     * size) {
+     * return courseRepository.findByKeyword(keyword)
+     * .sort(Comparator.comparing(Course::getTitle))
+     * .skip((long) page * size)
+     * .take(size)
+     * .flatMap(course -> {
+     * List<String> studentIds = new ArrayList<>(course.getStudentsIds());
+     * 
+     * Mono<Set<IdAndNameDTO>> studentsMono =
+     * studentRepository.findAllById(studentIds)
+     * .map(student -> new IdAndNameDTO(student.getId(), student.getSurname() + " "
+     * + student.getName()))
+     * .collectList()
+     * .map(HashSet::new);
+     * 
+     * Mono<IdAndNameDTO> teacherMono =
+     * teacherRepository.findById(course.getTeacherId())
+     * .map(teacher -> new IdAndNameDTO(teacher.getId(), teacher.getSurname() + " "
+     * + teacher.getName()))
+     * .defaultIfEmpty(new IdAndNameDTO("", ""));
+     * 
+     * return Mono.zip(studentsMono, teacherMono)
+     * .map(tuple -> new CourseDTO(
+     * course.getId(), course.getTitle(), course.getDescription(),
+     * course.getStatus(), course.getMonthlyPrice(), tuple.getT1(), tuple.getT2()
+     * ));
+     * });
+     * }
+     * 
+     * public Mono<CourseDTO> findById(String id) {
+     * return courseRepository.findById(id).flatMap(course -> {
+     * List<String> studentIds = new ArrayList<>(course.getStudentsIds());
+     * 
+     * Mono<Set<IdAndNameDTO>> studentsMono =
+     * studentRepository.findAllById(studentIds)
+     * .map(student -> new IdAndNameDTO(student.getId(), student.getSurname() + " "
+     * + student.getName()))
+     * .collectList()
+     * .map(HashSet::new);
+     * 
+     * Mono<IdAndNameDTO> teacherMono =
+     * teacherRepository.findById(course.getTeacherId())
+     * .map(teacher -> new IdAndNameDTO(teacher.getId(), teacher.getSurname() + " "
+     * + teacher.getName()))
+     * .defaultIfEmpty(new IdAndNameDTO("", ""));
+     * 
+     * return Mono.zip(studentsMono, teacherMono)
+     * .map(tuple -> new CourseDTO(
+     * course.getId(), course.getTitle(), course.getDescription(),
+     * course.getStatus(), course.getMonthlyPrice(), tuple.getT1(), tuple.getT2()
+     * ));
+     * });
+     * }
+     */
 
 }

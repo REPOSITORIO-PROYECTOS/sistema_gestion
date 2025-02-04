@@ -11,9 +11,9 @@ import com.sistema.gestion.Models.Admin.Management.StudentAttendance;
 import reactor.core.publisher.Flux;
 
 @Repository
-public interface StudentAttendanceRepository extends ReactiveMongoRepository<StudentAttendance, String>  {
+public interface StudentAttendanceRepository extends ReactiveMongoRepository<StudentAttendance, String> {
 
-    @Query("{ 'attendanceDate' : { $gte : ?0 , $lte : ?1 } }")
-    public Flux<StudentAttendance> findByMonth(LocalDate startMonth, LocalDate endMonth);
-    
+    @Query("{ 'courseId': ?2, 'attendanceDate' : { $gte : ?0 , $lt : ?1 } }")
+    Flux<StudentAttendance> findByMonthAndCourse(LocalDate startMonth, LocalDate endMonth, String courseId);
+
 }

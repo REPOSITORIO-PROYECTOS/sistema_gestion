@@ -38,6 +38,9 @@ public class User extends ModelClass {
 
     private String password;
 
+    // TODO: Idear Relacion unica con la institucion
+    private String istitution;
+
     @NotBlank(message = "El rol no puede estar en blanco.")
     private String rol;
 }

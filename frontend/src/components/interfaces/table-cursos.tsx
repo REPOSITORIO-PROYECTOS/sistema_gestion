@@ -88,6 +88,7 @@ import AgregarCurso from "../agregar-curso";
 import React from 'react';
 import { useLoading } from '@/hooks/useLoading';
 import { useFetch } from '@/hooks/useFetch';
+import Link from 'next/link';
 
 type Item = {
     id: string;
@@ -153,7 +154,7 @@ const columns: ColumnDef<Item>[] = [
     },
     {
         header: "Profesor",
-        accessorKey: "teacherId",
+        accessorKey: "teacherId.name",
         size: 160,
     },
     {
@@ -184,13 +185,13 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function TableFilter() {
     const id = useId();
-    const { finishLoading, isLoading, startLoading } = useLoading()
+    const { finishLoading, loading, startLoading } = useLoading()
     const fetch = useFetch()
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [pagination, setPagination] = useState<PaginationState>({
         pageIndex: 0,
-        pageSize: 5,
+        pageSize: 10,
     });
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -204,7 +205,7 @@ export default function TableFilter() {
     const [data, setData] = useState<Item[]>([]);
 
     const swrUrl = useMemo(() => {
-        return `https://sistema-gestion-bovz.onrender.com/cursos/todos?page=${pagination.pageIndex}&size=${pagination.pageSize}`;
+        return `https://sistema-gestion-bovz.onrender.com/api/cursos/todos?page=${pagination.pageIndex}&size=${pagination.pageSize}`;
     }, [pagination.pageIndex, pagination.pageSize]);
 
     const { data: swrData, error, mutate } = useSWR(swrUrl, fetcher, {
@@ -216,6 +217,18 @@ export default function TableFilter() {
             setData(swrData);
         }
     }, [swrData]);
+
+    const handleDeleteRow = async (row: Row<Item>) => {
+        startLoading()
+        const updatedData = data.filter((item) => item.id !== row.original.id);
+        setData(updatedData);
+        await fetch({
+            endpoint: `cursos/${row.original.id}`,
+            method: 'delete'
+        });
+        await mutate();
+        finishLoading()
+    }
 
     const handleDeleteRows = async () => {
         startLoading()
@@ -651,6 +664,7 @@ export default function TableFilter() {
     );
 }
 
+
 const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
     return (
         <DropdownMenu>
@@ -668,8 +682,12 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                         <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                        <span>Duplicar</span>
-                        <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
+                        {
+                            <Link href={`/cursos/${row.original.id}/asistencias`}>
+                                <span>Ver asistencias</span>
+                            </Link>
+                        }
+                        <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
@@ -697,7 +715,9 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-destructive focus:text-destructive">
-                    <span>Borrar</span>
+                    <span
+
+                    >Borrar</span>
                     <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
                 </DropdownMenuItem>
             </DropdownMenuContent>

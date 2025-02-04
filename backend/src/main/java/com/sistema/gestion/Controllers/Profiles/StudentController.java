@@ -3,53 +3,82 @@ package com.sistema.gestion.Controllers.Profiles;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import com.sistema.gestion.DTO.PagedResponse;
 import com.sistema.gestion.Models.Profiles.Student;
 import com.sistema.gestion.Services.Profiles.StudentService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/estudiantes")
+@Tag(name = "Student Controller", description = "Controlador para la gestión de estudiantes")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class StudentController {
 
-    private final StudentService studentService;
-    String user = "Pepe Hongo - admin";
+  private final StudentService studentService;
+  String user = "Pepe Hongo - admin";
 
-    @GetMapping("/todos")
-    public ResponseEntity<Flux<Student>> findAll(@RequestParam(defaultValue = "0") int page, 
-    @RequestParam(defaultValue = "5") int size) {
-        return new ResponseEntity<>(studentService.findAll(page, size), HttpStatus.OK);
-    }
+  @GetMapping("/todos")
+  public Mono<ResponseEntity<PagedResponse<Student>>> findAll(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    return studentService.findAll(page, size)
+        .map(ResponseEntity::ok)
+        .defaultIfEmpty(ResponseEntity.noContent().build());
+  }
 
-    @GetMapping("/contar-todos")
-    public Mono<Long> findAllCount() {
-        return studentService.findAllCount();
-    }
+  @GetMapping("/buscar")
+  public Mono<ResponseEntity<PagedResponse<Student>>> searchStudents(
+      @RequestParam String query,
+      @RequestParam int page,
+      @RequestParam int size) {
+    return studentService.searchStudents(query, page, size)
+        .map(ResponseEntity::ok)
+        .onErrorResume(e -> Mono.error(new ResponseStatusException(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "Error al realizar la búsqueda de estudiantes")));
+  }
 
-    @GetMapping("/{id}")
-    public Mono<Student> findById(@PathVariable String id) {
-        return studentService.findById(id);
-    }
+  @GetMapping("/{id}")
+  public Mono<Student> findById(@PathVariable String id) {
+    return studentService.findById(id)
+        .switchIfEmpty(Mono.error(new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Estudiante no encontrado con ID: " + id)))
+        .onErrorResume(e -> Mono.error(new ResponseStatusException(
+            HttpStatus.INTERNAL_SERVER_ERROR, "Error al buscar estudiante")));
+  }
 
-    @PostMapping("/crear")
-    @ResponseStatus(HttpStatus.CREATED)
-    public Mono<Student> createStudent(@RequestBody @Valid Student student) {
-        return studentService.createStudent(student, user);
-    }
+  @PostMapping("/crear")
+  @ResponseStatus(HttpStatus.CREATED)
+  public Mono<Student> createStudent(@RequestBody @Valid Student student) {
+    return studentService.createStudent(student, user)
+        .onErrorResume(e -> Mono.error(new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "Error al crear estudiante")));
+  }
 
-    @PutMapping("/actualizar/{id}")
-    public Mono<Student> actualizarUsuario(@PathVariable String id, @RequestBody @Valid Student student) {
-        return studentService.updateStudent(id, student, user);
-    }
+  @PutMapping("/actualizar/{id}")
+  public Mono<Student> actualizarUsuario(@PathVariable String id, @RequestBody @Valid Student student) {
+    return studentService.updateStudent(id, student, user)
+        .switchIfEmpty(Mono.error(new ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "No se pudo actualizar. Estudiante no encontrado con ID: " + id)))
+        .onErrorResume(e -> Mono.error(new ResponseStatusException(
+            HttpStatus.INTERNAL_SERVER_ERROR, "Error al actualizar estudiante")));
+  }
 
-    @DeleteMapping("/eliminar/{id}")
-    public Mono<Void> eliminarUsuario(@PathVariable String id) {
-        return studentService.deleteStudent(id);
-    }
+  @DeleteMapping("/eliminar/{id}")
+  public Mono<Void> eliminarUsuario(@PathVariable String id) {
+    return studentService.deleteStudent(id)
+        .switchIfEmpty(Mono.error(new ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "No se pudo eliminar. Estudiante no encontrado con ID: " + id)))
+        .onErrorResume(e -> Mono.error(new ResponseStatusException(
+            HttpStatus.INTERNAL_SERVER_ERROR, "Error al eliminar estudiante.")));
+  }
 }

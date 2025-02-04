@@ -10,5 +10,4 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface CashRegisterRepository extends ReactiveMongoRepository<CashRegister, String> {
     Mono<CashRegister> findFirstByIsClosedFalse();
-
 }

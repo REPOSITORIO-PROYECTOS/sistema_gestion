@@ -1,30 +1,24 @@
 "use client"
 
-import { CircleAlert, Plus } from "lucide-react"
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "./ui/alert-dialog"
-import { Button } from "./ui/button"
-import { Input } from "./ui/input"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Calendar } from "./ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form"
+import { CalendarWithMonthYearPicker } from "./ui/calendar-with-month-year-picker"
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
+import { CircleAlert, Loader2Icon, Plus } from "lucide-react"
 import MultipleSelector from "@/components/ui/multiselect";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useLoading } from "@/hooks/useLoading"
+import { cn, formatDate } from "@/lib/utils"
+import { useEffect, useState } from "react"
+import { useFetch } from "@/hooks/useFetch"
+import { useForm } from "react-hook-form"
+import { Button } from "./ui/button"
+import { es } from "date-fns/locale"
+import { Input } from "./ui/input"
+import { format } from "date-fns"
+import { toast } from "sonner"
+import * as z from "zod"
 
 const formSchema = z.object({
     name: z.string().min(2, {
@@ -55,16 +49,17 @@ const formSchema = z.object({
         message: "Debe seleccionar al menos un curso.",
     }),
 })
-const courseOptions = [
-    { label: "Matemáticas", value: "math101" },
-    { label: "Historia", value: "hist101" },
-    { label: "Ciencias", value: "sci101" },
-    { label: "Literatura", value: "lit101" },
-    { label: "Programación", value: "cs101" },
-]
+interface AgregarPersonaProps {
+    // Propiedades
+    mutate: () => void
+}
 
-export default function AgregarPersona() {
+export default function AgregarPersona(props: AgregarPersonaProps) {
+    const [courseOptions, setCourseOptions] = useState<{ label: string; value: string }[]>([])
+    const [isLoading, setIsLoading] = useState(true)
     const [open, setOpen] = useState(false)
+    const { finishLoading, loading, startLoading } = useLoading()
+    const fetch = useFetch()
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -80,10 +75,77 @@ export default function AgregarPersona() {
         },
     })
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values)
-        // Aquí puedes manejar el envío del formulario
-        setOpen(false)
+    const getCourseOptions = async () => {
+        setIsLoading(true)
+        try {
+            const response = await fetch({
+                endpoint: 'cursos/todos?page=0&size=100',
+                method: 'GET',
+            })
+            if (response) {
+                const courses = response
+                if (courses) {
+                    const options = courses.map((course: any) => ({ label: course.title, value: course.id }))
+                    setCourseOptions(options)
+                } else {
+                    toast.error("Error al cargar los cursos. Inténtalo de nuevo.")
+                }
+            }
+        } catch (error: any) {
+            const errorMessage =
+                (typeof error === 'object' && error.response
+                    ? error.response.data?.message
+                    : error?.message) ||
+                "Error al cargar los cursos. Inténtalo de nuevo.";
+            console.error("Error en getCourseOptions: ", errorMessage)
+            toast.error(errorMessage)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        getCourseOptions()
+    }, [])
+
+    async function onSubmit(data: z.infer<typeof formSchema>) {
+        const formData = {
+            name: data.name,
+            surname: data.surname,
+            email: data.email,
+            dni: data.dni,
+            status: data.status,
+            phone: data.phone,
+            dateOfBirth: formatDate(data.dateOfBirth),
+            ingressDate: formatDate(data.ingressDate),
+            cursesIds: data.cursesIds,
+        }
+        startLoading()
+        try {
+            // Envío del formulario
+            const response = await fetch({
+                endpoint: 'estudiantes/crear',
+                formData
+            })
+            if (response) {
+                console.log(response)
+                await props.mutate()
+                toast.success("Usuario creado correctamente.")
+                setOpen(false)
+                form.reset()
+            }
+            return response
+        } catch (error: any) {
+            const errorMessage =
+                (typeof error === 'object' && error.response
+                    ? error.response.data?.message
+                    : error?.message) ||
+                "Error al crear el usuario. Inténtalo de nuevo.";
+            console.error("Error en onSubmit: ", errorMessage)
+            toast.error(errorMessage)
+        } finally {
+            finishLoading()
+        }
     }
 
     return (
@@ -109,7 +171,7 @@ export default function AgregarPersona() {
                         </AlertDialogHeader>
                     </div>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4 py-6 px-2 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300">
                             <div className="grid grid-cols-2 gap-4">
                                 <FormField
                                     control={form.control}
@@ -213,17 +275,14 @@ export default function AgregarPersona() {
                                                     <FormControl>
                                                         <Button
                                                             variant={"outline"}
-                                                            className={cn(
-                                                                "w-full pl-3 text-left font-normal",
-                                                                !field.value && "text-muted-foreground",
-                                                            )}
+                                                            className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
                                                         >
-                                                            {field.value ? format(field.value, "PPP") : <span>Seleccione una fecha</span>}
+                                                            {field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccione una fecha</span>}
                                                         </Button>
                                                     </FormControl>
                                                 </PopoverTrigger>
                                                 <PopoverContent className="w-auto p-0" align="start">
-                                                    <Calendar
+                                                    <CalendarWithMonthYearPicker
                                                         mode="single"
                                                         selected={field.value}
                                                         onSelect={field.onChange}
@@ -252,12 +311,12 @@ export default function AgregarPersona() {
                                                                 !field.value && "text-muted-foreground",
                                                             )}
                                                         >
-                                                            {field.value ? format(field.value, "PPP") : <span>Seleccione una fecha</span>}
+                                                            {field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccione una fecha</span>}
                                                         </Button>
                                                     </FormControl>
                                                 </PopoverTrigger>
                                                 <PopoverContent className="w-auto p-0" align="start">
-                                                    <Calendar
+                                                    <CalendarWithMonthYearPicker
                                                         mode="single"
                                                         selected={field.value}
                                                         onSelect={field.onChange}
@@ -271,35 +330,45 @@ export default function AgregarPersona() {
                                     )}
                                 />
                             </div>
-                            <FormField
-                                control={form.control}
-                                name="cursesIds"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Cursos</FormLabel>
-                                        <FormControl>
-                                            <MultipleSelector
-                                                options={courseOptions}
-                                                //@ts-ignore
-                                                selected={
-                                                    field.value?.map(
-                                                        (id: string) =>
-                                                            courseOptions.find((option) => option.value === id) || { value: id, label: id },
-                                                    ) || []
-                                                }
-                                                onChange={(selected) => field.onChange(selected.map((option) => option.value))}
-                                                placeholder="Seleccionar cursos..."
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                            {
+                                isLoading ? <Loader2Icon className="animate-spin" size={16} strokeWidth={2} /> : <FormField
+                                    control={form.control}
+                                    name="cursesIds"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Cursos</FormLabel>
+                                            <FormControl>
+                                                <MultipleSelector
+                                                    options={courseOptions}
+                                                    //@ts-ignore
+                                                    selected={
+                                                        field.value?.map(
+                                                            (id: string) =>
+                                                                courseOptions.find((option) => option.value === id) || { value: id, label: id },
+                                                        ) || []
+                                                    }
+                                                    onChange={(selected) => field.onChange(selected.map((option) => option.value))}
+                                                    placeholder="Seleccionar cursos..."
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            }
+
                         </form>
                     </Form>
                     <AlertDialogFooter>
                         <AlertDialogCancel onClick={() => setOpen(false)}>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={form.handleSubmit(onSubmit)}>Crear</AlertDialogAction>
+                        <AlertDialogAction onClick={form.handleSubmit(onSubmit)}>
+                            {
+                                isLoading ? <Loader2Icon className="animate-spin" size={16} strokeWidth={2} /> : <Plus className="-ms-1 me-2 opacity-60" size={16} strokeWidth={2} aria-hidden="true" />
+                            }
+                            {
+                                isLoading ? "Creando..." : "Crear"
+                            }
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
