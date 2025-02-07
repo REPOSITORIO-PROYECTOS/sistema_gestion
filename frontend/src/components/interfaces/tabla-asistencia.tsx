@@ -25,8 +25,9 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Columns3 } from 'lucide-react'
+import { Calendar, Columns3 } from 'lucide-react'
 import { BuscadorAlumnos } from "./buscador-alumnos"
+import Link from "next/link"
 
 type Alumno = {
     id: string
@@ -146,6 +147,30 @@ export function TablaAsistencia() {
                 dni: "87654321",
                 telefono: "0987654321",
             },
+            {
+                id: "3",
+                nombre: "Carlos",
+                apellido: "López",
+                email: "carlos@example.com",
+                dni: "11111111",
+                telefono: "1111111111",
+            },
+            {
+                id: "4",
+                nombre: "Ana",
+                apellido: "Martínez",
+                email: "ana@example.com",
+                dni: "22222222",
+                telefono: "2222222222",
+            },
+            {
+                id: "5",
+                nombre: "Pedro",
+                apellido: "Rodríguez",
+                email: "pedro@example.com",
+                dni: "33333333",
+                telefono: "3333333333",
+            }
         ];
         setAlumnos(sampleAlumnos);
 
@@ -180,39 +205,47 @@ export function TablaAsistencia() {
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center space-x-2 py-4">
-                <Input
-                    placeholder="Filtrar por nombre..."
-                    value={(table.getColumn("nombre")?.getFilterValue() as string) ?? ""}
-                    onChange={(event) => table.getColumn("nombre")?.setFilterValue(event.target.value)}
-                    className="max-w-sm"
-                />
-                {/* <BuscadorAlumnos alumnos={alumnos} onSelectAlumno={(alumno) => console.log(alumno)} /> */}
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" >
-                            <Columns3 className="mr-2 h-4 w-4" />
-                            Columnas
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        {table
-                            .getAllColumns()
-                            .filter((column) => column.getCanHide())
-                            .map((column) => {
-                                return (
-                                    <DropdownMenuCheckboxItem
-                                        key={column.id}
-                                        className="capitalize"
-                                        checked={column.getIsVisible()}
-                                        onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                                    >
-                                        {column.id}
-                                    </DropdownMenuCheckboxItem>
-                                )
-                            })}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+            <div className="flex items-center justify-between space-x-2 py-4">
+                <div className="flex items-center space-x-2 w-full max-w-xl">
+                    <Input
+                        placeholder="Filtrar por nombre..."
+                        value={(table.getColumn("nombre")?.getFilterValue() as string) ?? ""}
+                        onChange={(event) => table.getColumn("nombre")?.setFilterValue(event.target.value)}
+                        className="max-w-sm"
+                    />
+                    {/* <BuscadorAlumnos alumnos={alumnos} onSelectAlumno={(alumno) => console.log(alumno)} /> */}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" >
+                                <Columns3 className="mr-2 h-4 w-4" />
+                                Columnas
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            {table
+                                .getAllColumns()
+                                .filter((column) => column.getCanHide())
+                                .map((column) => {
+                                    return (
+                                        <DropdownMenuCheckboxItem
+                                            key={column.id}
+                                            className="capitalize"
+                                            checked={column.getIsVisible()}
+                                            onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                                        >
+                                            {column.id}
+                                        </DropdownMenuCheckboxItem>
+                                    )
+                                })}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+                <Button asChild variant="outline">
+                    <Link href="/cursos/1/mensual">
+                        Ver planilla mensual
+                        <Calendar className="ml-2 h-4 w-4" />
+                    </Link>
+                </Button>
             </div>
             <div className="rounded-md border">
                 <Table>
