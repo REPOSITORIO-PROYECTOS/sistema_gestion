@@ -26,7 +26,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Calendar, Columns3 } from 'lucide-react'
-import { BuscadorAlumnos } from "./buscador-alumnos"
 import Link from "next/link"
 
 type Alumno = {
@@ -43,8 +42,12 @@ type AsistenciaItem = {
     fecha: string
     presente: boolean
 }
+interface TablaAsistenciaProps {
+    id: string
+}
 
-export function TablaAsistencia() {
+export function TablaAsistencia(props: TablaAsistenciaProps) {
+    const { id } = props
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -241,7 +244,7 @@ export function TablaAsistencia() {
                     </DropdownMenu>
                 </div>
                 <Button asChild variant="outline">
-                    <Link href="/cursos/1/mensual">
+                    <Link href={`/cursos/${id}/mensual`}>
                         Ver planilla mensual
                         <Calendar className="ml-2 h-4 w-4" />
                     </Link>
