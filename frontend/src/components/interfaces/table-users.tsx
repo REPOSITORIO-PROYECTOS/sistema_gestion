@@ -1,6 +1,5 @@
 "use client";
 
-import useSWR, { mutate } from "swr";
 import { cn } from "@/lib/utils";
 import {
     AlertDialog,
@@ -57,7 +56,6 @@ import {
     PaginationState,
     Row,
     SortingState,
-    Updater,
     VisibilityState,
     flexRender,
     getCoreRowModel,
@@ -81,40 +79,39 @@ import {
     Filter,
     ListFilter,
     Loader2Icon,
-    Plus,
     Trash,
 } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import AgregarCurso from "../form-curso";
-import React from 'react';
-import { useLoading } from '@/hooks/useLoading';
-import { useFetch } from '@/hooks/useFetch';
-import { toast } from 'sonner';
-import PersonaForm from '../form-persona';
-import FormCurso from "../form-curso";
-import Link from "next/link";
+import useSWR, { mutate } from "swr";
+import React from "react";
+import { useFetch } from "@/hooks/useFetch";
+import { useLoading } from "@/hooks/useLoading";
+import { toast } from "sonner";
+import PersonaForm from "../form-persona";
 
 type Item = {
     id: string;
-    title: string;
-    description: string;
-    status: 'ACTIVE' | 'INACTIVE'
-    monthlyPrice: number;
-    studentsIds: string[]
-    teacherId: string;
+    name: string;
+    surname: string;
+    email: string;
+    dni: string;
+    phone: string;
+    password: string;
+    istitution: string;
+    rol: 'admin' | 'user';
 };
 
 // Custom filter function for multi-column searching
 const multiColumnFilterFn: FilterFn<Item> = (row, columnId, filterValue) => {
-    const searchableRowContent = `${row.original.title}`.toLowerCase();
+    const searchableRowContent = `${row.original.name} ${row.original.surname} ${row.original.email}`.toLowerCase();
     const searchTerm = (filterValue ?? "").toLowerCase();
     return searchableRowContent.includes(searchTerm);
 };
 
-const statusFilterFn: FilterFn<Item> = (row, columnId, filterValue: string[]) => {
+const rolFilterFn: FilterFn<Item> = (row, columnId, filterValue: string[]) => {
     if (!filterValue?.length) return true;
-    const status = row.getValue(columnId) as string;
-    return filterValue.includes(status);
+    const rol = row.getValue(columnId) as string;
+    return filterValue.includes(rol);
 };
 
 const columns: ColumnDef<Item>[] = [
@@ -141,41 +138,59 @@ const columns: ColumnDef<Item>[] = [
         enableHiding: false,
     },
     {
-        header: "Título",
-        accessorKey: "title",
-        size: 200,
+        header: "Nombre",
+        accessorKey: "name",
+        cell: ({ row }) => (
+            <div className="flex items-center gap-2">
+                <div>
+                    <div className="">{row.getValue("name")}</div>
+                    <div className="text-sm text-muted-foreground">{row.original.surname}</div>
+                </div>
+            </div>
+        ),
+        size: 220,
         filterFn: multiColumnFilterFn,
     },
     {
-        header: "Descripción",
-        accessorKey: "description",
-        size: 320,
+        header: "Email",
+        accessorKey: "email",
+        size: 220,
     },
     {
-        header: "Precio mensual",
-        accessorKey: "monthlyPrice",
+        header: "DNI",
+        accessorKey: "dni",
         size: 160,
         filterFn: multiColumnFilterFn,
     },
     {
-        header: "Profesor",
-        accessorKey: "teacherId.name",
+        header: "Teléfono",
+        accessorKey: "phone",
         size: 160,
     },
     {
-        header: "Estado",
-        accessorKey: "status",
+        header: "Contraseña",
+        accessorKey: "password",
+        size: 160,
+    },
+    {
+        header: "Institución",
+        accessorKey: "istitution",
+        size: 160,
+    },
+    {
+        header: "Rol",
+        accessorKey: "rol",
         cell: ({ row }) => (
             <Badge
                 className={cn(
-                    row.getValue("status") === "Inactive" ? "bg-muted-foreground/60 text-primary-foreground" : "bg-blue-600 text-background",
+                    row.getValue("rol") === "user" ? "bg-muted-foreground/60 text-primary-foreground" : "bg-blue-600 text-background",
                 )}
             >
-                {row.getValue("status")}
+                {row.getValue("rol")}
             </Badge>
         ),
         size: 100,
-        filterFn: statusFilterFn,
+        filterFn: rolFilterFn,
     },
     {
         id: "actions",
@@ -188,7 +203,7 @@ const columns: ColumnDef<Item>[] = [
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-export default function TablePerson() {
+export default function TableUsers() {
     const id = useId();
     const { finishLoading, loading, startLoading } = useLoading()
     const fetch = useFetch()
@@ -196,7 +211,7 @@ export default function TablePerson() {
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [pagination, setPagination] = useState<PaginationState>({
         pageIndex: 0,
-        pageSize: 10,
+        pageSize: 5,
     });
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("");
@@ -204,7 +219,7 @@ export default function TablePerson() {
 
     const [sorting, setSorting] = useState<SortingState>([
         {
-            id: "title",
+            id: "name",
             desc: false,
         },
     ]);
@@ -224,7 +239,7 @@ export default function TablePerson() {
     }, [searchTerm]);
 
     const swrUrl = useMemo(() => {
-        return `https://sistema-gestion-bovz.onrender.com/api/cursos/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
+        return `https://sistema-gestion-bovz.onrender.com/api/usuarios/todos?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
     }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm]);
 
     const { data: swrData, error, isLoading, mutate } = useSWR(swrUrl, fetcher, {
@@ -261,6 +276,7 @@ export default function TablePerson() {
 
             for (const row of selectedRows) {
                 try {
+                    console.log("Deleting row", row.original.id);
                     await fetch({
                         endpoint: `cursos/${row.original.id}`,
                         method: "delete",
@@ -305,26 +321,27 @@ export default function TablePerson() {
 
     // Get unique status values
     const uniqueStatusValues = useMemo(() => {
-        const statusColumn = table.getColumn("status");
+        const statusColumn = table.getColumn("rol");
+        console.log(statusColumn)
         if (!statusColumn) return [];
         const values = Array.from(statusColumn.getFacetedUniqueValues().keys());
         return values.sort();
-    }, [table.getColumn("status")?.getFacetedUniqueValues()]);
+    }, [table.getColumn("rol")?.getFacetedUniqueValues()]);
 
     // Get counts for each status
     const statusCounts = useMemo(() => {
-        const statusColumn = table.getColumn("status");
+        const statusColumn = table.getColumn("rol");
         if (!statusColumn) return new Map();
         return statusColumn.getFacetedUniqueValues();
-    }, [table.getColumn("status")?.getFacetedUniqueValues()]);
+    }, [table.getColumn("rol")?.getFacetedUniqueValues()]);
 
     const selectedStatuses = useMemo(() => {
-        const filterValue = table.getColumn("status")?.getFilterValue() as string[];
+        const filterValue = table.getColumn("rol")?.getFilterValue() as string[];
         return filterValue ?? [];
-    }, [table.getColumn("status")?.getFilterValue()]);
+    }, [table.getColumn("rol")?.getFilterValue()]);
 
     const handleStatusChange = (checked: boolean, value: string) => {
-        const filterValue = table.getColumn("status")?.getFilterValue() as string[];
+        const filterValue = table.getColumn("rol")?.getFilterValue() as string[];
         const newFilterValue = filterValue ? [...filterValue] : [];
 
         if (checked) {
@@ -336,7 +353,7 @@ export default function TablePerson() {
             }
         }
 
-        table.getColumn("status")?.setFilterValue(newFilterValue.length ? newFilterValue : undefined);
+        table.getColumn("rol")?.setFilterValue(newFilterValue.length ? newFilterValue : undefined);
     };
 
     return (
@@ -351,7 +368,7 @@ export default function TablePerson() {
                             ref={inputRef}
                             className={cn(
                                 "peer min-w-60 ps-9",
-                                Boolean(table.getColumn("title")?.getFilterValue()) && "pe-9",
+                                Boolean(table.getColumn("name")?.getFilterValue()) && "pe-9",
                             )}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -362,7 +379,7 @@ export default function TablePerson() {
                         <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
                             <ListFilter size={16} strokeWidth={2} aria-hidden="true" />
                         </div>
-                        {Boolean(table.getColumn("title")?.getFilterValue()) && (
+                        {Boolean(table.getColumn("name")?.getFilterValue()) && (
                             <button
                                 className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
                                 aria-label="Clear filter"
@@ -500,7 +517,7 @@ export default function TablePerson() {
                         </AlertDialog>
                     )}
                     {/* Add user button */}
-                    <FormCurso mutate={mutate} />
+                    <PersonaForm mutate={mutate} />
                 </div>
             </div>
 
@@ -709,6 +726,7 @@ export default function TablePerson() {
 
 const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+
     return (
         <>
             <DropdownMenu>
@@ -726,7 +744,7 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                             <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
-                            <Link href={`cursos/${row.original.id}/asistencias`}>Asistencia</Link>
+                            <span>Duplicar</span>
                             <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
                         </DropdownMenuItem>
                     </DropdownMenuGroup>
@@ -760,9 +778,9 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
-            {isEditDialogOpen && (
-                <FormCurso isEditable datos={row.original} mutate={mutate} onClose={() => setIsEditDialogOpen(false)} />
-            )}
+            {/* {isEditDialogOpen && (
+                <PersonaForm isEditable datos={row.original} mutate={mutate} onClose={() => setIsEditDialogOpen(false)} />
+            )} */}
         </>
     );
 });

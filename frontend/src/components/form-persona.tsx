@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { CircleAlert, Loader2Icon, Plus } from "lucide-react"
 import MultipleSelector from "@/components/ui/multiselect";
 import { zodResolver } from "@hookform/resolvers/zod"
+import { format, isValid, parse } from "date-fns"
 import { useLoading } from "@/hooks/useLoading"
 import { cn, formatDate } from "@/lib/utils"
 import { useEffect, useState } from "react"
@@ -15,8 +16,8 @@ import { useFetch } from "@/hooks/useFetch"
 import { useForm } from "react-hook-form"
 import { Button } from "./ui/button"
 import { es } from "date-fns/locale"
+import { ScopedMutator } from "swr"
 import { Input } from "./ui/input"
-import { format } from "date-fns"
 import { toast } from "sonner"
 import * as z from "zod"
 
@@ -49,12 +50,26 @@ const formSchema = z.object({
         message: "Debe seleccionar al menos un curso.",
     }),
 })
-interface AgregarPersonaProps {
-    // Propiedades
-    mutate: () => void
+
+interface PersonaFormProps {
+    isEditable?: boolean;
+    datos?: {
+        id: string
+        name: string
+        surname: string
+        email: string
+        dni: string
+        status: 'activo' | 'inactivo' | 'pendiente'
+        phone: string
+        dateOfBirth: Date
+        ingressDate: Date
+        cursesIds: string[]
+    };
+    mutate: ScopedMutator | (() => void); // Acepta tanto ScopedMutator como una función sin argumentos
+    onClose?: () => void
 }
 
-export default function AgregarPersona(props: AgregarPersonaProps) {
+export default function PersonaForm({ isEditable = false, datos, mutate, onClose }: PersonaFormProps) {
     const [courseOptions, setCourseOptions] = useState<{ label: string; value: string }[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [open, setOpen] = useState(false)
@@ -63,50 +78,54 @@ export default function AgregarPersona(props: AgregarPersonaProps) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: "",
-            surname: "",
-            email: "",
-            dni: "",
-            status: undefined,
-            phone: "",
-            dateOfBirth: undefined,
-            ingressDate: undefined,
-            cursesIds: [],
+            name: datos?.name || "",
+            surname: datos?.surname || "",
+            email: datos?.email || "",
+            dni: datos?.dni || "",
+            status: datos?.status || undefined,
+            phone: datos?.phone || "",
+            dateOfBirth: datos?.dateOfBirth ? parse(datos.dateOfBirth.toString(), "dd-MM-yyyy", new Date()) : undefined,
+            ingressDate: datos?.ingressDate ? parse(datos.ingressDate.toString(), "dd-MM-yyyy", new Date()) : undefined,
+            cursesIds: datos?.cursesIds ?? [],
         },
     })
 
-    const getCourseOptions = async () => {
-        setIsLoading(true)
-        try {
-            const response = await fetch({
-                endpoint: 'cursos/todos?page=0&size=100',
-                method: 'GET',
-            })
-            if (response) {
-                const courses = response
-                if (courses) {
-                    const options = courses.map((course: any) => ({ label: course.title, value: course.id }))
-                    setCourseOptions(options)
-                } else {
-                    toast.error("Error al cargar los cursos. Inténtalo de nuevo.")
-                }
-            }
-        } catch (error: any) {
-            const errorMessage =
-                (typeof error === 'object' && error.response
-                    ? error.response.data?.message
-                    : error?.message) ||
-                "Error al cargar los cursos. Inténtalo de nuevo.";
-            console.error("Error en getCourseOptions: ", errorMessage)
-            toast.error(errorMessage)
-        } finally {
-            setIsLoading(false)
-        }
-    }
+    console.log(datos)
 
     useEffect(() => {
+        const getCourseOptions = async () => {
+            setIsLoading(true)
+            try {
+                const response = await fetch({
+                    endpoint: 'cursos/paged',
+                    method: 'GET',
+                })
+                if (response) {
+                    const courses = response.content
+                    if (courses) {
+                        const options = courses.map((course: any) => ({ label: course.title, value: course.id }))
+                        setCourseOptions(options)
+                    } else {
+                        toast.error("Error al cargar los cursos. Inténtalo de nuevo.")
+                    }
+                }
+            } catch (error: any) {
+                const errorMessage =
+                    (typeof error === 'object' && error.response
+                        ? error.response.data?.message
+                        : error?.message) ||
+                    "Error al cargar los cursos. Inténtalo de nuevo.";
+                console.error("Error en getCourseOptions: ", errorMessage)
+                toast.error(errorMessage)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
         getCourseOptions()
     }, [])
+
+    console.log("algo intermedio")
 
     async function onSubmit(data: z.infer<typeof formSchema>) {
         const formData = {
@@ -122,16 +141,24 @@ export default function AgregarPersona(props: AgregarPersonaProps) {
         }
         startLoading()
         try {
-            // Envío del formulario
+            const endpoint = isEditable ? `estudiantes/actualizar/${datos?.id}` : 'estudiantes/crear'
             const response = await fetch({
-                endpoint: 'estudiantes/crear',
+                endpoint,
+                method: isEditable ? 'PUT' : 'POST',
                 formData
             })
             if (response) {
                 console.log(response)
-                await props.mutate()
-                toast.success("Usuario creado correctamente.")
-                setOpen(false)
+                // Llamada a mutate compatible con ambos casos
+                if (typeof mutate === "function") {
+                    if (isEditable) {
+                        await mutate(undefined, true); // Si es ScopedMutator, pasa los argumentos necesarios
+                    } else {
+                        await mutate(undefined, true); // Si es una función sin argumentos, llámala sin parámetros
+                    }
+                }
+                toast.success(isEditable ? "Usuario actualizado correctamente." : "Usuario creado correctamente.")
+                isEditable ? onClose?.() : setOpen(false)
                 form.reset()
             }
             return response
@@ -140,7 +167,7 @@ export default function AgregarPersona(props: AgregarPersonaProps) {
                 (typeof error === 'object' && error.response
                     ? error.response.data?.message
                     : error?.message) ||
-                "Error al crear el usuario. Inténtalo de nuevo.";
+                (isEditable ? "Error al actualizar el usuario. Inténtalo de nuevo." : "Error al crear el usuario. Inténtalo de nuevo.");
             console.error("Error en onSubmit: ", errorMessage)
             toast.error(errorMessage)
         } finally {
@@ -150,12 +177,16 @@ export default function AgregarPersona(props: AgregarPersonaProps) {
 
     return (
         <div className="flex items-center gap-3">
-            <AlertDialog open={open} onOpenChange={setOpen}>
+            <AlertDialog open={isEditable ? true : open} onOpenChange={isEditable ? onClose : setOpen}>
                 <AlertDialogTrigger asChild>
-                    <Button className="ml-auto" variant="outline">
-                        <Plus className="-ms-1 me-2 opacity-60" size={16} strokeWidth={2} aria-hidden="true" />
-                        Agregar Usuario
-                    </Button>
+                    {isEditable ? (
+                        null
+                    ) : (
+                        <Button className="ml-auto" variant="outline">
+                            <Plus className="-ms-1 me-2 opacity-60" size={16} strokeWidth={2} aria-hidden="true" />
+                            Agregar Usuario
+                        </Button>
+                    )}
                 </AlertDialogTrigger>
                 <AlertDialogContent className="sm:max-w-lg">
                     <div className="flex flex-col gap-2 max-sm:items-center sm:flex-row sm:gap-4">
@@ -166,7 +197,7 @@ export default function AgregarPersona(props: AgregarPersonaProps) {
                             <CircleAlert className="opacity-80" size={16} strokeWidth={2} />
                         </div>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Formulario de inscripción</AlertDialogTitle>
+                            <AlertDialogTitle>{isEditable ? "Editar Usuario" : "Formulario de inscripción"}</AlertDialogTitle>
                             <AlertDialogDescription>Por favor, complete todos los campos del formulario.</AlertDialogDescription>
                         </AlertDialogHeader>
                     </div>
@@ -267,67 +298,85 @@ export default function AgregarPersona(props: AgregarPersonaProps) {
                                 <FormField
                                     control={form.control}
                                     name="dateOfBirth"
-                                    render={({ field }) => (
-                                        <FormItem className="flex flex-col">
-                                            <FormLabel>Fecha de Nacimiento</FormLabel>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <FormControl>
-                                                        <Button
-                                                            variant={"outline"}
-                                                            className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
-                                                        >
-                                                            {field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccione una fecha</span>}
-                                                        </Button>
-                                                    </FormControl>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0" align="start">
-                                                    <CalendarWithMonthYearPicker
-                                                        mode="single"
-                                                        selected={field.value}
-                                                        onSelect={field.onChange}
-                                                        disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
+                                    render={({ field }) => {
+                                        let dateObj: Date | undefined;
+                                        if (typeof field.value === "string" && field.value) {
+                                            dateObj = parse(field.value, "dd-MM-yyyy", new Date(), { locale: es }); // Asegúrate de usar el locale
+                                        } else if (field.value instanceof Date) {
+                                            dateObj = field.value;
+                                        }
+                                        const formattedDate = dateObj && isValid(dateObj) ? format(dateObj, "PPP", { locale: es }) : "";
+                                        return (
+                                            <FormItem className="flex flex-col">
+                                                <FormLabel>Fecha de Nacimiento</FormLabel>
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <FormControl>
+                                                            <Button
+                                                                variant={"outline"}
+                                                                className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
+                                                            >
+                                                                {formattedDate || <span>Seleccione una fecha</span>}
+                                                            </Button>
+                                                        </FormControl>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className="w-auto p-0" align="start">
+                                                        <CalendarWithMonthYearPicker
+                                                            mode="single"
+                                                            selected={field.value}
+                                                            onSelect={field.onChange}
+                                                            disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                                                            initialFocus
+                                                        />
+                                                    </PopoverContent>
+                                                </Popover>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )
+                                    }}
                                 />
                                 <FormField
                                     control={form.control}
                                     name="ingressDate"
-                                    render={({ field }) => (
-                                        <FormItem className="flex flex-col">
-                                            <FormLabel>Fecha de Ingreso</FormLabel>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <FormControl>
-                                                        <Button
-                                                            variant={"outline"}
-                                                            className={cn(
-                                                                "w-full pl-3 text-left font-normal",
-                                                                !field.value && "text-muted-foreground",
-                                                            )}
-                                                        >
-                                                            {field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccione una fecha</span>}
-                                                        </Button>
-                                                    </FormControl>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0" align="start">
-                                                    <CalendarWithMonthYearPicker
-                                                        mode="single"
-                                                        selected={field.value}
-                                                        onSelect={field.onChange}
-                                                        disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
+                                    render={({ field }) => {
+                                        let dateObj: Date | undefined;
+                                        if (typeof field.value === "string" && field.value) {
+                                            dateObj = parse(field.value, "dd-MM-yyyy", new Date(), { locale: es }); // Asegúrate de usar el locale
+                                        } else if (field.value instanceof Date) {
+                                            dateObj = field.value;
+                                        }
+                                        const formattedDate = dateObj && isValid(dateObj) ? format(dateObj, "PPP", { locale: es }) : "";
+                                        return (
+                                            <FormItem className="flex flex-col">
+                                                <FormLabel>Fecha de Ingreso</FormLabel>
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <FormControl>
+                                                            <Button
+                                                                variant={"outline"}
+                                                                className={cn(
+                                                                    "w-full pl-3 text-left font-normal",
+                                                                    !field.value && "text-muted-foreground",
+                                                                )}
+                                                            >
+                                                                {formattedDate || <span>Seleccione una fecha</span>}
+                                                            </Button>
+                                                        </FormControl>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className="w-auto p-0" align="start">
+                                                        <CalendarWithMonthYearPicker
+                                                            mode="single"
+                                                            selected={field.value}
+                                                            onSelect={field.onChange}
+                                                            disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                                                            initialFocus
+                                                        />
+                                                    </PopoverContent>
+                                                </Popover>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )
+                                    }}
                                 />
                             </div>
                             {
@@ -340,13 +389,11 @@ export default function AgregarPersona(props: AgregarPersonaProps) {
                                             <FormControl>
                                                 <MultipleSelector
                                                     options={courseOptions}
-                                                    //@ts-ignore
-                                                    selected={
-                                                        field.value?.map(
-                                                            (id: string) =>
-                                                                courseOptions.find((option) => option.value === id) || { value: id, label: id },
-                                                        ) || []
-                                                    }
+                                                    // @ts-ignore
+                                                    selected={(field.value || []).map(
+                                                        (id: string) =>
+                                                            courseOptions.find((option) => option.value === id) || { value: id, label: id }
+                                                    )}
                                                     onChange={(selected) => field.onChange(selected.map((option) => option.value))}
                                                     placeholder="Seleccionar cursos..."
                                                 />
@@ -363,10 +410,10 @@ export default function AgregarPersona(props: AgregarPersonaProps) {
                         <AlertDialogCancel onClick={() => setOpen(false)}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={form.handleSubmit(onSubmit)}>
                             {
-                                isLoading ? <Loader2Icon className="animate-spin" size={16} strokeWidth={2} /> : <Plus className="-ms-1 me-2 opacity-60" size={16} strokeWidth={2} aria-hidden="true" />
+                                loading ? <Loader2Icon className="animate-spin" size={16} strokeWidth={2} /> : <Plus className="-ms-1 me-2 opacity-60" size={16} strokeWidth={2} aria-hidden="true" />
                             }
                             {
-                                isLoading ? "Creando..." : "Crear"
+                                loading ? (isEditable ? "Actualizando..." : "Creando...") : (isEditable ? "Actualizar" : "Crear")
                             }
                         </AlertDialogAction>
                     </AlertDialogFooter>
