@@ -12,6 +12,14 @@ import reactor.core.publisher.Mono;
 
 @Repository
 public interface TeacherRepository extends ReactiveMongoRepository<Teacher, String> {
+    // Busqueda con paginación
+    @Query("{}")
+    Flux<Teacher> findAllBy(PageRequest pageRequest);
+
+    // Conteo total de registros
+    @Query(value = "{}", count = true)
+    Mono<Long> countAll();
+
     // Busqueda por DNI o Apellido con paginación
     @Query("{ '$or': [ { 'dni': ?0 }, { 'surname': ?0 } ] }")
     Flux<Teacher> findByDniOrSurname(String query, PageRequest pageRequest);
@@ -19,11 +27,4 @@ public interface TeacherRepository extends ReactiveMongoRepository<Teacher, Stri
     // Conteo de registros por DNI o Apellido
     @Query(value = "{ '$or': [ { 'dni': ?0 }, { 'surname': ?0 } ] }", count = true)
     Mono<Long> countByDniOrSurname(String query);
-
-    // Busqueda paginada
-    @Query("{}")
-    Flux<Teacher> findAllBy(PageRequest pageRequest);
-
-    @Query(value = "{}", count = true)
-    Mono<Long> countAll();
 }

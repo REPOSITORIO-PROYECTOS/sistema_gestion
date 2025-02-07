@@ -35,23 +35,11 @@ public class TeacherController {
   @GetMapping("/todos")
   public Mono<ResponseEntity<PagedResponse<Teacher>>> findAll(
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size) {
-    return teacherService.findAll(page, size)
+      @RequestParam(defaultValue = "10") int size,
+      @RequestParam(required = false) String keyword) {
+    return teacherService.findAll(page, size, keyword)
         .map(ResponseEntity::ok)
-        .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(null)));
-  }
-
-  @GetMapping("/buscar")
-  public Mono<ResponseEntity<PagedResponse<Teacher>>> searchStudents(
-      @RequestParam String query,
-      @RequestParam int page,
-      @RequestParam int size) {
-    return teacherService.searchTeachers(query, page, size)
-        .map(ResponseEntity::ok)
-        .onErrorResume(e -> Mono.error(new ResponseStatusException(
-            HttpStatus.INTERNAL_SERVER_ERROR,
-            "Error al realizar la búsqueda de estudiantes")));
+        .defaultIfEmpty(ResponseEntity.noContent().build());
   }
 
   @GetMapping("/{id}")
@@ -69,10 +57,8 @@ public class TeacherController {
     String user = "Pepe Hongo - admin";
     return teacherService.create(teacher, user)
         .map(savedTeacher -> ResponseEntity.status(HttpStatus.CREATED).body(savedTeacher))
-        .onErrorResume(ResponseStatusException.class,
-            e -> Mono.just(ResponseEntity.status(e.getStatusCode()).body(null)))
-        .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(null)));
+        .onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Error al registrar el Profesor"));
   }
 
   @PutMapping("/actualizar/{id}")

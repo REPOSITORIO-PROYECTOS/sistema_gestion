@@ -15,6 +15,7 @@ import com.sistema.gestion.DTO.PagedResponse;
 import com.sistema.gestion.Models.Admin.Management.Course;
 import com.sistema.gestion.Repositories.Admin.Management.CourseRepository;
 import com.sistema.gestion.Repositories.Profiles.StudentRepository;
+import com.sistema.gestion.Repositories.Profiles.TeacherRepository;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
@@ -26,6 +27,7 @@ public class CourseService {
 
   private final CourseRepository courseRepo;
   private final StudentRepository studentRepo;
+  private final TeacherRepository teacherRepo;
 
   public Mono<PagedResponse<Course>> getCoursesPaged(int page, int size, String keyword) {
     PageRequest pageRequest = PageRequest.of(page, size);
@@ -55,15 +57,38 @@ public class CourseService {
   }
 
   public Mono<Course> saveCourse(Course course, String user) {
-
     if (course.getId() != null && !course.getId().isEmpty()) {
-      return monoError(HttpStatus.BAD_REQUEST, "El curso ya tiene un ID resgistrado,"
-          + " no se puede almacenar un nuevo curso con ID ya registrado");
+      return monoError(HttpStatus.BAD_REQUEST,
+          "El curso ya tiene un ID registrado, no se puede almacenar un nuevo curso con ID ya registrado");
     }
+
     course.setCreatedAt(LocalDateTime.now());
     course.setCreatedBy(user);
-    return courseRepo.save(course);
 
+    return courseRepo.save(course)
+        .flatMap(savedCourse -> {
+
+          if (savedCourse.getTeacherId() == null || savedCourse.getTeacherId().isEmpty()) {
+            return Mono.just(savedCourse); // Si no hay profesor devolvemos el curso sin cambios
+          }
+
+          return teacherRepo.findById(savedCourse.getTeacherId())
+              .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                  "Profesor no encontrado: " + savedCourse.getTeacherId())))
+              .flatMap(teacher -> {
+                if (teacher.getCoursesIds() == null || teacher.getCoursesIds().isEmpty()) {
+                  Set<String> courses = new HashSet<>();
+                  courses.add(savedCourse.getId());
+                  teacher.setCoursesIds(courses);
+                  return teacherRepo.save(teacher);
+                }
+                Set<String> updatedCourses = new HashSet<>(teacher.getCoursesIds());
+                updatedCourses.add(savedCourse.getId());
+                teacher.setCoursesIds(updatedCourses);
+                return teacherRepo.save(teacher);
+              })
+              .thenReturn(savedCourse); // Retornamos el curso guardado
+        });
   }
 
   public Mono<Course> updateCourse(Course course, String courseId, String user) {

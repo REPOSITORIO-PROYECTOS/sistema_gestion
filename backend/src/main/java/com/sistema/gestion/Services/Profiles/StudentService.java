@@ -1,6 +1,7 @@
 package com.sistema.gestion.Services.Profiles;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.sistema.gestion.DTO.PagedResponse;
 import com.sistema.gestion.Models.Profiles.Student;
+import com.sistema.gestion.Repositories.Admin.Management.CourseRepository;
 import com.sistema.gestion.Repositories.Profiles.StudentRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import reactor.core.publisher.Flux;
 public class StudentService {
 
   private final StudentRepository studentRepository;
+  private final CourseRepository courseRepository;
 
   public Mono<PagedResponse<Student>> findAll(int page, int size, String keyword) {
     PageRequest pageRequest = PageRequest.of(page, size);
@@ -67,11 +70,29 @@ public class StudentService {
     return studentRepository.count();
   }
 
-  public Mono<Student> createStudent(Student student, String user) {
+  public Mono<Student> createStudentWithCourses(Student student, String user) {
     student.setCreatedBy(user);
+
     return studentRepository.save(student)
-        .onErrorMap(
-            e -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al guardar el estudiante", e));
+        .flatMap(savedStudent -> {
+          Set<String> courseIds = savedStudent.getCoursesIds();
+
+          if (courseIds == null || courseIds.isEmpty()) {
+            return Mono.just(savedStudent);
+          }
+
+          return Flux.fromIterable(courseIds)
+              .flatMap(courseId -> courseRepository.findById(courseId)
+                  .switchIfEmpty(
+                      Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Curso no encontrado: " + courseId)))
+                  .flatMap(course -> {
+                    course.getStudentsIds().add(savedStudent.getId()); // Agregamos el estudiante al curso
+                    return courseRepository.save(course); // Guardamos el curso actualizado
+                  }))
+              .then(Mono.just(savedStudent)); // Devolvemos el estudiante guardado
+        })
+        .onErrorMap(e -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+            "Error al inscribir al estudiante en los cursos", e));
   }
 
   public Mono<Student> findById(String id) {

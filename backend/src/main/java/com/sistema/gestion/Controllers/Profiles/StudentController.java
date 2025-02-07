@@ -46,7 +46,7 @@ public class StudentController {
   @PostMapping("/crear")
   @ResponseStatus(HttpStatus.CREATED)
   public Mono<Student> createStudent(@RequestBody @Valid Student student) {
-    return studentService.createStudent(student, user)
+    return studentService.createStudentWithCourses(student, user)
         .onErrorResume(e -> Mono.error(new ResponseStatusException(
             HttpStatus.BAD_REQUEST, "Error al crear estudiante")));
   }
