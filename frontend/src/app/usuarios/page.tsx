@@ -1,11 +1,11 @@
 import Panel from "@/components/interfaces/panel";
-import TablePerson from "@/components/interfaces/table-person";
+import TableUsers from "@/components/interfaces/table-users";
 
 export default function Page() {
     return (
         <>
             <Panel />
-            <TablePerson />
+            <TableUsers />
         </>
     );
 }
