@@ -184,7 +184,7 @@ export default function PersonaForm({ isEditable = false, datos, mutate, onClose
                     ) : (
                         <Button className="ml-auto" variant="outline">
                             <Plus className="-ms-1 me-2 opacity-60" size={16} strokeWidth={2} aria-hidden="true" />
-                            Agregar Usuario
+                            Agregar Estudiante
                         </Button>
                     )}
                 </AlertDialogTrigger>
