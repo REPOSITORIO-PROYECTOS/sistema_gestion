@@ -88,6 +88,7 @@ import { useFetch } from "@/hooks/useFetch";
 import { useLoading } from "@/hooks/useLoading";
 import { toast } from "sonner";
 import PersonaForm from "../form-persona";
+import UserForm from "../form-user";
 
 type Item = {
     id: string;
@@ -97,8 +98,8 @@ type Item = {
     dni: string;
     phone: string;
     password: string;
-    istitution: string;
-    rol: 'admin' | 'user';
+    institution: string;
+    rol: 'director' | 'alumno' | 'docente' | 'preceptor';
 };
 
 // Custom filter function for multi-column searching
@@ -170,6 +171,18 @@ const columns: ColumnDef<Item>[] = [
     {
         header: "Contraseña",
         accessorKey: "password",
+        cell: ({ row }) => (
+            //ocultar contraseña con asteriscos
+            <div className="flex items-center gap-2">
+                <div>
+                    <div className="">{
+                        (row.getValue("password") as string).split('').map((char, index) => {
+                            return index < 3 ? char : '●'
+                        }).join('')
+                    }</div>
+                </div>
+            </div>
+        ),
         size: 160,
     },
     {
@@ -183,7 +196,7 @@ const columns: ColumnDef<Item>[] = [
         cell: ({ row }) => (
             <Badge
                 className={cn(
-                    row.getValue("rol") === "user" ? "bg-muted-foreground/60 text-primary-foreground" : "bg-blue-600 text-background",
+                    row.getValue("rol") === "director" ? "bg-yellow-700 text-primary-foreground" : "bg-blue-600 text-background",
                 )}
             >
                 {row.getValue("rol")}
@@ -248,8 +261,8 @@ export default function TableUsers() {
 
     useEffect(() => {
         if (swrData) {
-            setData(swrData.content);
-            setTotalElements(swrData.totalElements);
+            setData(swrData);
+            setTotalElements(swrData.length);
         }
     }, [swrData]);
 
@@ -517,7 +530,7 @@ export default function TableUsers() {
                         </AlertDialog>
                     )}
                     {/* Add user button */}
-                    <PersonaForm mutate={mutate} />
+                    <UserForm mutate={mutate} />
                 </div>
             </div>
 
@@ -778,9 +791,9 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
-            {/* {isEditDialogOpen && (
-                <PersonaForm isEditable datos={row.original} mutate={mutate} onClose={() => setIsEditDialogOpen(false)} />
-            )} */}
+            {isEditDialogOpen && (
+                <UserForm isEditable datos={row.original} mutate={mutate} onClose={() => setIsEditDialogOpen(false)} />
+            )}
         </>
     );
 });
