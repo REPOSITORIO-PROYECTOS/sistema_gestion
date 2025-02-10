@@ -1,6 +1,7 @@
 package com.sistema.gestion.Services.Profiles;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.sistema.gestion.DTO.PagedResponse;
 import com.sistema.gestion.Models.Profiles.Teacher;
+import com.sistema.gestion.Repositories.Admin.Management.CourseRepository;
 import com.sistema.gestion.Repositories.Profiles.TeacherRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -18,42 +20,32 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 public class TeacherService {
-    
+
   private final TeacherRepository teacherRepository;
+  private final CourseRepository courseRepository;
 
-  public Mono<PagedResponse<Teacher>> findAll(int page, int size) {
+  public Mono<PagedResponse<Teacher>> findAll(int page, int size, String keyword) {
     PageRequest pageRequest = PageRequest.of(page, size);
 
-    Mono<Long> totalElementsMono = teacherRepository.countAll()
-        .onErrorResume(e -> Mono.error(new ResponseStatusException(
-            HttpStatus.INTERNAL_SERVER_ERROR, "Error al contar los docentes", e)));
+    if (keyword != null && !keyword.isEmpty()) {
+      Mono<Long> totalElementsMono = teacherRepository.countByDniOrSurname(keyword);
+      Flux<Teacher> teacherFlux = teacherRepository.findByDniOrSurname(keyword, pageRequest);
 
-    Flux<Teacher> teachersFlux = teacherRepository.findAllBy(pageRequest)
-        .onErrorResume(e -> Flux.error(new ResponseStatusException(
-            HttpStatus.INTERNAL_SERVER_ERROR, "Error al obtener la lista de docentes", e)));
+      return Mono.zip(totalElementsMono, teacherFlux.collectList())
+          .map(tuple -> new PagedResponse<>(
+              tuple.getT2(), // Lista de maestros filtrados
+              tuple.getT1(), // Total de registros filtrados
+              page,
+              size));
+    }
 
-    return Mono.zip(totalElementsMono, teachersFlux.collectList())
+    Mono<Long> totalElementsMono = teacherRepository.countAll();
+    Flux<Teacher> studentsFlux = teacherRepository.findAllBy(pageRequest);
+
+    return Mono.zip(totalElementsMono, studentsFlux.collectList())
         .map(tuple -> new PagedResponse<>(
-            tuple.getT2(), // Lista de docentes
+            tuple.getT2(), // Lista de maestros
             tuple.getT1(), // Total de registros
-            page,
-            size))
-        .onErrorResume(e -> Mono.error(new ResponseStatusException(
-            HttpStatus.INTERNAL_SERVER_ERROR, "Error al procesar la paginación de docentes", e)));
-  }
-
-  public Mono<PagedResponse<Teacher>> searchTeachers(String query, int page, int size) {
-    PageRequest pageRequest = PageRequest.of(page, size);
-
-    // Contar total de coincidencias en DNI o Apellido
-    Mono<Long> totalElementsMono = teacherRepository.countByDniOrSurname(query);
-    // Obtener lista de coincidencias con paginación
-    Flux<Teacher> teacherFlux = teacherRepository.findByDniOrSurname(query, pageRequest);
-
-    return Mono.zip(totalElementsMono, teacherFlux.collectList())
-        .map(tuple -> new PagedResponse<>(
-            tuple.getT2(), // Lista de estudiantes encontrados
-            tuple.getT1(), // Total de registros encontrados
             page,
             size));
   }
@@ -61,22 +53,39 @@ public class TeacherService {
   public Mono<Teacher> findById(String id) {
     return teacherRepository.findById(id)
         .switchIfEmpty(Mono.error(new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "No se encontró el docente con ID: " + id)))
+            HttpStatus.NOT_FOUND, "No se encontró el profesor con ID: " + id)))
         .onErrorResume(e -> Mono.error(new ResponseStatusException(
-            HttpStatus.INTERNAL_SERVER_ERROR, "Error al buscar el docente", e)));
+            HttpStatus.INTERNAL_SERVER_ERROR, "Error al buscar el profesor", e)));
   }
 
   public Mono<Teacher> create(Teacher teacher, String user) {
     teacher.setCreatedBy(user);
+
     return teacherRepository.save(teacher)
+        .flatMap(savedTeacher -> {
+          Set<String> courseIds = savedTeacher.getCoursesIds();
+          if (courseIds == null || courseIds.isEmpty()) {
+            return Mono.just(savedTeacher); // Si no tiene cursos devolvemos el profesor sin cambios
+          }
+
+          return Flux.fromIterable(courseIds)
+              .flatMap(courseId -> courseRepository.findById(courseId) // Buscamos el curso por ID
+                  .switchIfEmpty(
+                      Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Curso no encontrado: " + courseId)))
+                  .flatMap(course -> {
+                    course.setTeacherId(savedTeacher.getId());
+                    return courseRepository.save(course); // Guardamos el curso actualizado
+                  }))
+              .then(Mono.just(savedTeacher)); // Devolvemos el profesor guardado
+        })
         .onErrorResume(e -> Mono.error(new ResponseStatusException(
-            HttpStatus.INTERNAL_SERVER_ERROR, "Error al crear el docente", e)));
+            HttpStatus.INTERNAL_SERVER_ERROR, "Error al crear el profesor", e)));
   }
 
   public Mono<Teacher> update(String id, Teacher teacher, String user) {
     return teacherRepository.findById(id)
         .switchIfEmpty(Mono.error(new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "No se encontró el docente con ID: " + id)))
+            HttpStatus.NOT_FOUND, "No se encontró el profesor con ID: " + id)))
         .flatMap(existingTeacher -> {
           existingTeacher.setName(teacher.getName());
           existingTeacher.setSurname(teacher.getSurname());
@@ -87,15 +96,15 @@ public class TeacherService {
           return teacherRepository.save(existingTeacher);
         })
         .onErrorResume(e -> Mono.error(new ResponseStatusException(
-            HttpStatus.INTERNAL_SERVER_ERROR, "Error al actualizar el docente", e)));
+            HttpStatus.INTERNAL_SERVER_ERROR, "Error al actualizar el profesor", e)));
   }
 
   public Mono<Void> delete(String id) {
     return teacherRepository.findById(id)
         .switchIfEmpty(Mono.error(new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "No se encontró el docente con ID: " + id)))
+            HttpStatus.NOT_FOUND, "No se encontró el profesor con ID: " + id)))
         .flatMap(existingTeacher -> teacherRepository.deleteById(id))
         .onErrorResume(e -> Mono.error(new ResponseStatusException(
-            HttpStatus.INTERNAL_SERVER_ERROR, "Error al eliminar el docente", e)));
+            HttpStatus.INTERNAL_SERVER_ERROR, "Error al eliminar el profesor", e)));
   }
 }
