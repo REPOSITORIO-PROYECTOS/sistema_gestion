@@ -71,7 +71,7 @@ public class CourseController {
 			@PathVariable @Parameter(description = "ID del curso a actualizar", required = true) String courseId,
 			@RequestBody @Valid Course course) {
 		String user = "ADMIN"; // Ejemplo, se debería obtener el usuario actual
-		return courseService.saveCourse(course, user)
+		return courseService.updateCourse(course, courseId, user)
 				.map(savedCourse -> ResponseEntity.status(HttpStatus.CREATED).body(savedCourse))
 				.onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
 						"Error al modificar o actualizar el curso."));
