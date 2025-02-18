@@ -216,13 +216,11 @@ public class PaymentService {
         .collectList()
         .flatMapMany(existingPayments -> {
           return studentRepo.findAll()
-              .filter(student -> "Activo"
-                  .equalsIgnoreCase(student.getStatus()))
+              .filter(student -> "Activo".equalsIgnoreCase(student.getStatus()))
               .collectList()
               .flatMapMany(students -> {
                 return courseRepo.findAll()
-                    .filter(course -> course
-                        .getStatus() == CourseStatus.ACTIVE)
+                    .filter(course -> course.getStatus() == CourseStatus.ACTIVE)
                     .collectList()
                     .flatMapMany(courses -> {
                       List<Payment> paymentsToSave = new ArrayList<>();
@@ -231,16 +229,19 @@ public class PaymentService {
                         for (Student student : students) {
                           boolean paymentExists = existingPayments
                               .stream()
-                              .anyMatch(payment -> payment
-                                  .getStudentId()
+                              .anyMatch(payment -> payment.getStudentId()
                                   .equals(student.getId())
                                   &&
                                   payment.getCourseId()
                                       .equals(course.getId()));
 
                           if (!paymentExists
-                              && student.getCoursesIds()
-                                  .contains(course.getId())) {
+                              &&
+                              student.getCoursesIds() != null
+                              &&
+                              !student.getCoursesIds().isEmpty()
+                              &&
+                              student.getCoursesIds().contains(course.getId())) {
                             Payment newPayment = mappingPaymentToMontlyPayment(
                                 course,
                                 student,
