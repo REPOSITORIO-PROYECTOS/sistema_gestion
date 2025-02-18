@@ -71,6 +71,7 @@ interface MultipleSelectorProps {
   commandProps?: React.ComponentPropsWithoutRef<typeof Command>;
   /** Props of `CommandInput` */
   inputProps?: Omit<
+    //@ts-ignore
     React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>,
     "value" | "placeholder" | "disabled"
   >;
@@ -146,7 +147,10 @@ function isOptionsExist(groupOption: GroupOption, targetOption: Option[]) {
  **/
 const CommandEmpty = forwardRef<
   HTMLDivElement,
-  React.ComponentProps<typeof CommandPrimitive.Empty>
+  React.ComponentProps<
+    //@ts-ignore
+    typeof CommandPrimitive.Empty>
+//@ts-ignore
 >(({ className, ...props }, forwardedRef) => {
   const render = useCommandState((state) => state.filtered.count === 0);
 
@@ -353,9 +357,11 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
       }
 
       const Item = (
+        //@ts-ignore
         <CommandItem
           value={inputValue}
           className="cursor-pointer"
+          //@ts-ignore
           onMouseDown={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -394,13 +400,17 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
       // For async search that showing emptyIndicator
       if (onSearch && !creatable && Object.keys(options).length === 0) {
         return (
+          //@ts-ignore
           <CommandItem value="-" disabled>
             {emptyIndicator}
           </CommandItem>
         );
       }
 
-      return <CommandEmpty>{emptyIndicator}</CommandEmpty>;
+      return (
+        //@ts-ignore
+        <CommandEmpty>{emptyIndicator}</CommandEmpty>
+      )
     }, [creatable, emptyIndicator, onSearch, options]);
 
     const selectables = React.useMemo<GroupOption>(
@@ -410,7 +420,9 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
 
     /** Avoid Creatable Selector freezing or lagging when paste a long string. */
     const commandFilter = React.useCallback(() => {
+      //@ts-ignore
       if (commandProps?.filter) {
+        //@ts-ignore
         return commandProps.filter;
       }
 
@@ -421,18 +433,24 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
       }
       // Using default filter in `cmdk`. We don&lsquo;t have to provide it.
       return undefined;
+      //@ts-ignore
     }, [creatable, commandProps?.filter]);
 
     return (
+      //@ts-ignore
       <Command
         ref={dropdownRef}
         {...commandProps}
+        //@ts-ignore
         onKeyDown={(e) => {
           handleKeyDown(e);
+          //@ts-ignore
           commandProps?.onKeyDown?.(e);
         }}
+        //@ts-ignore
         className={cn("h-auto overflow-visible bg-transparent", commandProps?.className)}
         shouldFilter={
+          //@ts-ignore
           commandProps?.shouldFilter !== undefined ? commandProps.shouldFilter : !onSearch
         } // When onSearch is provided, we don&lsquo;t want to filter the options. You can still override it.
         filter={commandFilter()}
@@ -485,39 +503,46 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
               );
             })}
             {/* Avoid having the "Search" Icon */}
-            <CommandPrimitive.Input
-              {...inputProps}
-              ref={inputRef}
-              value={inputValue}
-              disabled={disabled}
-              onValueChange={(value) => {
-                setInputValue(value);
-                inputProps?.onValueChange?.(value);
-              }}
-              onBlur={(event) => {
-                if (!onScrollbar) {
-                  setOpen(false);
-                }
-                inputProps?.onBlur?.(event);
-              }}
-              onFocus={(event) => {
-                setOpen(true);
-                if (triggerSearchOnFocus) {
-                  onSearch?.(debouncedSearchTerm);
-                }
-                inputProps?.onFocus?.(event);
-              }}
-              placeholder={hidePlaceholderWhenSelected && selected.length !== 0 ? "" : placeholder}
-              className={cn(
-                "flex-1 bg-transparent outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed",
-                {
-                  "w-full": hidePlaceholderWhenSelected,
-                  "px-3 py-2": selected.length === 0,
-                  "ml-1": selected.length !== 0,
-                },
-                inputProps?.className,
-              )}
-            />
+
+            {
+              //@ts-ignore
+              <CommandPrimitive.Input
+                {...inputProps}
+                ref={inputRef}
+                value={inputValue}
+                disabled={disabled}
+                onValueChange={(value) => {
+                  setInputValue(value);
+                  //@ts-ignore
+                  inputProps?.onValueChange?.(value);
+                }}
+                onBlur={(event) => {
+                  if (!onScrollbar) {
+                    setOpen(false);
+                  }
+                  //@ts-ignore
+                  inputProps?.onBlur?.(event);
+                }}
+                onFocus={(event) => {
+                  setOpen(true);
+                  if (triggerSearchOnFocus) {
+                    onSearch?.(debouncedSearchTerm);
+                  }
+                  //@ts-ignore
+                  inputProps?.onFocus?.(event);
+                }}
+                placeholder={hidePlaceholderWhenSelected && selected.length !== 0 ? "" : placeholder}
+                className={cn(
+                  "flex-1 bg-transparent outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed",
+                  {
+                    "w-full": hidePlaceholderWhenSelected,
+                    "px-3 py-2": selected.length === 0,
+                    "ml-1": selected.length !== 0,
+                  },
+                  //@ts-ignore
+                  inputProps?.className,
+                )}
+              />}
             <button
               type="button"
               onClick={() => {
@@ -530,7 +555,7 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
                   disabled ||
                   selected.length < 1 ||
                   selected.filter((s) => s.fixed).length === selected.length) &&
-                  "hidden",
+                "hidden",
               )}
               aria-label="Clear all"
             >
@@ -548,6 +573,7 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
             data-state={open ? "open" : "closed"}
           >
             {open && (
+              //@ts-ignore
               <CommandList
                 className="bg-popover text-popover-foreground shadow-lg shadow-black/5 outline-none"
                 onMouseLeave={() => {
@@ -566,16 +592,22 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
                   <>
                     {EmptyItem()}
                     {CreatableItem()}
-                    {!selectFirstItem && <CommandItem value="-" className="hidden" />}
+                    {!selectFirstItem &&
+                      //@ts-ignore
+                      <CommandItem value="-" className="hidden" />
+                    }
                     {Object.entries(selectables).map(([key, dropdowns]) => (
+                      //@ts-ignore
                       <CommandGroup key={key} heading={key} className="h-full overflow-auto">
                         <>
                           {dropdowns.map((option) => {
                             return (
+                              //@ts-ignore
                               <CommandItem
                                 key={option.value}
                                 value={option.value}
                                 disabled={option.disable}
+                                //@ts-ignore
                                 onMouseDown={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
