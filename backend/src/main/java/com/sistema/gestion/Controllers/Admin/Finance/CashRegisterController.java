@@ -25,12 +25,13 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/caja")
-@Tag(name = "Cash Register", description = "Endpoints para gestionar las caja")
+@Tag(name = "Caja", description = "Endpoints para gestionar las caja")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class CashRegisterController {
 
   private final CashRegisterService cashRegisterService;
+  private static final String DEFAULT_USER = "ADMIN"; // Temporal hasta implementar seguridad
 
   @DeleteMapping("/borrarTodo")
   public Mono<Void> deleteAll() {
@@ -44,12 +45,8 @@ public class CashRegisterController {
   })
   @PostMapping("/abrir")
   public Mono<ResponseEntity<CashRegister>> openCashRegister() {
-    String user = "ADMIN"; // Se cambia cuando se implemente la seguridad
-
-    return cashRegisterService.openCashRegister(user)
-        .map(ResponseEntity::ok)
-        .onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Error al abrir la caja."));
+    return cashRegisterService.openCashRegister(DEFAULT_USER)
+        .map(ResponseEntity::ok);
   }
 
   @Operation(summary = "Cerrar una caja", description = "Cierra la caja abierta actualmente y calcula el total acumulado.")
@@ -59,12 +56,8 @@ public class CashRegisterController {
   })
   @PostMapping("/cerrar")
   public Mono<ResponseEntity<CashRegister>> closeCashRegister() {
-    String user = "ADMIN"; // Se cambia cuando se implemente la seguridad
-
-    return cashRegisterService.closeCashRegister(user)
-        .map(ResponseEntity::ok)
-        .onErrorResume(e -> Mono.error(new ResponseStatusException(
-            HttpStatus.BAD_REQUEST, "Error al cerrar la caja")));
+    return cashRegisterService.closeCashRegister(DEFAULT_USER)
+        .map(ResponseEntity::ok);
   }
 
   @Operation(summary = "Consultar caja abierta", description = "Obtiene los detalles de la caja abierta actualmente, incluyendo un cálculo provisional de los pagos realizados.")
@@ -76,8 +69,7 @@ public class CashRegisterController {
   public Mono<ResponseEntity<CashRegister>> getOpenCashRegister() {
     return cashRegisterService.getOpenCashRegister()
         .map(ResponseEntity::ok)
-        .onErrorMap(e -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-            "No hay caja abierta."));
+        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay caja abierta.")));
   }
 
   @GetMapping("/balance-mensual")
@@ -91,9 +83,13 @@ public class CashRegisterController {
   public Mono<MonthlyBalance> getMonthlyBalance(
       @Parameter(description = "Año del balance, debe ser menor o igual al año actual", example = "2024") @RequestParam int year,
       @Parameter(description = "Mes del balance, debe estar entre 1 y 12 y no puede ser posterior al mes actual", example = "1") @RequestParam int month) {
-    return cashRegisterService.getMonthlyBalance(year, month)
-        .onErrorMap(e -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-            "Error al obtener el balance mensual."));
-  }
 
+    if (year < 0 || month < 1 || month > 12) {
+      return Mono.error(
+          new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parámetros inválidos (año o mes fuera de rango)"));
+    }
+    return cashRegisterService.getMonthlyBalance(year, month)
+        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+            "No se encontraron cierres de caja para el mes especificado")));
+  }
 }

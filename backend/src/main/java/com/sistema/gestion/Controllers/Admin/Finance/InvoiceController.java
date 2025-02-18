@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.sistema.gestion.DTO.InvoiceWithProviderDTO;
 import com.sistema.gestion.DTO.PagedResponse;
@@ -27,68 +28,79 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/facturas")
-@Tag(name = "Invoice Controller", description = "Controlador para la gestión de facturas")
+@Tag(name = "Invoice Controller", description = "Endpoints para la gestión de facturas")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class InvoiceController {
 
+  private static final String DEFAULT_USER = "ADMIN"; // Temporal hasta implementar seguridad
+
   private final InvoiceService invoiceService;
 
+  @Operation(summary = "Obtener facturas paginadas", description = "Retorna una lista paginada de facturas. Se pueden especificar el número de página y el tamaño de la página.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Facturas obtenidas exitosamente"),
+      @ApiResponse(responseCode = "400", description = "Parámetros de paginación inválidos")
+  })
   @GetMapping("/paged")
   public Mono<PagedResponse<Invoice>> getInvoicesPaged(
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size) {
+      @Parameter(description = "Número de página (por defecto 0)", example = "0") @RequestParam(defaultValue = "0") int page,
+      @Parameter(description = "Tamaño de la página (por defecto 10)", example = "10") @RequestParam(defaultValue = "10") int size) {
     return invoiceService.getInvoicesPaged(page, size);
   }
 
-  @Operation(summary = "Obtener una factura con detalles", description = "Retorna los detalles de una factura específica por su ID")
+  @Operation(summary = "Obtener una factura con detalles", description = "Retorna los detalles de una factura específica, incluyendo información del proveedor.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Factura con detalles obtenida exitosamente"),
-      @ApiResponse(responseCode = "404", description = "Factura o proveedor no encontrado")
+      @ApiResponse(responseCode = "404", description = "Factura no encontrada")
   })
   @GetMapping("/detalles/{invoiceId}")
   public Mono<ResponseEntity<InvoiceWithProviderDTO>> getInvoiceWithDetails(
-      @Parameter(description = "ID de la factura a buscar", required = true) @PathVariable String invoiceId) {
+      @Parameter(description = "ID de la factura a buscar", required = true, example = "12345") @PathVariable String invoiceId) {
     return invoiceService.getInvoiceWithDetails(invoiceId)
-        .map(ResponseEntity::ok);
+        .map(ResponseEntity::ok)
+        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Factura no encontrada")));
   }
 
-  @Operation(summary = "Registrar una nueva factura", description = "Crea una nueva factura en el sistema")
+  @Operation(summary = "Registrar una nueva factura", description = "Crea una nueva factura en el sistema. El usuario que realiza la operación se registra automáticamente.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "201", description = "Factura creada exitosamente"),
-      @ApiResponse(responseCode = "400", description = "Solicitud inválida")
+      @ApiResponse(responseCode = "400", description = "Datos de la factura inválidos")
   })
   @PostMapping
   public Mono<ResponseEntity<Invoice>> saveInvoice(
-      @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos de la factura") @RequestBody Invoice invoice) {
-    String user = "ADMIN"; // Se cambia cuando se implemente la seguridad
-    return invoiceService.saveInvoice(invoice, user)
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos de la factura a crear", required = true) @RequestBody Invoice invoice) {
+    return invoiceService.saveInvoice(invoice, DEFAULT_USER)
         .map(savedInvoice -> ResponseEntity.status(HttpStatus.CREATED).body(savedInvoice));
   }
 
-  @Operation(summary = "Actualizar una factura", description = "Actualiza los datos de una factura existente")
+  @Operation(summary = "Actualizar una factura", description = "Actualiza los datos de una factura existente. El ID de la factura en la ruta debe coincidir con el ID en el cuerpo de la solicitud.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Factura actualizada exitosamente"),
-      @ApiResponse(responseCode = "400", description = "IDs no coinciden o solicitud inválida"),
+      @ApiResponse(responseCode = "400", description = "IDs no coinciden o datos inválidos"),
       @ApiResponse(responseCode = "404", description = "Factura no encontrada")
   })
   @PutMapping("/{invoiceId}")
-  public Mono<ResponseEntity<Invoice>> updateInvoice(@RequestBody Invoice invoice, @PathVariable String invoiceId) {
-    String user = "ADMIN"; // Se cambia cuando se implemente la seguridad
-    return invoiceService.updateInvoice(invoice, invoiceId, user)
-        .map(updatedInvoice -> ResponseEntity.ok(updatedInvoice));
+  public Mono<ResponseEntity<Invoice>> updateInvoice(
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados de la factura", required = true) @RequestBody Invoice invoice,
+      @Parameter(description = "ID de la factura a actualizar", required = true, example = "12345") @PathVariable String invoiceId) {
+    return invoiceService.updateInvoice(invoice, invoiceId, DEFAULT_USER)
+        .map(ResponseEntity::ok)
+        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Factura no encontrada")));
   }
 
-  @Operation(summary = "Registrar un pago de factura", description = "Efectúa un pago sobre una factura existente")
+  @Operation(summary = "Registrar un pago de factura", description = "Efectúa un pago sobre una factura existente. El pago se registra en la caja abierta actual.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Pago realizado exitosamente"),
       @ApiResponse(responseCode = "400", description = "Solicitud inválida o caja cerrada"),
       @ApiResponse(responseCode = "404", description = "Factura no encontrada")
   })
   @PutMapping("/pagar/{invoiceId}")
-  public Mono<ResponseEntity<Invoice>> doInvoicePayment(@RequestBody Invoice invoice, @PathVariable String invoiceId) {
-    String user = "ADMIN"; // Se cambia cuando se implemente la seguridad
-    return invoiceService.doInvoicePayment(invoiceId, invoice, user)
-        .map(paidInvoice -> ResponseEntity.ok(paidInvoice));
+  public Mono<ResponseEntity<Invoice>> doInvoicePayment(
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos del pago a registrar", required = true) @RequestBody Invoice invoice,
+      @Parameter(description = "ID de la factura a pagar", required = true, example = "12345") @PathVariable String invoiceId) {
+    return invoiceService.doInvoicePayment(invoiceId, invoice, DEFAULT_USER)
+        .map(ResponseEntity::ok)
+        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Factura no encontrada")));
   }
 }

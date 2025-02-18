@@ -89,12 +89,10 @@ public class CourseController {
 			@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Cuerpo de la solicitud que contiene el ID del estudiante", required = true, content = @Content(mediaType = "application/json", schema = @Schema(example = "{\"studentId\": \"idDeEjemplo\"}"))) @RequestBody Map<String, String> requestBody) {
 		String studentId = requestBody.get("studentId");
 		if (studentId == null) {
-			return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-					"El campo 'studentId' es obligatorio"));
+			return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "El campo 'studentId' es obligatorio"));
 		}
 		return courseService.registerStudentInCourse(courseId, studentId)
-				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-						"No se pudo inscribir al estudiante en el curso")));
+				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,  "No se pudo inscribir al estudiante en el curso")));
 	}
 
 	@Operation(summary = "Eliminar un estudiante de un curso", description = "Permite eliminar la inscripción de un estudiante en el curso especificado mediante su ID.")
