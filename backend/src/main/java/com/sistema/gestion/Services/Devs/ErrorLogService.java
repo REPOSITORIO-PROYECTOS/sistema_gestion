@@ -13,21 +13,21 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 public class ErrorLogService {
-  private final ErrorLogRepository errorLogRepo;
+	private final ErrorLogRepository errorLogRepo;
 
-  public Flux<ErrorLog> getAllErrorLogs(PageRequest pageRequest) {
-    return errorLogRepo.findAllBy(pageRequest);
-  }
+	public Flux<ErrorLog> getAllErrorLogs(PageRequest pageRequest) {
+		return errorLogRepo.findAllBy(pageRequest);
+	}
 
-  public Mono<Long> countAllErrorLogs() {
-    return errorLogRepo.countAll();
-  }
+	public Mono<Long> countAllErrorLogs() {
+		return errorLogRepo.countAll();
+	}
 
-  public Mono<ErrorLog> getErrorLogById(String id) {
-    return errorLogRepo.findById(id);
-  }
+	public Mono<ErrorLog> getErrorLogById(String id) {
+		return errorLogRepo.findById(id);
+	}
 
-  public Mono<Void> deleteAllErrorLogs() {
-    return errorLogRepo.deleteAll();
-  }
+	public Mono<Void> deleteAllErrorLogs() {
+		return errorLogRepo.deleteAll();
+	}
 }

@@ -17,28 +17,28 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Invoice extends ModelClass {
-    @Id
-    private String id;
+	@Id
+	private String id;
 
-    @Size(min = 3, max = 150, message = "La descripción debe tener entre 3 y 150 caracteres.")
-    private String description;
+	@Size(min = 3, max = 150, message = "La descripción debe tener entre 3 y 150 caracteres.")
+	private String description;
 
-    @Min(value = 0, message = "El valor del pago debe ser 0 o mayor.")
-    private Double dueAmount;
+	@Min(value = 0, message = "El valor del pago debe ser 0 o mayor.")
+	private Double dueAmount;
 
-    @Min(value = 0, message = "El valor pagado debe ser 0 o mayor.")
-    @Positive
-    private Double paidAmount;
+	@Min(value = 0, message = "El valor pagado debe ser 0 o mayor.")
+	@Positive
+	private Double paidAmount;
 
-    private Boolean hasDebt;
+	private Boolean hasDebt;
 
-    private Boolean isPaid;
+	private Boolean isPaid;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDate paymentDueDate;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+	private LocalDate paymentDueDate;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy'T'HH:mm")
-    private LocalDateTime lastPaymentDate;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy'T'HH:mm")
+	private LocalDateTime lastPaymentDate;
 
-    private String providerId;
+	private String providerId;
 }

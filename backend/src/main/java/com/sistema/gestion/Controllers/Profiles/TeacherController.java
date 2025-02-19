@@ -30,56 +30,56 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class TeacherController {
 
-  private final TeacherService teacherService;
+	private final TeacherService teacherService;
 
-  @GetMapping("/todos")
-  public Mono<ResponseEntity<PagedResponse<Teacher>>> findAll(
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size,
-      @RequestParam(required = false) String keyword) {
-    return teacherService.findAll(page, size, keyword)
-        .map(ResponseEntity::ok)
-        .defaultIfEmpty(ResponseEntity.noContent().build());
-  }
+	@GetMapping("/todos")
+	public Mono<ResponseEntity<PagedResponse<Teacher>>> findAll(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(required = false) String keyword) {
+		return teacherService.findAll(page, size, keyword)
+				.map(ResponseEntity::ok)
+				.defaultIfEmpty(ResponseEntity.noContent().build());
+	}
 
-  @GetMapping("/{id}")
-  public Mono<ResponseEntity<Teacher>> findById(@PathVariable String id) {
-    return teacherService.findById(id)
-        .map(ResponseEntity::ok)
-        .onErrorResume(ResponseStatusException.class,
-            e -> Mono.just(ResponseEntity.status(e.getStatusCode()).body(null)))
-        .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(null)));
-  }
+	@GetMapping("/{id}")
+	public Mono<ResponseEntity<Teacher>> findById(@PathVariable String id) {
+		return teacherService.findById(id)
+				.map(ResponseEntity::ok)
+				.onErrorResume(ResponseStatusException.class,
+						e -> Mono.just(ResponseEntity.status(e.getStatusCode()).body(null)))
+				.onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+						.body(null)));
+	}
 
-  @PostMapping("/crear")
-  public Mono<ResponseEntity<Teacher>> crear(@RequestBody @Valid Teacher teacher) {
-    String user = "Pepe Hongo - admin";
-    return teacherService.create(teacher, user)
-        .map(savedTeacher -> ResponseEntity.status(HttpStatus.CREATED).body(savedTeacher))
-        .onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Error al registrar el Profesor"));
-  }
+	@PostMapping("/crear")
+	public Mono<ResponseEntity<Teacher>> crear(@RequestBody @Valid Teacher teacher) {
+		String user = "Pepe Hongo - admin";
+		return teacherService.create(teacher, user)
+				.map(savedTeacher -> ResponseEntity.status(HttpStatus.CREATED).body(savedTeacher))
+				.onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+						"Error al registrar el Profesor"));
+	}
 
-  @PutMapping("/actualizar/{id}")
-  public Mono<ResponseEntity<Teacher>> actualizar(@PathVariable String id, @RequestBody @Valid Teacher teacher) {
-    String user = "Pepe Hongo - admin";
-    return teacherService.update(id, teacher, user)
-        .map(ResponseEntity::ok)
-        .onErrorResume(ResponseStatusException.class,
-            e -> Mono.just(ResponseEntity.status(e.getStatusCode()).body(null)))
-        .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(null)));
-  }
+	@PutMapping("/actualizar/{id}")
+	public Mono<ResponseEntity<Teacher>> actualizar(@PathVariable String id, @RequestBody @Valid Teacher teacher) {
+		String user = "Pepe Hongo - admin";
+		return teacherService.update(id, teacher, user)
+				.map(ResponseEntity::ok)
+				.onErrorResume(ResponseStatusException.class,
+						e -> Mono.just(ResponseEntity.status(e.getStatusCode()).body(null)))
+				.onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+						.body(null)));
+	}
 
-  @DeleteMapping("/eliminar/{id}")
-  public Mono<Void> eliminarUsuario(@PathVariable String id) {
-    return teacherService.delete(id)
-        .switchIfEmpty(Mono.error(new ResponseStatusException(
-            HttpStatus.NOT_FOUND,
-            "No se pudo eliminar. Profesor no encontrado con ID: " + id)))
-        .onErrorResume(e -> Mono.error(new ResponseStatusException(
-            HttpStatus.INTERNAL_SERVER_ERROR, "Error al eliminar profesor.")));
-  }
+	@DeleteMapping("/eliminar/{id}")
+	public Mono<Void> eliminarUsuario(@PathVariable String id) {
+		return teacherService.delete(id)
+				.switchIfEmpty(Mono.error(new ResponseStatusException(
+						HttpStatus.NOT_FOUND,
+						"No se pudo eliminar. Profesor no encontrado con ID: " + id)))
+				.onErrorResume(e -> Mono.error(new ResponseStatusException(
+						HttpStatus.INTERNAL_SERVER_ERROR, "Error al eliminar profesor.")));
+	}
 
 }

@@ -26,34 +26,34 @@ import reactor.core.publisher.Mono;
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class ErrorLogController {
-  private final ErrorLogService errorLogService;
+	private final ErrorLogService errorLogService;
 
-  @GetMapping
-  public Mono<ResponseEntity<Flux<ErrorLog>>> getAllErrorLogs(
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size) {
-    PageRequest pageRequest = PageRequest.of(page, size);
-    return errorLogService.countAllErrorLogs()
-        .flatMap(count -> {
-          if (count == 0) {
-            return Mono.just(ResponseEntity.noContent().build());
-          }
-          return Mono.just(ResponseEntity.ok().body(errorLogService.getAllErrorLogs(pageRequest)));
-        });
-  }
+	@GetMapping
+	public Mono<ResponseEntity<Flux<ErrorLog>>> getAllErrorLogs(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size) {
+		PageRequest pageRequest = PageRequest.of(page, size);
+		return errorLogService.countAllErrorLogs()
+				.flatMap(count -> {
+					if (count == 0) {
+						return Mono.just(ResponseEntity.noContent().build());
+					}
+					return Mono.just(ResponseEntity.ok().body(errorLogService.getAllErrorLogs(pageRequest)));
+				});
+	}
 
-  @GetMapping("/{errorLogId}")
-  public Mono<ResponseEntity<ErrorLog>> getErrorLogById(@PathVariable String errorLogId) {
-    return errorLogService.getErrorLogById(errorLogId)
-        .map(ResponseEntity::ok)
-        .defaultIfEmpty(ResponseEntity.notFound().build())
-        .onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Error al tratar de obtener el Log con el ID: " + errorLogId));
-  }
+	@GetMapping("/{errorLogId}")
+	public Mono<ResponseEntity<ErrorLog>> getErrorLogById(@PathVariable String errorLogId) {
+		return errorLogService.getErrorLogById(errorLogId)
+				.map(ResponseEntity::ok)
+				.defaultIfEmpty(ResponseEntity.notFound().build())
+				.onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+						"Error al tratar de obtener el Log con el ID: " + errorLogId));
+	}
 
-  @DeleteMapping
-  public Mono<ResponseEntity<Void>> deleteAllErrorLogs() {
-    return errorLogService.deleteAllErrorLogs()
-        .then(Mono.just(ResponseEntity.noContent().build()));
-  }
+	@DeleteMapping
+	public Mono<ResponseEntity<Void>> deleteAllErrorLogs() {
+		return errorLogService.deleteAllErrorLogs()
+				.then(Mono.just(ResponseEntity.noContent().build()));
+	}
 }

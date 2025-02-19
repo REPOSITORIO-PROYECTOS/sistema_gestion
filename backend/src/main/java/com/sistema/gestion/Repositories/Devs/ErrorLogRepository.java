@@ -13,10 +13,10 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface ErrorLogRepository extends ReactiveMongoRepository<ErrorLog, String> {
 
-  Flux<ErrorLog> findAllBy(PageRequest pageRequest);
+	Flux<ErrorLog> findAllBy(PageRequest pageRequest);
 
-  @Query(value = "{}", count = true)
-  Mono<Long> countAll();
+	@Query(value = "{}", count = true)
+	Mono<Long> countAll();
 
-  Mono<Void> deleteAll();
+	Mono<Void> deleteAll();
 }

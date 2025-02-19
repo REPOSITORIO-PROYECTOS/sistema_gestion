@@ -11,6 +11,6 @@ import reactor.core.publisher.Flux;
 
 @Repository
 public interface ProviderRepository extends ReactiveMongoRepository<Provider, String> {
-  @Query("{}")
-  Flux<Provider> findProvidersPaged(PageRequest pageRequest);
+	@Query("{}")
+	Flux<Provider> findProvidersPaged(PageRequest pageRequest);
 }
