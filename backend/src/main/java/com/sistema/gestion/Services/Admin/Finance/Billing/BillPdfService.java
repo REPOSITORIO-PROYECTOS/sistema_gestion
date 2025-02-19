@@ -5,6 +5,8 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
+import com.itextpdf.io.image.ImageData;
+import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
@@ -12,8 +14,6 @@ import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.util.Base64;
 
 @Service
@@ -22,10 +22,9 @@ public class BillPdfService {
     public byte[] generarFacturaPDF(String jsonData) throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         Document document = new Document(new PdfDocument(new PdfWriter(out)));
-        document.open();
 
         // Título
-        document.add(new Paragraph("Factura Electrónica", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+        document.add(new Paragraph("Factura Electrónica"));
         document.add(new Paragraph("\n"));
 
         // Contenido de la factura
@@ -40,7 +39,8 @@ public class BillPdfService {
         // Generar QR
         String base64Json = Base64.getEncoder().encodeToString(jsonData.getBytes());
         String qrUrl = "https://www.afip.gob.ar/fe/qr/?p=" + base64Json;
-        Image qrImage = Image.getInstance(generarCodigoQR(qrUrl));
+        ImageData imageData = ImageDataFactory.create(generarCodigoQR(qrUrl));
+        Image qrImage = new Image(imageData);
         qrImage.scaleToFit(150, 150);
         document.add(qrImage);
 

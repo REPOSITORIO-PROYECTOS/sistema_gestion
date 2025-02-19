@@ -2,6 +2,7 @@ package com.sistema.gestion.Controllers.Admin.Finance;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,8 +59,12 @@ public class ProviderController {
 			@ApiResponse(responseCode = "400", description = "Solicitud inválida")
 	})
 	@PostMapping
-	public Mono<ResponseEntity<Provider>> saveProvider(@RequestBody Provider provider) {
-		String user = "ADMIN"; // Se cambia cuando se implemente la seguridad
+	public Mono<ResponseEntity<Provider>> saveProvider(
+			@RequestBody Provider provider,
+			Authentication auth) {
+
+		String user = auth.getName();
+
 		return providerService.saveProvider(provider, user)
 				.map(savedProvider -> ResponseEntity.status(HttpStatus.CREATED).body(savedProvider));
 	}
@@ -71,9 +76,13 @@ public class ProviderController {
 			@ApiResponse(responseCode = "404", description = "Proveedor no encontrado")
 	})
 	@PutMapping("/{providerId}")
-	public Mono<ResponseEntity<Provider>> updateProvider(@RequestBody Provider provider,
-	                                                     @PathVariable String providerId) {
-		String user = "ADMIN"; // Se cambia cuando se implemente la seguridad
+	public Mono<ResponseEntity<Provider>> updateProvider(
+			Authentication auth,
+			@RequestBody Provider provider,
+			@PathVariable String providerId) {
+
+		String user = auth.getName();
+
 		return providerService.updateProvider(provider, providerId, user)
 				.map(updatedProvider -> ResponseEntity.ok(updatedProvider));
 	}

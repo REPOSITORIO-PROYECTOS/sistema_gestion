@@ -32,8 +32,8 @@ public class SpringSecurityConfig {
 	}
 
 	@Bean
-	SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
-	                                              JwtAuthenticationWebFilter jwtAuthenticationFilter) {
+	SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, JwtAuthenticationWebFilter jwtAuthenticationFilter) {
+
 		return http
 				.cors(cors -> cors.configurationSource(exchange -> {
 					CorsConfiguration config = new CorsConfiguration();
@@ -45,23 +45,32 @@ public class SpringSecurityConfig {
 				}))
 				.csrf(ServerHttpSecurity.CsrfSpec::disable)
 				.authorizeExchange(exchanges -> {
+					exchanges.pathMatchers(
+							"/webjars/**",
+							"/swagger-ui.html",
+							"/swagger-ui/**",
+							"/v3/api-docs/**",
+							"/swagger-resources/**"
+					).permitAll();
 
-					// ENDPOINTS PÚBLICOS
+					// ? ENDPOINTS PÚBLICOS
 					exchanges.pathMatchers(HttpMethod.POST, "/api/auth/login").permitAll();
 
-					// ENDPOINTS RESTRINGIDOS POR ROL
+					// ? ENDPOINTS RESTRINGIDOS POR ROL
 					exchanges.pathMatchers(HttpMethod.POST, "/api/auth/registrar").hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
 					exchanges.pathMatchers(HttpMethod.PUT, "/api/auth/editar/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
 
-					// MÉTODOS AUTENTICADOS
+					// ? MÉTODOS AUTENTICADOS
 					authenticateEndpoints(exchanges, "/api/caja/**", "/api/facturas/**", "/api/pagos/**",
 							"/api/proveedores/**", "/api/cursos/**", "/api/asistencias/**", "/api/estudiantes/**");
 
-					// MÉTODOS ADMIN & DEV
+					// TODO: Métodos de ARCA
+
+					// ? MÉTODOS ADMIN & DEV
 					restrictEndpoints(exchanges, HttpMethod.DELETE, "/api/caja/**", "/api/facturas/**", "/api/pagos/**",
 							"/api/proveedores/**", "/api/cursos/**", "/api/asistencias/**", "/api/estudiantes/**");
 
-					// MÉTODOS DE DESARROLLO
+					// ? MÉTODOS DE DESARROLLO
 					devsEndpoints(exchanges, "/api/errors/**");
 
 					exchanges.anyExchange().authenticated();

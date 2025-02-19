@@ -8,6 +8,7 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sistema.gestion.Services.Profiles.UserService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -32,11 +33,16 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
+
 	private final PaymentRepository paymentRepo;
 	private final StudentRepository studentRepo;
 	private final CourseRepository courseRepo;
 	private final CashRegisterRepository cashRegisterRepo;
+	private final UserService userService;
 
+	// ? ==================== MÉTODOS PÚBLICOS ====================
+
+	// ? Consultas
 	public Mono<PagedResponse<Payment>> getPaymentsPaged(int page, int size) {
 		PageRequest pageRequest = PageRequest.of(page, size);
 		Mono<Long> totalElementsMono = paymentRepo.count();
@@ -54,51 +60,14 @@ public class PaymentService {
 		return paymentRepo.findById(paymentId)
 				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
 						"No se encontró el pago con el ID: " + paymentId)))
-				.flatMap(payment -> {
-					Mono<Student> studentMono = studentRepo.findById(payment.getStudentId())
-							.switchIfEmpty(Mono.error(new ResponseStatusException(
-									HttpStatus.NOT_FOUND,
-									"No se encontró el estudiante con el ID: "
-											+ payment.getStudentId())));
-					Mono<Course> courseMono = courseRepo.findById(payment.getCourseId())
-							.switchIfEmpty(Mono.error(new ResponseStatusException(
-									HttpStatus.NOT_FOUND,
-									"No se encontró el curso con el ID: "
-											+ payment.getCourseId())));
-					return Mono.zip(studentMono, courseMono)
-							.map(tuple -> {
-								Student student = tuple.getT1();
-								Course course = tuple.getT2();
-								PaymentWithStudentDTO dto = new PaymentWithStudentDTO();
-								mappingFromPaymentToPaymentWithStudentDTO(dto, payment,
-										student, course);
-								return dto;
-							});
-				});
+				.flatMap(this::mapPaymentToDTO);
 	}
 
 	public Mono<PagedResponse<PaymentWithStudentDTO>> getPaymentsHasDebt(Boolean hasDebt, int page, int size) {
 		PageRequest pageRequest = PageRequest.of(page, size);
-
 		Mono<Long> totalElementsMono = paymentRepo.countByHasDebt(hasDebt);
 		Flux<PaymentWithStudentDTO> paymentsFlux = paymentRepo.findAllByHasDebt(hasDebt, pageRequest)
-				.flatMap(payment -> {
-					Mono<Student> studentMono = studentRepo.findById(payment.getStudentId())
-							.switchIfEmpty(Mono.error(new ResponseStatusException(
-									HttpStatus.NOT_FOUND, "No se encontró el estudiante con ID: " + payment.getStudentId())));
-					Mono<Course> courseMono = courseRepo.findById(payment.getCourseId())
-							.switchIfEmpty(Mono.error(new ResponseStatusException(
-									HttpStatus.NOT_FOUND, "No se encontró el curso con ID: " + payment.getCourseId())));
-
-					return Mono.zip(studentMono, courseMono)
-							.map(tuple -> {
-								Student student = tuple.getT1();
-								Course course = tuple.getT2();
-								PaymentWithStudentDTO dto = new PaymentWithStudentDTO();
-								mappingFromPaymentToPaymentWithStudentDTO(dto, payment, student, course);
-								return dto;
-							});
-				});
+				.flatMap(this::mapPaymentToDTO);
 
 		return Mono.zip(totalElementsMono, paymentsFlux.collectList())
 				.map(tuple -> new PagedResponse<>(
@@ -108,31 +77,14 @@ public class PaymentService {
 						size));
 	}
 
-	public Mono<PagedResponse<PaymentWithStudentDTO>> getPaymentsHasDebtByMonth(Integer year, Integer month, int page,
-	                                                                            int size) {
+	public Mono<PagedResponse<PaymentWithStudentDTO>> getPaymentsHasDebtByMonth(Integer year, Integer month, int page, int size) {
 		LocalDate startOfMonth = YearMonth.of(year, month).atDay(1);
 		LocalDate endOfMonth = startOfMonth.plusMonths(1);
 		PageRequest pageRequest = PageRequest.of(page, size);
 
 		Mono<Long> totalElementsMono = paymentRepo.countWithDebtInMonth(startOfMonth, endOfMonth);
 		Flux<PaymentWithStudentDTO> paymentsFlux = paymentRepo.findAllWithDebtInMonth(startOfMonth, endOfMonth, pageRequest)
-				.flatMap(payment -> {
-					Mono<Student> studentMono = studentRepo.findById(payment.getStudentId())
-							.switchIfEmpty(Mono.error(new ResponseStatusException(
-									HttpStatus.NOT_FOUND, "No se encontró el estudiante con ID: " + payment.getStudentId())));
-					Mono<Course> courseMono = courseRepo.findById(payment.getCourseId())
-							.switchIfEmpty(Mono.error(new ResponseStatusException(
-									HttpStatus.NOT_FOUND, "No se encontró el curso con ID: " + payment.getCourseId())));
-
-					return Mono.zip(studentMono, courseMono)
-							.map(tuple -> {
-								Student student = tuple.getT1();
-								Course course = tuple.getT2();
-								PaymentWithStudentDTO dto = new PaymentWithStudentDTO();
-								mappingFromPaymentToPaymentWithStudentDTO(dto, payment, student, course);
-								return dto;
-							});
-				});
+				.flatMap(this::mapPaymentToDTO);
 
 		return Mono.zip(totalElementsMono, paymentsFlux.collectList())
 				.map(tuple -> new PagedResponse<>(
@@ -144,28 +96,9 @@ public class PaymentService {
 
 	public Mono<PagedResponse<PaymentWithStudentDTO>> getAllPaymentsByStudentId(String studentId, int page, int size) {
 		PageRequest pageRequest = PageRequest.of(page, size);
-
 		Mono<Long> totalElementsMono = paymentRepo.countByStudentId(studentId);
 		Flux<PaymentWithStudentDTO> paymentsFlux = paymentRepo.findAllByStudentId(studentId, pageRequest)
-				.flatMap(payment -> {
-					Mono<Student> studentMono = studentRepo.findById(payment.getStudentId())
-							.switchIfEmpty(Mono.error(new ResponseStatusException(
-									HttpStatus.NOT_FOUND,
-									"No se encontró el estudiante con el ID: " + studentId)));
-					Mono<Course> courseMono = courseRepo.findById(payment.getCourseId())
-							.switchIfEmpty(Mono.error(new ResponseStatusException(
-									HttpStatus.NOT_FOUND,
-									"No se encontró el curso con el ID: " + payment.getCourseId())));
-
-					return Mono.zip(studentMono, courseMono)
-							.map(tuple -> {
-								Student student = tuple.getT1();
-								Course course = tuple.getT2();
-								PaymentWithStudentDTO dto = new PaymentWithStudentDTO();
-								mappingFromPaymentToPaymentWithStudentDTO(dto, payment, student, course);
-								return dto;
-							});
-				});
+				.flatMap(this::mapPaymentToDTO);
 
 		return Mono.zip(totalElementsMono, paymentsFlux.collectList())
 				.map(tuple -> new PagedResponse<>(
@@ -175,136 +108,67 @@ public class PaymentService {
 						size));
 	}
 
-	public Mono<Payment> registerPayment(Payment payment, String user) {
+	// ? Operaciones de escritura
+	public Mono<Payment> registerPayment(Payment payment, String username) {
 		YearMonth currentMonth = YearMonth.now();
 		LocalDate startOfMonth = currentMonth.atDay(1);
 		LocalDate endOfMonth = currentMonth.atEndOfMonth();
+
 		if (payment.getStudentId() == null || payment.getStudentId().isEmpty()) {
-			return monoError(HttpStatus.BAD_REQUEST, "El ID del estudiante esta vacio o nulo");
+			return monoError(HttpStatus.BAD_REQUEST, "El ID del estudiante está vacío o nulo");
 		}
 
 		if (payment.getId() != null && !payment.getId().isEmpty()) {
-			return monoError(HttpStatus.BAD_REQUEST, "El pago ya tiene un ID resgistrado,"
-					+ " no se puede almacenar un nuevo pago con ID ya registrado. Modifique o realice un pago parcial en el ya existente");
+			return monoError(HttpStatus.BAD_REQUEST, "El pago ya tiene un ID registrado, no se puede almacenar un nuevo pago con ID ya registrado.");
 		}
 
-		if (payment.getPaymentType() == PaymentType.CUOTE) {
-			return paymentRepo.findByPaymentDueDateBetween(startOfMonth, endOfMonth)
-					.filter(existingPayment -> existingPayment.getPaymentType() == PaymentType.CUOTE
-							&&
-							existingPayment.getStudentId().equals(payment.getStudentId()) &&
-							existingPayment.getCourseId().equals(payment.getCourseId()))
-					.hasElements()
-					.flatMap(doesExist -> {
-						if (doesExist) {
-							return monoError(HttpStatus.CONFLICT,
-									"Ya existe una cuota registrada para este estudiante y curso en el mes actual.");
-						}
-						return savePayment(payment, startOfMonth, user);
-					});
-		}
-		return savePayment(payment, startOfMonth, user);
+		return userService.getFullName(username)
+				.flatMap(name -> {
+					if (payment.getPaymentType() == PaymentType.CUOTE) {
+						return paymentRepo.findByPaymentDueDateBetween(startOfMonth, endOfMonth)
+								.filter(existingPayment -> existingPayment.getPaymentType() == PaymentType.CUOTE
+										&& existingPayment.getStudentId().equals(payment.getStudentId())
+										&& existingPayment.getCourseId().equals(payment.getCourseId()))
+								.hasElements()
+								.flatMap(doesExist -> {
+									if (doesExist) {
+										return monoError(HttpStatus.CONFLICT,
+												"Ya existe una cuota registrada para este estudiante y curso en el mes actual.");
+									}
+									return savePayment(payment, startOfMonth, name);
+								});
+					}
+					return savePayment(payment, startOfMonth, name);
+				});
 	}
 
-	public Flux<Payment> registerMonthlyPayments(String user) {
+	public Flux<Payment> registerMonthlyPayments(String username) {
 		YearMonth currentMonth = YearMonth.now();
 		LocalDate startOfMonth = currentMonth.atDay(1);
 		LocalDate endOfMonth = currentMonth.atEndOfMonth();
 
-		return paymentRepo.findByPaymentDueDateBetween(startOfMonth, endOfMonth)
-				.filter(payment -> payment.getPaymentType() == PaymentType.CUOTE)
-				.collectList()
-				.flatMapMany(existingPayments -> {
-					return studentRepo.findAll()
-							.filter(student -> "Activo".equalsIgnoreCase(student.getStatus()))
-							.collectList()
-							.flatMapMany(students -> {
-								return courseRepo.findAll()
-										.filter(course -> course.getStatus() == CourseStatus.ACTIVE)
-										.collectList()
-										.flatMapMany(courses -> {
-											List<Payment> paymentsToSave = new ArrayList<>();
-
-											for (Course course : courses) {
-												for (Student student : students) {
-													boolean paymentExists = existingPayments
-															.stream()
-															.anyMatch(payment -> payment.getStudentId()
-																	.equals(student.getId())
-																	&&
-																	payment.getCourseId()
-																			.equals(course.getId()));
-
-													if (!paymentExists
-															&&
-															student.getCoursesIds() != null
-															&&
-															!student.getCoursesIds().isEmpty()
-															&&
-															student.getCoursesIds().contains(course.getId())) {
-														Payment newPayment = mappingPaymentToMontlyPayment(
-																course,
-																student,
-																startOfMonth.atStartOfDay(),
-																user);
-														newPayment.setPaymentType(
-																PaymentType.CUOTE);
-														paymentsToSave.add(
-																newPayment);
-													}
-												}
-											}
-											return Flux.fromIterable(
-															paymentsToSave)
-													.flatMap(paymentRepo::save);
-										});
-							});
-				});
+		return userService.getFullName(username)
+				.flatMapMany(name -> paymentRepo.findByPaymentDueDateBetween(startOfMonth, endOfMonth)
+						.filter(payment -> payment.getPaymentType() == PaymentType.CUOTE)
+						.collectList()
+						.flatMapMany(existingPayments -> generatePaymentsForActiveStudents(existingPayments, startOfMonth, name)));
 	}
 
-	public Mono<Payment> doPayment(String paymentId, Payment payment, String user) {
+	public Mono<Payment> doPayment(String paymentId, Payment payment, String username) {
 		if (!payment.getId().equals(paymentId)) {
 			return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-					"Los IDs del Pago a efectuar " +
-							"en la base de datos con el del cuerpo de la solicitud no coinciden."
-							+
-							"ID solicitud: " + payment.getId() + "\nID base de datos: "
-							+ paymentId));
+					"Los IDs del Pago a efectuar en la base de datos con el del cuerpo de la solicitud no coinciden."));
 		}
-		return cashRegisterRepo.findFirstByIsClosedFalse()
-				.hasElement() // Verifica si hay elementos
-				.flatMap(hasOpenRegister -> {
-					if (hasOpenRegister) {
-						return paymentRepo.findById(payment.getId())
-								.flatMap(existingPayment -> {
-									if (existingPayment
-											.getPaymentAmount() < (existingPayment
-											.getPaidAmount()
-											+ payment.getPaidAmount())) {
-										return Mono.error(
-												new ResponseStatusException(
-														HttpStatus.BAD_REQUEST,
-														"El pago a realizar exedera el saldo total."));
-									}
-									return paymentRepo
-											.save(mappingPaymentToDoPayment(
-													existingPayment,
-													payment, user));
-								});
-					}
-					return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-							"No existe una caja abierta, para guarar un pago necesita abrir la caja primero."));
-				});
+
+		return userService.getFullName(username)
+				.flatMap(name -> validateAndProcessPayment(payment, name))
+				.onErrorResume(ResponseStatusException.class, Mono::error);
 	}
 
 	public Mono<Payment> updatePaymentInfo(String paymentId, Payment payment, String user) {
 		if (!payment.getId().equals(paymentId)) {
 			return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-					"Los IDs del Pago a actualizar " +
-							"en la base de datos con el del cuerpo de la solicitud no coinciden."
-							+
-							"ID solicitud: " + payment.getId() +
-							"\nID base de datos: " + paymentId));
+					"Los IDs del Pago a actualizar no coinciden."));
 		}
 		return paymentRepo.findById(paymentId)
 				.flatMap(existingPayment -> {
@@ -329,7 +193,8 @@ public class PaymentService {
 		return paymentRepo.deleteAll();
 	}
 
-	/** Metodos Locales */
+	// ? ==================== MÉTODOS PRIVADOS ====================
+
 	private Mono<Payment> savePayment(Payment payment, LocalDate startOfMonth, String user) {
 		return courseRepo.findById(payment.getCourseId())
 				.flatMap(course -> {
@@ -344,6 +209,24 @@ public class PaymentService {
 					return paymentRepo.save(payment);
 				}).switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
 						"No se encontró el curso con ID: " + payment.getCourseId())));
+	}
+
+	private Mono<PaymentWithStudentDTO> mapPaymentToDTO(Payment payment) {
+		Mono<Student> studentMono = studentRepo.findById(payment.getStudentId())
+				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+						"No se encontró el estudiante con ID: " + payment.getStudentId())));
+		Mono<Course> courseMono = courseRepo.findById(payment.getCourseId())
+				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+						"No se encontró el curso con ID: " + payment.getCourseId())));
+
+		return Mono.zip(studentMono, courseMono)
+				.map(tuple -> {
+					Student student = tuple.getT1();
+					Course course = tuple.getT2();
+					PaymentWithStudentDTO dto = new PaymentWithStudentDTO();
+					mappingFromPaymentToPaymentWithStudentDTO(dto, payment, student, course);
+					return dto;
+				});
 	}
 
 	private PaymentWithStudentDTO mappingFromPaymentToPaymentWithStudentDTO(PaymentWithStudentDTO dto,
@@ -394,4 +277,74 @@ public class PaymentService {
 		return existingPayment;
 	}
 
+	private Flux<Payment> generatePaymentsForActiveStudents(List<Payment> existingPayments, LocalDate startOfMonth, String user) {
+		return studentRepo.findAll()
+				.filter(student -> "Activo".equalsIgnoreCase(student.getStatus()))
+				.collectList()
+				.flatMapMany(students -> generatePaymentsForActiveCourses(existingPayments, students, startOfMonth, user));
+	}
+
+	private Flux<Payment> generatePaymentsForActiveCourses(List<Payment> existingPayments, List<Student> students, LocalDate startOfMonth, String user) {
+		return courseRepo.findAll()
+				.filter(course -> course.getStatus() == CourseStatus.ACTIVE)
+				.collectList()
+				.flatMapMany(courses -> createAndSavePayments(existingPayments, students, courses, startOfMonth, user));
+	}
+
+	private Flux<Payment> createAndSavePayments(List<Payment> existingPayments, List<Student> students, List<Course> courses, LocalDate startOfMonth, String user) {
+		return Flux.fromIterable(courses)
+				.flatMap(course -> generatePaymentsForCourse(existingPayments, students, course, startOfMonth, user));
+	}
+
+	private Flux<Payment> generatePaymentsForCourse(List<Payment> existingPayments, List<Student> students, Course course, LocalDate startOfMonth, String user) {
+		return Flux.fromIterable(students)
+				.filter(student -> !hasExistingPayment(existingPayments, student, course) && isStudentEnrolledInCourse(student, course))
+				.map(student -> createMonthlyPayment(course, student, startOfMonth, user))
+				.flatMap(paymentRepo::save);
+	}
+
+	private boolean hasExistingPayment(List<Payment> existingPayments, Student student, Course course) {
+		return existingPayments.stream()
+				.anyMatch(payment -> payment.getStudentId().equals(student.getId()) && payment.getCourseId().equals(course.getId()));
+	}
+
+	private boolean isStudentEnrolledInCourse(Student student, Course course) {
+		return student.getCoursesIds() != null && !student.getCoursesIds().isEmpty() && student.getCoursesIds().contains(course.getId());
+	}
+
+	private Payment createMonthlyPayment(Course course, Student student, LocalDate startOfMonth, String user) {
+		Payment newPayment = mappingPaymentToMontlyPayment(course, student, startOfMonth.atStartOfDay(), user);
+		newPayment.setPaymentType(PaymentType.CUOTE);
+		return newPayment;
+	}
+
+	private Mono<Payment> validateAndProcessPayment(Payment payment, String name) {
+		return cashRegisterRepo.findFirstByIsClosedFalse()
+				.hasElement()
+				.flatMap(hasOpenRegister -> {
+					if (!hasOpenRegister) {
+						return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+								"No existe una caja abierta, para guardar un pago necesita abrir la caja primero."));
+					}
+					return processPayment(payment, name);
+				});
+	}
+
+	private Mono<Payment> processPayment(Payment payment, String name) {
+		return paymentRepo.findById(payment.getId())
+				.flatMap(existingPayment -> validatePaymentAmount(existingPayment, payment))
+				.flatMap(existingPayment -> paymentRepo.save(mappingPaymentToDoPayment(existingPayment, payment, name)));
+	}
+
+	private Mono<Payment> validatePaymentAmount(Payment existingPayment, Payment newPayment) {
+		if (existingPayment.getPaymentAmount() < (existingPayment.getPaidAmount() + newPayment.getPaidAmount())) {
+			return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"El pago a realizar excederá el saldo total."));
+		}
+		return Mono.just(existingPayment);
+	}
+
+	private <T> Mono<T> monoError(HttpStatus status, String message) {
+		return Mono.error(new ResponseStatusException(status, message));
+	}
 }

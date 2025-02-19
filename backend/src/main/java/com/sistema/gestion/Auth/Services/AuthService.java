@@ -2,7 +2,8 @@ package com.sistema.gestion.Auth.Services;
 
 import java.time.LocalDateTime;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -13,25 +14,17 @@ import com.sistema.gestion.Models.Profiles.User;
 import com.sistema.gestion.Repositories.Profiles.UserRepository;
 import com.sistema.gestion.Services.Profiles.UserService;
 
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtUtil jwtUtil;
-	@Autowired
 	private final UserService userService;
-
-	public AuthService(UserRepository userRepository,
-	                   PasswordEncoder passwordEncoder,
-	                   JwtUtil jwtUtil, UserService userService) {
-		this.userRepository = userRepository;
-		this.passwordEncoder = passwordEncoder;
-		this.jwtUtil = jwtUtil;
-		this.userService = userService;
-	}
 
 	public Mono<User> registerUser(User user, String username) {
 		return userService.getFullName(username)
@@ -93,5 +86,12 @@ public class AuthService {
 						return Mono.error(new RuntimeException("Credenciales incorrectas"));
 					}
 				});
+	}
+
+	public Mono<Void> deleteUser(String userId) {
+		return userRepository.findById(userId)
+				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+						"No se encontró el usuario para eliminar con ID: " + userId)))
+				.flatMap(userRepository::delete);
 	}
 }

@@ -2,8 +2,8 @@ package com.sistema.gestion.Controllers.Admin.Finance;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,18 +25,12 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/caja")
-@Tag(name = "Caja", description = "Endpoints para gestionar las caja")
+@Tag(name = "Cash Register Controller", description = "Endpoints para gestionar las caja")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class CashRegisterController {
 
 	private final CashRegisterService cashRegisterService;
-	private static final String DEFAULT_USER = "ADMIN"; // Temporal hasta implementar seguridad
-
-	@DeleteMapping("/borrarTodo")
-	public Mono<Void> deleteAll() {
-		return cashRegisterService.deleteAllCashRegisters();
-	}
 
 	@Operation(summary = "Abrir una caja", description = "Crea una nueva caja si no hay ninguna abierta actualmente.")
 	@ApiResponses(value = {
@@ -44,8 +38,9 @@ public class CashRegisterController {
 			@ApiResponse(responseCode = "400", description = "Ya existe una caja abierta o error al abrirla")
 	})
 	@PostMapping("/abrir")
-	public Mono<ResponseEntity<CashRegister>> openCashRegister() {
-		return cashRegisterService.openCashRegister(DEFAULT_USER)
+	public Mono<ResponseEntity<CashRegister>> openCashRegister(Authentication auth) {
+		String username = auth.getName();
+		return cashRegisterService.openCashRegister(username)
 				.map(ResponseEntity::ok);
 	}
 
@@ -55,8 +50,9 @@ public class CashRegisterController {
 			@ApiResponse(responseCode = "400", description = "No hay una caja abierta o error al cerrarla")
 	})
 	@PostMapping("/cerrar")
-	public Mono<ResponseEntity<CashRegister>> closeCashRegister() {
-		return cashRegisterService.closeCashRegister(DEFAULT_USER)
+	public Mono<ResponseEntity<CashRegister>> closeCashRegister(Authentication auth) {
+		String username = auth.getName();
+		return cashRegisterService.closeCashRegister(username)
 				.map(ResponseEntity::ok);
 	}
 

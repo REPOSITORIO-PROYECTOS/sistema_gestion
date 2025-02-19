@@ -2,6 +2,7 @@ package com.sistema.gestion.Controllers.Admin.Finance;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,12 +32,10 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/pagos")
-@Tag(name = "Pagos", description = "Operaciones relacionadas con los pagos")
+@Tag(name = "Payment Controller", description = "Operaciones relacionadas con los pagos")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class PaymentController {
-
-	private static final String DEFAULT_USER = "ADMIN"; // Temporal hasta implementar seguridad
 
 	private final PaymentService paymentService;
 
@@ -112,8 +111,12 @@ public class PaymentController {
 	})
 	@PostMapping
 	public Mono<ResponseEntity<Payment>> registerPayment(
+			Authentication auth,
 			@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos del pago a registrar", required = true) @RequestBody @Valid Payment payment) {
-		return paymentService.registerPayment(payment, DEFAULT_USER)
+
+		String username = auth.getName();
+
+		return paymentService.registerPayment(payment, username)
 				.map(savedPayment -> ResponseEntity.status(HttpStatus.CREATED).body(savedPayment));
 	}
 
@@ -124,9 +127,13 @@ public class PaymentController {
 	})
 	@PutMapping("/realizar/{paymentId}")
 	public Mono<ResponseEntity<Payment>> doPayment(
+			Authentication auth,
 			@Parameter(description = "ID del pago al que se desea realizar el pago parcial", required = true, example = "12345") @PathVariable String paymentId,
 			@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos del pago parcial", required = true) @RequestBody @Valid Payment payment) {
-		return paymentService.doPayment(paymentId, payment, DEFAULT_USER)
+
+		String username = auth.getName();
+
+		return paymentService.doPayment(paymentId, payment, username)
 				.map(ResponseEntity::ok);
 	}
 
@@ -137,9 +144,13 @@ public class PaymentController {
 	})
 	@PutMapping("/editar/{paymentId}")
 	public Mono<ResponseEntity<Payment>> updatePaymentInfo(
+			Authentication auth,
 			@Parameter(description = "ID del pago que se desea editar", required = true, example = "12345") @PathVariable String paymentId,
 			@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados del pago", required = true) @RequestBody @Valid Payment payment) {
-		return paymentService.updatePaymentInfo(paymentId, payment, DEFAULT_USER)
+
+		String username = auth.getName();
+
+		return paymentService.updatePaymentInfo(paymentId, payment, username)
 				.map(ResponseEntity::ok);
 	}
 
@@ -162,8 +173,11 @@ public class PaymentController {
 			@ApiResponse(responseCode = "500", description = "Error al generar los pagos mensuales.")
 	})
 	@PostMapping("/generar-cuotas")
-	public Mono<ResponseEntity<Flux<Payment>>> generateMonthlyPayments() {
-		return paymentService.registerMonthlyPayments(DEFAULT_USER)
+	public Mono<ResponseEntity<Flux<Payment>>> generateMonthlyPayments(Authentication auth) {
+
+		String username = auth.getName();
+
+		return paymentService.registerMonthlyPayments(username)
 				.collectList()
 				.map(payments -> ResponseEntity.ok().body(Flux.fromIterable(payments)));
 	}

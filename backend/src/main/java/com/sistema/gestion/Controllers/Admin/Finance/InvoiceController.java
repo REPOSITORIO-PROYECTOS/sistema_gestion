@@ -2,6 +2,7 @@ package com.sistema.gestion.Controllers.Admin.Finance;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,8 +33,6 @@ import reactor.core.publisher.Mono;
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class InvoiceController {
-
-	private static final String DEFAULT_USER = "ADMIN"; // Temporal hasta implementar seguridad
 
 	private final InvoiceService invoiceService;
 
@@ -69,8 +68,12 @@ public class InvoiceController {
 	})
 	@PostMapping
 	public Mono<ResponseEntity<Invoice>> saveInvoice(
+			Authentication auth,
 			@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos de la factura a crear", required = true) @RequestBody Invoice invoice) {
-		return invoiceService.saveInvoice(invoice, DEFAULT_USER)
+
+		String username = auth.getName();
+
+		return invoiceService.saveInvoice(invoice, username)
 				.map(savedInvoice -> ResponseEntity.status(HttpStatus.CREATED).body(savedInvoice));
 	}
 
@@ -82,9 +85,13 @@ public class InvoiceController {
 	})
 	@PutMapping("/{invoiceId}")
 	public Mono<ResponseEntity<Invoice>> updateInvoice(
+			Authentication auth,
 			@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados de la factura", required = true) @RequestBody Invoice invoice,
 			@Parameter(description = "ID de la factura a actualizar", required = true, example = "12345") @PathVariable String invoiceId) {
-		return invoiceService.updateInvoice(invoice, invoiceId, DEFAULT_USER)
+
+		String username = auth.getName();
+
+		return invoiceService.updateInvoice(invoice, invoiceId, username)
 				.map(ResponseEntity::ok)
 				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Factura no encontrada")));
 	}
@@ -97,9 +104,13 @@ public class InvoiceController {
 	})
 	@PutMapping("/pagar/{invoiceId}")
 	public Mono<ResponseEntity<Invoice>> doInvoicePayment(
+			Authentication auth,
 			@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos del pago a registrar", required = true) @RequestBody Invoice invoice,
 			@Parameter(description = "ID de la factura a pagar", required = true, example = "12345") @PathVariable String invoiceId) {
-		return invoiceService.doInvoicePayment(invoiceId, invoice, DEFAULT_USER)
+
+		String username = auth.getName();
+
+		return invoiceService.doInvoicePayment(invoiceId, invoice, username)
 				.map(ResponseEntity::ok)
 				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Factura no encontrada")));
 	}
