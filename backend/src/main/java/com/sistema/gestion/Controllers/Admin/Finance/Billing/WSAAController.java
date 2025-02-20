@@ -13,11 +13,11 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/afip/autenticar")
 public class WSAAController {
 
-    private final WSAAClientService wsaaClient;
+	private final WSAAClientService wsaaClient;
 
-    public WSAAController(WSAAClientService wsaaClient) {
-        this.wsaaClient = wsaaClient;
-    }
+	public WSAAController(WSAAClientService wsaaClient) {
+		this.wsaaClient = wsaaClient;
+	}
 
     @GetMapping("/autenticacion")
     public Mono<ResponseEntity<String>> authenticate() {

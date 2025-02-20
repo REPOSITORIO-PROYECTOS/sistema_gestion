@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class MonthlyBalance {
-  private List<CashRegister> dailyBalances;
-  private BigDecimal totalIncome;
-  private BigDecimal totalExpense;
+	private List<CashRegister> dailyBalances;
+	private BigDecimal totalIncome;
+	private BigDecimal totalExpense;
 }

@@ -15,13 +15,13 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/afip/factura")
 public class BillController {
 
-    private final WSFEClientService wsfeClient;
-    private final WSAAClientService wsaaClient;
+	private final WSFEClientService wsfeClient;
+	private final WSAAClientService wsaaClient;
 
-    public BillController(WSFEClientService wsfeClient, WSAAClientService wsaaClient) {
-        this.wsfeClient = wsfeClient;
-        this.wsaaClient = wsaaClient;
-    }
+	public BillController(WSFEClientService wsfeClient, WSAAClientService wsaaClient) {
+		this.wsfeClient = wsfeClient;
+		this.wsaaClient = wsaaClient;
+	}
 
     @GetMapping("/facturar")
     public Mono<ResponseEntity<String>> facturar(@RequestParam String cuit) {
@@ -34,27 +34,27 @@ public class BillController {
                 .map(ResponseEntity::ok);
     }
 
-    @GetMapping("/consultar")
-    public Mono<ResponseEntity<String>> consultarFactura(
-            @RequestParam String cuit,
-            @RequestParam int ptoVta,
-            @RequestParam int tipoComprobante,
-            @RequestParam int numeroComprobante) {
+	@GetMapping("/consultar")
+	public Mono<ResponseEntity<String>> consultarFactura(
+			@RequestParam String cuit,
+			@RequestParam int ptoVta,
+			@RequestParam int tipoComprobante,
+			@RequestParam int numeroComprobante) {
 
-        return wsaaClient.authenticate()
-                .flatMap(response -> {
-                    String token = extractValue(response, "Token");
-                    String sign = extractValue(response, "Sign");
+		return wsaaClient.authenticate()
+				.flatMap(response -> {
+					String token = extractValue(response, "Token");
+					String sign = extractValue(response, "Sign");
 
-                    return wsfeClient.consultarFactura(token, sign, cuit, ptoVta, tipoComprobante, numeroComprobante);
-                })
-                .map(ResponseEntity::ok);
-    }
+					return wsfeClient.consultarFactura(token, sign, cuit, ptoVta, tipoComprobante, numeroComprobante);
+				})
+				.map(ResponseEntity::ok);
+	}
 
-    private String extractValue(String response, String tagName) {
-        int start = response.indexOf("<" + tagName + ">") + tagName.length() + 2;
-        int end = response.indexOf("</" + tagName + ">");
-        return response.substring(start, end);
-    }
+	private String extractValue(String response, String tagName) {
+		int start = response.indexOf("<" + tagName + ">") + tagName.length() + 2;
+		int end = response.indexOf("</" + tagName + ">");
+		return response.substring(start, end);
+	}
 }
 

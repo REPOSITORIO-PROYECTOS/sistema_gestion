@@ -12,13 +12,11 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class CourseDTO {
-    
-    private String id;
-    private String title;
-    private String description;
-    private CourseStatus status;
-    private Double monthlyPrice;
-    private Set<IdAndNameDTO> studentsIds;
-    private IdAndNameDTO teacherId;
-
+	private String id;
+	private String title;
+	private String description;
+	private CourseStatus status;
+	private Double monthlyPrice;
+	private Set<IdAndNameDTO> studentsIds;
+	private IdAndNameDTO teacherId;
 }

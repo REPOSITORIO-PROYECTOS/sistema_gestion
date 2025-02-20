@@ -13,11 +13,11 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/api/afip/certificado")
 public class CertificateController {
-    private final CertificateService certificateService;
+	private final CertificateService certificateService;
 
-    public CertificateController(CertificateService certificateService) {
-        this.certificateService = certificateService;
-    }
+	public CertificateController(CertificateService certificateService) {
+		this.certificateService = certificateService;
+	}
 
     @GetMapping("/generar-csr")
     public Mono<ResponseEntity<String>> generateCsr(@RequestParam String cuit) {

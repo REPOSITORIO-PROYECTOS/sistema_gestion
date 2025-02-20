@@ -2,12 +2,18 @@ package com.sistema.gestion.Services.Profiles;
 
 import java.time.LocalDateTime;
 
+import com.sistema.gestion.DTO.PagedResponse;
+import com.sistema.gestion.DTO.UserInfo;
+import com.sistema.gestion.Models.Admin.Management.Course;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.sistema.gestion.Models.Profiles.User;
 import com.sistema.gestion.Repositories.Profiles.UserRepository;
 
-import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -15,42 +21,45 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class UserService {
 
-  private final UserRepository userRepository;
+	private final UserRepository userRepository;
 
-  public Mono<User> createUser(User user, String createdBy) {
-    user.setCreatedBy(createdBy);
-    return userRepository.save(user);
-  }
+	public Mono<PagedResponse<UserInfo>> getUsersPaged(int page, int size, String keyword) {
+		PageRequest pageRequest = PageRequest.of(page, size);
 
-  public Mono<Long> findAllCount() {
-    return userRepository.count();
-  }
+		if (keyword != null && !keyword.isEmpty()) {
+			Mono<Long> totalElementsMono = userRepository.countByKeyword(keyword);
+			Flux<UserInfo> userFlux = userRepository.findByKeywordPaged(keyword, pageRequest)
+					.map(UserInfo::new);
 
-  public Flux<User> findAll(int page, int size) {
-    return userRepository.findAll()
-        .sort((user1, user2) -> user1.getSurname().compareTo(user2.getSurname()))
-        .skip((long) page * size)
-        .take(size);
-  }
+			return Mono.zip(totalElementsMono, userFlux.collectList())
+					.map(tuple -> new PagedResponse<>(
+							tuple.getT2(), // Lista de cursos filtrados
+							tuple.getT1(), // Total de registros filtrados
+							page,
+							size));
+		}
 
-  public Mono<User> findById(String id) {
-    return userRepository.findById(id);
-  }
+		Mono<Long> totalElementsMono = userRepository.count();
+		Flux<UserInfo> userFlux = userRepository.findUsersPaged(pageRequest)
+				.map(UserInfo::new);
 
-  public Mono<User> updateUser(String id, User user, String updatedBy) {
-    return userRepository.findById(id)
-        .flatMap(existingUsuario -> {
-          existingUsuario.setName(user.getName());
-          existingUsuario.setSurname(user.getSurname());
-          existingUsuario.setUpdatedAt(LocalDateTime.now());
-          existingUsuario.setModifiedBy(updatedBy); // TODO: Colocar nombre del usuario que realizo la modificacion
-          existingUsuario.setEmail(user.getEmail());
-          existingUsuario.setPhone(user.getPhone());
-          return userRepository.save(existingUsuario);
-        });
-  }
+		return Mono.zip(totalElementsMono, userFlux.collectList())
+				.map(tuple -> new PagedResponse<>(
+						tuple.getT2(),
+						tuple.getT1(), // Total de registros
+						page,
+						size));
+	}
 
-  public Mono<Void> deleteUser(String id) {
-    return userRepository.deleteById(id);
-  }
+	public Mono<UserInfo> findById(String id) {
+		return userRepository.findById(id).map(UserInfo::new);
+	}
+
+	public Mono<String> getFullName(String email) {
+		return userRepository.findByEmail(email)
+				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+						"No se encontró el usuario: " + email)))
+				.map(user -> user.getName() + " " + user.getSurname());
+	}
+
 }
