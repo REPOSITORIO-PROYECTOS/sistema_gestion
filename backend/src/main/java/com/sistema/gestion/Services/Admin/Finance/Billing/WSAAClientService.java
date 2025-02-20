@@ -34,6 +34,12 @@ public class WSAAClientService {
 
     private Mono<String> sendRequestToAfip(String signedTRA) {
         String soapRequest = buildSoapRequest(signedTRA);
+        /*TODO Ejecucion normal hasta aca
+         * Se obtuvo el TRA codificado en base64 
+         * y la siguente linea lo envia a AFIP 
+         * para obtener el Token de acceso
+        */
+        WebClient webClient = WebClient.create();
 
         return webClient.post()
                 .contentType(MediaType.TEXT_XML)

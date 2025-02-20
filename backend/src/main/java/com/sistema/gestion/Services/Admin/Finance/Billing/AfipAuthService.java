@@ -22,8 +22,8 @@ import org.w3c.dom.Element;
 @Service
 public class AfipAuthService {
 
-    private static final String CERT_PATH = "src/main/resources/afip/certificado.crt";
-    private static final String KEY_PATH = "src/main/resources/afip/clavePrivada.key";
+    private static final String CERT_PATH = "src/main/resources/certificado.crt";
+    private static final String KEY_PATH = "src/main/resources/clavePrivada.key";
     private static final String WSAA_URL = "https://wsaahomo.afip.gov.ar/ws/services/LoginCms";
     private static final String SERVICE = "wsfe";
 
@@ -66,7 +66,6 @@ public class AfipAuthService {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         transformer.transform(new DOMSource(doc), new StreamResult(outputStream));
         String xmlTRA = outputStream.toString();
-
         // Firmar el XML con la clave privada
         return signTRA(xmlTRA);
     }
@@ -75,12 +74,11 @@ public class AfipAuthService {
         byte[] privateKeyBytes = java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(KEY_PATH));
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
         PrivateKey privateKey = KeyFactory.getInstance("RSA").generatePrivate(keySpec);
-
         Signature signature = Signature.getInstance("SHA256withRSA");
         signature.initSign(privateKey);
         signature.update(xml.getBytes());
         byte[] signedData = signature.sign();
-
+        
         return Base64.getEncoder().encodeToString(signedData);
     }
 

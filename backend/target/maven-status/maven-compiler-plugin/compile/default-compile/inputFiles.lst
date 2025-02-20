@@ -1,3 +1,6 @@
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\Billing\BillController.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\Billing\CertificateController.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\Billing\WSAAController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\CashRegisterController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\InvoiceController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\PaymentController.java
@@ -37,6 +40,11 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\R
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Profiles\StudentRepository.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Profiles\TeacherRepository.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Profiles\UserRepository.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Finance\Billing\AfipAuthService.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Finance\Billing\BillPdfService.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Finance\Billing\CertificateService.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Finance\Billing\WSAAClientService.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Finance\Billing\WSFEClientService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Finance\CashRegisterService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Finance\InvoiceService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Finance\PaymentService.java

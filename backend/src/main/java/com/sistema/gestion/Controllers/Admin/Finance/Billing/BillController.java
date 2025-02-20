@@ -2,6 +2,7 @@ package com.sistema.gestion.Controllers.Admin.Finance.Billing;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,6 +12,7 @@ import com.sistema.gestion.Services.Admin.Finance.Billing.WSFEClientService;
 import reactor.core.publisher.Mono;
 
 @RestController
+@RequestMapping("/api/afip/factura")
 public class BillController {
 
     private final WSFEClientService wsfeClient;
@@ -27,7 +29,6 @@ public class BillController {
                 .flatMap(response -> {
                     String token = extractValue(response, "Token");
                     String sign = extractValue(response, "Sign");
-
                     return wsfeClient.createInvoice(token, sign, cuit);
                 })
                 .map(ResponseEntity::ok);
