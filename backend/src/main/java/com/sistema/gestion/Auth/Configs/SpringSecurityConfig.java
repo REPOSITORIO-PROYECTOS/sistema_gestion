@@ -45,20 +45,17 @@ public class SpringSecurityConfig {
 				}))
 				.csrf(ServerHttpSecurity.CsrfSpec::disable)
 				.authorizeExchange(exchanges -> {
-					exchanges.pathMatchers(
-							"/webjars/**",
-							"/swagger-ui.html",
-							"/swagger-ui/**",
-							"/v3/api-docs/**",
-							"/swagger-resources/**"
-					).permitAll();
 
 					// ? ENDPOINTS PÚBLICOS
 					exchanges.pathMatchers(HttpMethod.POST, "/api/auth/login").permitAll();
+					exchanges.pathMatchers("/webjars/**", "/swagger-ui.html", "/swagger-ui/**",
+							"/v3/api-docs/**", "/swagger-resources/**").permitAll();
 
 					// ? ENDPOINTS RESTRINGIDOS POR ROL
-					exchanges.pathMatchers(HttpMethod.POST, "/api/auth/registrar").hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
-					exchanges.pathMatchers(HttpMethod.PUT, "/api/auth/editar/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
+					exchanges.pathMatchers(HttpMethod.POST, "/api/auth/registrar")
+							.hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
+					exchanges.pathMatchers(HttpMethod.PUT, "/api/auth/editar/**")
+							.hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
 
 					// ? MÉTODOS AUTENTICADOS
 					authenticateEndpoints(exchanges, "/api/caja/**", "/api/facturas/**", "/api/pagos/**",
@@ -80,7 +77,7 @@ public class SpringSecurityConfig {
 				.build();
 	}
 
-	// **Método auxiliar para endpoints autenticados**
+	// **Método auxiliar para endpoints autenticados
 	private void authenticateEndpoints(ServerHttpSecurity.AuthorizeExchangeSpec exchanges, String... paths) {
 		for (String path : paths) {
 			exchanges.pathMatchers(HttpMethod.GET, path).authenticated();
@@ -89,7 +86,7 @@ public class SpringSecurityConfig {
 		}
 	}
 
-	// **Método auxiliar para restricciones de ADMIN & DEV**
+	// **Método auxiliar para restricciones de ADMIN & DEV
 	private void restrictEndpoints(ServerHttpSecurity.AuthorizeExchangeSpec exchanges, HttpMethod method,
 	                               String... paths) {
 		for (String path : paths) {
@@ -97,7 +94,7 @@ public class SpringSecurityConfig {
 		}
 	}
 
-	// **Método auxiliar para logs de desarrollo**
+	// **Método auxiliar para logs de desarrollo
 	private void devsEndpoints(ServerHttpSecurity.AuthorizeExchangeSpec exchanges, String... paths) {
 		for (String path : paths) {
 			exchanges.pathMatchers(HttpMethod.GET, path).hasAnyAuthority("ROLE_DEV");

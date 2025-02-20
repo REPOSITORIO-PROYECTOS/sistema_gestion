@@ -50,7 +50,7 @@ public class JwtAuthenticationFilter implements ServerAuthenticationConverter {
 		} catch (JwtException e) {
 			// Si el token es inválido o no se puede verificar, lanza un error
 			return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-					"Token inválido desde JwtAuthenticationFilter"));
+					"Token inválido."));
 		}
 	}
 }

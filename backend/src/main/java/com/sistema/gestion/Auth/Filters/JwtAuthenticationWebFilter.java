@@ -57,8 +57,7 @@ public class JwtAuthenticationWebFilter implements WebFilter {
 				// Establece el contexto de seguridad reactivo
 				SecurityContext securityContext = new SecurityContextImpl(authentication);
 
-				// Continúa con el siguiente filtro en la cadena, adjuntando el contexto de
-				// seguridad
+				// Continúa con el siguiente filtro en la cadena, adjuntando el contexto de seguridad
 				return chain.filter(exchange)
 						.contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext)));
 
