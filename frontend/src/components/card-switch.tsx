@@ -5,10 +5,10 @@ import { useId } from "react";
 export default function CardSwitch() {
     const id = useId();
     return (
-        <div className="border-input has-data-[state=checked]:border-ring relative flex w-full items-start gap-2 rounded-md border p-4 shadow-xs outline-none ">
+        <div className="border-input has-data-[state=checked]:border-ring relative  flex w-full items-start gap-2 rounded-md border p-4 shadow-2xs outline-hidden ">
             <Switch
                 id={id}
-                className="order-1 h-4 w-6 after:absolute after:inset-0 [&_span]:size-3 data-[state=checked]:[&_span]:translate-x-2 data-[state=checked]:[&_span]:rtl:-translate-x-2"
+                className="order-1 h-4 w-6 after:absolute after:inset-0 [&_span]:size-3 [&_span]:data-[state=checked]:translate-x-2 rtl:[&_span]:data-[state=checked]:-translate-x-2"
                 aria-describedby={`${id}-description`}
             />
             <div className="grid grow gap-2">
