@@ -4,12 +4,12 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useId } from "react";
-import { useOptimistic, useState, startTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { toggleCajaEstado } from "@/actions/caja-actions";
 
 interface CardSwitchProps {
     initialState?: boolean;
-    cajaId?: string;
     sublabel?: string;
     description?: string;
     onToggleSuccess?: (newState: boolean) => void;
@@ -17,7 +17,6 @@ interface CardSwitchProps {
 
 export default function CardSwitch({
     initialState = false,
-    cajaId,
     sublabel = "(Sublabel)",
     description = "A short description goes here.",
     onToggleSuccess,
@@ -25,6 +24,7 @@ export default function CardSwitch({
     const id = useId();
     const [cajaActiva, setCajaActiva] = useState(initialState);
     const [isLoading, setIsLoading] = useState(false);
+    const [isPending, startTransition] = useTransition();
 
     // Estado optimista que se actualiza inmediatamente
     const [optimisticCajaActiva, updateOptimisticCajaActiva] = useOptimistic(
@@ -35,7 +35,7 @@ export default function CardSwitch({
     // Función para manejar el cambio del switch
     const handleToggle = async (checked: boolean) => {
         // Prevenir múltiples clics mientras está cargando
-        if (isLoading) return;
+        if (isLoading || isPending) return;
 
         setIsLoading(true);
 
@@ -45,24 +45,13 @@ export default function CardSwitch({
         });
 
         try {
-            console.log("Enviando petición a la API con estado:", checked);
-            // Llamada a la API para actualizar el estado
-            const response = await fetch(
-                `https://sistema-gestion-1.onrender.com/api/caja/cerrar`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ activa: checked }),
-                }
-            );
+            // Llamar al Server Action
+            const result = await toggleCajaEstado(checked);
 
-            const data = await response.json();
-            console.log("Respuesta de la API:", data);
-
-            if (!response.ok) {
-                throw new Error("Error al cambiar el estado de la caja");
+            if (!result.success) {
+                throw new Error(
+                    result.error || "Error al cambiar el estado de la caja"
+                );
             }
 
             // Actualiza el estado real después de la respuesta exitosa
@@ -74,7 +63,10 @@ export default function CardSwitch({
             }
 
             toast.success(
-                `Caja ${checked ? "activada" : "desactivada"} correctamente`
+                `Caja ${checked ? "activada" : "desactivada"} correctamente`,
+                {
+                    richColors: true,
+                }
             );
         } catch (error) {
             console.error("Error al actualizar estado de caja:", error);
@@ -87,7 +79,10 @@ export default function CardSwitch({
             setCajaActiva(!checked);
 
             toast.error(
-                "Error al cambiar el estado de la caja. Por favor, inténtalo de nuevo."
+                "Error al cambiar el estado de la caja. Por favor, inténtalo de nuevo.",
+                {
+                    richColors: true,
+                }
             );
         } finally {
             setIsLoading(false);
@@ -109,7 +104,7 @@ export default function CardSwitch({
                 aria-describedby={`${id}-description`}
                 checked={optimisticCajaActiva}
                 onCheckedChange={handleToggle}
-                disabled={isLoading}
+                disabled={isLoading || isPending}
             />
             <div className="grid grow gap-2">
                 <Label htmlFor={id}>
@@ -125,7 +120,7 @@ export default function CardSwitch({
                 </p>
                 <p className="text-xs font-medium">
                     Estado: {optimisticCajaActiva ? "Activa" : "Inactiva"}
-                    {isLoading && " (actualizando...)"}
+                    {(isLoading || isPending) && " (actualizando...)"}
                 </p>
             </div>
         </div>
