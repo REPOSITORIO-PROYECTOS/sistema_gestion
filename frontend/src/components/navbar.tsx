@@ -15,10 +15,8 @@ export function Navbar() {
     const navItems = [
         { href: "/", label: "Home" },
         { href: "/caja", label: "Caja" },
-        { href: "/inventario", label: "Inventario" },
         { href: "/cursos", label: "Cursos" },
         { href: "/usuarios", label: "Usuarios" },
-        { href: "/historial", label: "Historial" },
     ];
 
     useEffect(() => {
