@@ -1,22 +1,25 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { BookOpenIcon, PhoneCall } from "lucide-react";
+import { useAuth } from "./providers/auth-provider";
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { usePathname } from "next/navigation";
+import { ModeToggle } from "./mode-toggle";
+import Link from "next/link";
 
 export function Navbar() {
     const pathname = usePathname();
+    const { logout } = useAuth();
     const [activeIndex, setActiveIndex] = useState(0);
     const [indicatorStyle, setIndicatorStyle] = useState({});
     const navRef = useRef<HTMLDivElement>(null);
 
     const navItems = [
-        { href: "/", label: "Home" },
-        { href: "/caja", label: "Caja" },
-        { href: "/cursos", label: "Cursos" },
-        { href: "/usuarios", label: "Usuarios" },
+        { href: "/admin/", label: "Home" },
+        { href: "/admin/caja", label: "Caja" },
+        { href: "/admin/cursos", label: "Cursos" },
+        { href: "/admin/usuarios", label: "Usuarios" },
     ];
 
     useEffect(() => {
@@ -41,7 +44,7 @@ export function Navbar() {
     }, [activeIndex]);
 
     return (
-        <nav className="bg-white shadow-md">
+        <nav className="shadow-md border-b dark:border-gray-700">
             <div className="container mx-auto px-6 py-3 flex justify-between items-center space-x-4">
                 <div className="space-x-2 relative" ref={navRef}>
                     {navItems.map((item, index) => (
@@ -66,7 +69,7 @@ export function Navbar() {
                         style={indicatorStyle}
                     />
                 </div>
-                <div className="space-x-4">
+                <div className="space-x-4 flex items-center">
                     <Button className="bg-blue-600 hover:bg-blue-800">
                         Manual del Usuario
                         <BookOpenIcon
@@ -81,6 +84,14 @@ export function Navbar() {
                             aria-hidden="true"
                         />
                     </Button>
+                    <Button
+                        variant="ghost"
+                        onClick={logout}
+                        className="text-sm font-semibold hover:bg-red-500 hover:text-white"
+                    >
+                        Cerrar sesión
+                    </Button>
+                    <ModeToggle />
                 </div>
             </div>
         </nav>
