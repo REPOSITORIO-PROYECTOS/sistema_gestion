@@ -114,6 +114,14 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
                             ],
                         },
                     },
+                    {
+                        id: "subsection-2-2",
+                        title: "Ejercicios prácticos",
+                        content: {
+                            body: "<p>Realiza los siguientes ejercicios para practicar.</p><ol><li>Ejercicio 1</li><li>Ejercicio 2</li></ol>",
+                            links: [],
+                        },
+                    },
                 ],
             },
         ],
@@ -135,7 +143,7 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
     );
 
     return (
-        <div className="container mx-auto py-6">
+        <div className="container mx-auto py-6 min-h-[calc(100vh-65px)]">
             <div className="mb-6">
                 <Link
                     href="/"
@@ -169,8 +177,8 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
                         </CardHeader>
                         <CardContent className="p-0">
                             <Tabs defaultValue="contenido" className="w-full">
-                                <TabsList className="grid w-full grid-cols-2">
-                                    <TabsTrigger value="contenido">
+                                <TabsList className="grid w-full grid-cols-2 dark:bg-zinc-900">
+                                    <TabsTrigger value="contenido" className="">
                                         Contenido
                                     </TabsTrigger>
                                     <TabsTrigger value="info">
