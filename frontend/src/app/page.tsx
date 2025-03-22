@@ -197,10 +197,10 @@ export default function Home() {
                                         <CardFooter className="pt-0">
                                             <Button
                                                 variant="link"
-                                                className="p-0 h-auto"
+                                                className="p-0 h-auto group"
                                             >
                                                 Leer más{" "}
-                                                <ChevronRight className="h-4 w-4 ml-1" />
+                                                <ChevronRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
                                             </Button>
                                         </CardFooter>
                                     )}
@@ -270,9 +270,9 @@ export default function Home() {
                     {/* Sidebar - Cursos inscritos */}
                     <div className="space-y-6">
                         <div>
-                            <div className="flex items-center mb-4">
+                            <div className="flex items-center mb-6">
                                 <Bell className="mr-2 h-5 w-5" />
-                                <h2 className="text-xl font-semibold tracking-tight">
+                                <h2 className="text-xl font-semibold tracking-tight ">
                                     Recordatorios
                                 </h2>
                             </div>
@@ -297,14 +297,21 @@ export default function Home() {
                                     <div className="text-muted-foreground dark:text-zinc-300">
                                         Evaluación parcial - Curso 2025
                                     </div>
-                                    <div className="text-xs mt-1 text-blue-700 dark:text-blue-400">
+                                    <div className="text-xs mt-1 text-blue-700 dark:text-blue-300">
                                         30 de Marzo, 2025
                                     </div>
                                 </div>
+                                <Link
+                                    href="#"
+                                    className="p-3 flex items-center justify-center text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 dark:bg-blue-900 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-800 group"
+                                >
+                                    Ver mas recordatorios
+                                    <ChevronRight className="size-5 ml-1 group-hover:translate-x-1 transition-transform" />
+                                </Link>
                             </div>
                         </div>
 
-                        <Separator />
+                        <Separator className="bg-zinc-400 dark:bg-zinc-700" />
 
                         <div className="flex items-center">
                             <BookOpen className="mr-2 h-5 w-5" />
