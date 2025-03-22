@@ -18,7 +18,7 @@ export default function NavbarAula() {
         return <Navbar />;
     }
     return (
-        <header className="border-b shadow-md">
+        <header className="relative z-50 border-b shadow-md bg-zinc-50 dark:bg-zinc-800 dark:border-gray-700">
             <div className="container mx-auto flex h-16 items-center px-4">
                 <div className="font-bold text-xl">Aula Virtual</div>
                 <nav className="ml-auto flex items-center gap-4">
