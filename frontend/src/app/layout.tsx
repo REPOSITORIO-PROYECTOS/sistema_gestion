@@ -31,20 +31,17 @@ export default function RootLayout({
     return (
         <html lang="es" suppressHydrationWarning>
             <body
-                className={`${geistSans.variable} ${geistMono.variable} relative antialiased flex flex-col min-h-screen`}
+                className={`${geistSans.variable} ${geistMono.variable} relative antialiased flex flex-col bg-zinc-200 dark:bg-zinc-900 transition-colors text-zinc-900 dark:text-zinc-100 font-sans`}
             >
                 <div className="absolute z-0 h-full w-full bg-[radial-gradient(#d4d4d8_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] dark:bg-[radial-gradient(#27272a_1px,transparent_1px)] "></div>
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"
                     enableSystem
-                    disableTransitionOnChange
                 >
                     <AuthProvider>
-                        <main className="grow relative z-10">
-                            <NavbarAula />
-                            {children}
-                        </main>
+                        <NavbarAula />
+                        <main className="grow relative">{children}</main>
                     </AuthProvider>
                 </ThemeProvider>
                 <Toaster />
