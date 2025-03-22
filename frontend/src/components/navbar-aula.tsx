@@ -14,7 +14,7 @@ export default function NavbarAula() {
     if (pathname === "/login") {
         return null;
     }
-    if (pathname === "/admin") {
+    if (pathname.startsWith("/admin")) {
         return <Navbar />;
     }
     return (
