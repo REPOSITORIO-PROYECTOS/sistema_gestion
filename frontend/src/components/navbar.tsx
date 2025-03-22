@@ -16,7 +16,7 @@ export function Navbar() {
     const navRef = useRef<HTMLDivElement>(null);
 
     const navItems = [
-        { href: "/admin/", label: "Home" },
+        { href: "/admin", label: "Home" },
         { href: "/admin/caja", label: "Caja" },
         { href: "/admin/cursos", label: "Cursos" },
         { href: "/admin/usuarios", label: "Usuarios" },
@@ -44,7 +44,7 @@ export function Navbar() {
     }, [activeIndex]);
 
     return (
-        <nav className="shadow-md border-b dark:border-gray-700">
+        <nav className="relative z-50 shadow-md border-b dark:border-gray-700">
             <div className="container mx-auto px-6 py-3 flex justify-between items-center space-x-4">
                 <div className="space-x-2 relative" ref={navRef}>
                     {navItems.map((item, index) => (
