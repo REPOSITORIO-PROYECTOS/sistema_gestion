@@ -483,7 +483,7 @@ export default function TableCashItems() {
                             table.getColumn("titulo")?.getFilterValue()
                         ) && (
                             <button
-                                className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+                                className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
                                 aria-label="Clear filter"
                                 onClick={() => {
                                     setSearchTerm("");
@@ -868,6 +868,8 @@ export default function TableCashItems() {
                             <TableCell colSpan={3} className="font-medium">
                                 Totales
                             </TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
                             <TableCell className="font-medium">
                                 <div className="flex flex-col gap-1">
                                     <span className="text-green-600 flex items-center gap-1">
@@ -909,7 +911,6 @@ export default function TableCashItems() {
                                     </span>
                                 </div>
                             </TableCell>
-                            <TableCell></TableCell>
                         </TableRow>
                     </TableFooter>
                 </Table>
