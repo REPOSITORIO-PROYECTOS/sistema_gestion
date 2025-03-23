@@ -1,6 +1,8 @@
 package com.sistema.gestion.Services.Admin.Finance.Billing;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.Signature;
@@ -8,6 +10,8 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
+import java.util.List;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -15,6 +19,17 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaCertStore;
+import org.bouncycastle.cms.CMSProcessableByteArray;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.cms.SignerInfoGenerator;
+import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -26,6 +41,8 @@ public class AfipAuthService {
     private static final String KEY_PATH = "src/main/resources/clavePrivada.key";
     private static final String WSAA_URL = "https://wsaahomo.afip.gov.ar/ws/services/LoginCms";
     private static final String SERVICE = "wsfe";
+
+    
 
     public String generateTRA() throws Exception {
         long generationTime = System.currentTimeMillis() / 1000;
@@ -70,20 +87,48 @@ public class AfipAuthService {
         return signTRA(xmlTRA);
     }
 
-    private String signTRA(String xml) throws Exception {
-        byte[] privateKeyBytes = java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(KEY_PATH));
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+    public static String signTRA(String traXml) throws Exception {
+        // Leer la clave privada
+        byte[] keyBytes = Files.readAllBytes(Paths.get(KEY_PATH));
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
         PrivateKey privateKey = KeyFactory.getInstance("RSA").generatePrivate(keySpec);
-        Signature signature = Signature.getInstance("SHA256withRSA");
-        signature.initSign(privateKey);
-        signature.update(xml.getBytes());
-        byte[] signedData = signature.sign();
-        
-        return Base64.getEncoder().encodeToString(signedData);
+
+        // Leer el certificado
+        CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+        X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(Files.newInputStream(Paths.get(CERT_PATH)));
+        System.out.println("--------------EJECUTANDO--------------");
+        X509CertificateHolder cert = (X509CertificateHolder) List.of(certificate);
+        // Configurar el firmante
+        ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256withRSA").build(privateKey);
+        JcaSignerInfoGeneratorBuilder signerInfoGeneratorBuilder = new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder().build());
+        signerInfoGeneratorBuilder.setDirectSignature(true);
+        SignerInfoGenerator signerInfoGenerator = signerInfoGeneratorBuilder.build(contentSigner, certificate);
+
+        // Crear la estructura CMS (PKCS#7)
+        CMSSignedDataGenerator generator = new CMSSignedDataGenerator();
+        generator.addSignerInfoGenerator(signerInfoGenerator);
+        generator.addCertificate(cert);
+
+        CMSProcessableByteArray content = new CMSProcessableByteArray(traXml.getBytes());
+        CMSSignedData signedData = generator.generate(content, true); // True para formato DER
+
+        // Convertir a Base64
+        return Base64.getEncoder().encodeToString(signedData.getEncoded());
     }
+
+    // private String signTRA(String xml) throws Exception {
+    //     byte[] privateKeyBytes = java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(KEY_PATH));
+    //     PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+    //     PrivateKey privateKey = KeyFactory.getInstance("RSA").generatePrivate(keySpec);
+    //     Signature signature = Signature.getInstance("SHA256withRSA");
+    //     signature.initSign(privateKey);
+    //     signature.update(xml.getBytes());
+    //     byte[] signedData = signature.sign();
+        
+    //     return Base64.getEncoder().encodeToString(signedData);
+    // }
 
     private String formatAfipDate(long timestamp) {
         return new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX").format(new java.util.Date(timestamp * 1000));
     }
 }
-

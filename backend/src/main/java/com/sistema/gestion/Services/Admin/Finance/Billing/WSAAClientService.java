@@ -10,6 +10,8 @@ import reactor.core.publisher.Mono;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
+import java.nio.file.Files;
+import java.util.Base64;
 
 @Service
 public class WSAAClientService {
@@ -30,23 +32,32 @@ public class WSAAClientService {
                 return Mono.error(new Error("Error en la autenticación con AFIP", e));
             });
     }
-    
+
 
     private Mono<String> sendRequestToAfip(String signedTRA) {
         String soapRequest = buildSoapRequest(signedTRA);
-        /*TODO Ejecucion normal hasta aca
+    /*TODO Ejecucion normal hasta aca
          * Se obtuvo el TRA codificado en base64 
          * y la siguente linea lo envia a AFIP 
          * para obtener el Token de acceso
         */
-        WebClient webClient = WebClient.create();
-
+        
+        System.out.println("--------------EJECUTANDO--------------");
+        System.out.println(signedTRA);
+        System.out.println(soapRequest);
         return webClient.post()
                 .contentType(MediaType.TEXT_XML)
                 .bodyValue(soapRequest)
                 .retrieve()
-                .bodyToMono(String.class);
+                .bodyToMono(String.class)
+                .doOnNext(response -> {
+                    System.out.println("Respuesta de AFIP: " + response);
+                })
+                .doOnError(error -> {
+                    System.err.println("Error al enviar solicitud a AFIP: " + error.getMessage());
+                });
     }
+    
 
     private String buildSoapRequest(String signedTRA) {
         return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"

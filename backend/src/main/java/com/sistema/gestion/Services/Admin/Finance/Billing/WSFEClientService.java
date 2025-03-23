@@ -17,7 +17,6 @@ public class WSFEClientService {
 
     public Mono<String> createInvoice(String token, String sign, String cuit) {
         String soapRequest = buildSoapRequest(token, sign, cuit);
-
         return webClient.post()
                 .contentType(MediaType.TEXT_XML)
                 .bodyValue(soapRequest)

@@ -61,7 +61,8 @@ public class SpringSecurityConfig {
 					authenticateEndpoints(exchanges, "/api/caja/**", "/api/facturas/**", "/api/pagos/**",
 							"/api/proveedores/**", "/api/cursos/**", "/api/asistencias/**", "/api/estudiantes/**");
 
-					// TODO: Métodos de ARCA
+					// ? METODOS de ARCA
+					exchanges.pathMatchers(HttpMethod.GET, "/api/afip/**").permitAll();
 
 					// ? MÉTODOS ADMIN & DEV
 					restrictEndpoints(exchanges, HttpMethod.DELETE, "/api/caja/**", "/api/facturas/**", "/api/pagos/**",

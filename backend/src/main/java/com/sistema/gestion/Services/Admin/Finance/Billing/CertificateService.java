@@ -9,6 +9,7 @@ import java.security.PrivateKey;
 import javax.security.auth.x500.X500Principal;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -54,8 +55,9 @@ public class CertificateService {
     private void saveCSR(PKCS10CertificationRequest csr, String fileName) throws Exception {
         try (JcaPEMWriter writer = new JcaPEMWriter(new FileWriter(fileName))) {
             writer.writeObject(csr);
+            log.info("CSR guardado en: " + fileName);
         }
-        log.info("CSR guardado en: " + fileName);
+        
     }
 }
 

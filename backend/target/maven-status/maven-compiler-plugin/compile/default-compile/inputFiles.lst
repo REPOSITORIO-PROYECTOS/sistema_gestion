@@ -1,3 +1,11 @@
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Configs\SpringSecurityConfig.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Controllers\AuthController.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\CustomReactiveAuthenticationManager.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Filters\JwtAuthenticationFilter.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Filters\JwtAuthenticationWebFilter.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Services\AuthService.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Services\CustomReactiveUserDetailsService.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Utils\JwtUtil.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\Billing\BillController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\Billing\CertificateController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\Billing\WSAAController.java
@@ -15,9 +23,13 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\D
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\DTO\CourseDTO.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\DTO\IdAndNameDTO.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\DTO\InvoiceWithProviderDTO.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\DTO\LoginRequest.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\DTO\PagedResponse.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\DTO\PaymentWithStudentDTO.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\DTO\UserCredentialsDTO.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\DTO\UserInfo.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Exceptions\GlobalExceptionHandler.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Exceptions\UserNotFoundException.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\GestionApplication.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Finance\CashRegister.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Finance\Invoice.java
