@@ -20,10 +20,13 @@ public class File {
     @NotNull(message = "El campo 'enlace a archivo' no puede estar vacío")
     private String link;
 
+    private String subSectionId;
+
     public File() {
     }
 
-    public File(String link) {
+    public File(String name,String link) {
+        this.name = name;
         this.link = link;
     }
 }

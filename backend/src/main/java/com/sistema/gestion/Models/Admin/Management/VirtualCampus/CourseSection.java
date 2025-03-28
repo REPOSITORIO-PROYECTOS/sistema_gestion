@@ -25,5 +25,7 @@ public class CourseSection {
 
     private String updatedAt;
 
+    private String courseId;
+
     private ArrayList<String> subSectionsIds;
 }

@@ -1,13 +1,18 @@
 package com.sistema.gestion.Controllers.Admin.Management.VirtualCampus;
 
+import java.io.IOException;
+
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.sistema.gestion.Models.Admin.Management.VirtualCampus.File;
 import com.sistema.gestion.Services.Admin.Management.VirtualCampus.FileService;
 
+import jakarta.validation.Valid;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 
@@ -37,11 +42,11 @@ public class FileController {
         return fileService.create(file);
     }
 
-    @PostMapping("/subir")
-    public Mono<ResponseEntity<File>> subirArchivo(@RequestPart("file") MultipartFile file) {
-        return fileService.subirArchivoADrive(file)
-                .flatMap(url -> fileService.guardarEnMongo(new File(url)))
-                .map(ResponseEntity::ok);
+    @PostMapping(path = "/subir", consumes = "multipart/form-data")
+    public Mono<ResponseEntity<String>> subirArchivo(@RequestPart("file") Mono<MultipartFile> file) {
+        return file
+            .flatMap(filePart -> fileService.subirArchivoADrive(filePart)) // Sube el archivo a Drive
+            .map((url) -> ResponseEntity.ok("Archivo subido: " + url));
     }
 
     @PutMapping("/{id}")

@@ -6,6 +6,7 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\A
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Services\AuthService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Services\CustomReactiveUserDetailsService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Utils\JwtUtil.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Config\DriveConfig\GoogleDriveConfig.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\Billing\BillController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\Billing\CertificateController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\Billing\WSAAController.java
@@ -15,6 +16,9 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\C
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\ProviderController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Management\CourseController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Management\StudentAttendanceController.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Management\VirtualCampus\CourseSectionController.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Management\VirtualCampus\CourseSubSectionController.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Management\VirtualCampus\FileController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Devs\ErrorLogController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Profiles\StudentController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Profiles\TeacherController.java
@@ -37,6 +41,9 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\M
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Finance\Provider.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Management\Course.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Management\StudentAttendance.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Management\VirtualCampus\CourseSection.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Management\VirtualCampus\CourseSubSection.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Management\VirtualCampus\File.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Devs\ErrorLog.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\ModelClass.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Profiles\Student.java
@@ -48,6 +55,9 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\R
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Admin\Finance\ProviderRepository.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Admin\Management\CourseRepository.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Admin\Management\StudentAttendanceRepository.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Admin\Management\VirtualCampus\CourseSectionRepository.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Admin\Management\VirtualCampus\CourseSubSectionRepository.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Admin\Management\VirtualCampus\FileRepository.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Devs\ErrorLogRepository.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Profiles\StudentRepository.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Profiles\TeacherRepository.java
@@ -63,6 +73,9 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\S
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Finance\ProviderService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Management\CourseService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Management\StudentAttendanceService.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Management\VirtualCampus\CourseSectionService.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Management\VirtualCampus\CourseSubSectionService.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Management\VirtualCampus\FileService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Devs\ErrorLogService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Profiles\StudentService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Profiles\TeacherService.java

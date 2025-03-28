@@ -1,6 +1,7 @@
 package com.sistema.gestion.Services.Admin.Management.VirtualCampus;
 
 import com.sistema.gestion.Models.Admin.Management.VirtualCampus.CourseSection;
+import com.sistema.gestion.Models.Admin.Management.VirtualCampus.CourseSubSection;
 import com.sistema.gestion.Repositories.Admin.Management.VirtualCampus.CourseSectionRepository;
 
 import org.springframework.stereotype.Service;
@@ -11,9 +12,11 @@ import reactor.core.publisher.Flux;
 public class CourseSectionService {
 
     private final CourseSectionRepository courseSectionRepository;
+    private final CourseSubSectionService courseSubSectionService;
 
-    public CourseSectionService(CourseSectionRepository courseSectionRepository) {
+    public CourseSectionService(CourseSectionRepository courseSectionRepository, CourseSubSectionService courseSubSectionService) {
         this.courseSectionRepository = courseSectionRepository;
+        this.courseSubSectionService = courseSubSectionService;
     }
 
     public Flux<CourseSection> findAll() {
@@ -35,5 +38,14 @@ public class CourseSectionService {
 
     public Mono<Void> delete(String id) {
         return courseSectionRepository.deleteById(id);
+    }
+
+    public Mono<CourseSection> addSubSection(String sectionId, CourseSubSection subSection) {
+        return courseSectionRepository.findById(sectionId)
+                .flatMap(section -> {
+                    section.getSubSectionsIds().add(subSection.getId());
+                    courseSubSectionService.create(subSection);
+                    return courseSectionRepository.save(section);
+                });
     }
 }

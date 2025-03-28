@@ -17,7 +17,9 @@ public class CourseSubSection {
     @NotNull(message = "El campo 'body' no puede estar vacío")
     private String body;
 
+    private String SectionId;
+
     private ArrayList<String> filesIds;
 
-    private ArrayList<String> imagesLinks;
+    private ArrayList<String> imagesIds;
 }

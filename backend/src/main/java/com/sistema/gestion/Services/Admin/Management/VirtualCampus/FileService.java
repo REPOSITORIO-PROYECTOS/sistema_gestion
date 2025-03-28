@@ -42,7 +42,7 @@ public class FileService {
             // Crear metadatos del archivo en Google Drive
             com.google.api.services.drive.model.File fileMetadata = new com.google.api.services.drive.model.File();
             fileMetadata.setName(file.getOriginalFilename());
-            fileMetadata.setParents(Collections.singletonList("<FOLDER_ID>"));
+            fileMetadata.setParents(Collections.singletonList("https://drive.google.com/drive/folders/1eUrt3JWRauSeccLMWsI5DqCaRPIdEAv2?usp=drive_link"));
 
             // Crear el contenido del archivo
             AbstractInputStreamContent fileContent = new InputStreamContent(
@@ -58,8 +58,11 @@ public class FileService {
         });
     }
 
-    public Mono<File> guardarEnMongo(File file) {
-        return fileRepository.save(file);
+    public Mono<String> saveFile(String name, MultipartFile file) {
+        return subirArchivoADrive(file).flatMap(link -> {
+            File fileToSave = new File(name, link);
+            return fileRepository.save(fileToSave).flatMap(savedFile -> Mono.just(savedFile.getId()));
+        });
     }
 
     public Mono<File> update(String id, File file) {

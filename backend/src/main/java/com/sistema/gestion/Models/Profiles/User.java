@@ -35,7 +35,7 @@ public class User extends ModelClass {
     private String phone;
 
     // TODO: Idear Relacion unica con la institucion
-    private String istitution;
+    private String institution;
 
     @NotBlank(message = "El correo electrónico no puede estar vacío")
     @Email(message = "Debe proporcionar un correo electrónico válido")
