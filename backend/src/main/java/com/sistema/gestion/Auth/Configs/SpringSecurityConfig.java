@@ -67,6 +67,9 @@ public class SpringSecurityConfig {
 					// ? MÉTODOS CampusVirtual
 					exchanges.pathMatchers(HttpMethod.POST, "/api/files/**").permitAll();
 
+					// ? MÉTODOS VirtualCampus
+					exchanges.pathMatchers("/api/course-sections/**").permitAll();
+
 					// ? MÉTODOS ADMIN & DEV
 					restrictEndpoints(exchanges, HttpMethod.DELETE, "/api/caja/**", "/api/facturas/**", "/api/pagos/**",
 							"/api/proveedores/**", "/api/cursos/**", "/api/asistencias/**", "/api/estudiantes/**");

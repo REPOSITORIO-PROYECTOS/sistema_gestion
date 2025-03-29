@@ -1,18 +1,15 @@
 package com.sistema.gestion.Controllers.Admin.Management.VirtualCampus;
 
-import java.io.IOException;
-
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ServerWebExchange;
 
+import com.mongodb.client.result.DeleteResult;
 import com.sistema.gestion.Models.Admin.Management.VirtualCampus.File;
 import com.sistema.gestion.Services.Admin.Management.VirtualCampus.FileService;
 
-import jakarta.validation.Valid;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 
@@ -27,36 +24,36 @@ public class FileController {
     }
 
     @GetMapping
-    public Flux<File> getAllFiles() {
-        return fileService.findAll();
+    public Flux<File> getAllFiles(ServerWebExchange exchange) {
+        return fileService.findAll(exchange);
     }
 
     @GetMapping("/{id}")
-    public Mono<File> getFileById(@PathVariable String id) {
-        return fileService.findById(id);
+    public Mono<File> getFileById(ServerWebExchange exchange, @PathVariable String id) {
+        return fileService.findById(exchange, id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<File> createFile(@RequestBody File file) {
-        return fileService.create(file);
+    public Mono<File> createFile(ServerWebExchange exchange, @RequestBody File file) {
+        return fileService.create(exchange, file);
     }
 
     @PostMapping(path = "/subir", consumes = "multipart/form-data")
-    public Mono<ResponseEntity<String>> subirArchivo(@RequestPart("file") Mono<MultipartFile> file) {
+    public Mono<ResponseEntity<String>> subirArchivo(ServerWebExchange exchange, @RequestPart("file") Mono<MultipartFile> file) {
         return file
             .flatMap(filePart -> fileService.subirArchivoADrive(filePart)) // Sube el archivo a Drive
             .map((url) -> ResponseEntity.ok("Archivo subido: " + url));
     }
 
     @PutMapping("/{id}")
-    public Mono<File> updateFile(@PathVariable String id, @RequestBody File file) {
-        return fileService.update(id, file);
+    public Mono<File> updateFile(ServerWebExchange exchange, @PathVariable String id, @RequestBody File file) {
+        return fileService.update(exchange, id, file);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<Void> deleteFile(@PathVariable String id) {
-        return fileService.delete(id);
+    public Mono<DeleteResult> deleteFile(ServerWebExchange exchange, @PathVariable String id) {
+        return fileService.delete(exchange, id);
     }
 }

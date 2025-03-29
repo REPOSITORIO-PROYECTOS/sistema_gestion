@@ -7,6 +7,8 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\A
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Services\CustomReactiveUserDetailsService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Utils\JwtUtil.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Config\DriveConfig\GoogleDriveConfig.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Config\DynamicDBConection\DynamicMongoConfig.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Config\DynamicDBConection\InstitutionFilter.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\Billing\BillController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\Billing\CertificateController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\Billing\WSAAController.java
