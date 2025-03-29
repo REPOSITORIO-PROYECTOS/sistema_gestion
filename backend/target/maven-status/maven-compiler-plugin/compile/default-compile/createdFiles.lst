@@ -38,6 +38,7 @@ com\sistema\gestion\Services\Devs\ErrorLogService.class
 com\sistema\gestion\Auth\Filters\JwtAuthenticationWebFilter.class
 com\sistema\gestion\Exceptions\GlobalExceptionHandler.class
 com\sistema\gestion\Auth\Services\AuthService.class
+com\sistema\gestion\Config\DynamicDBConection\DynamicMongoConfig.class
 com\sistema\gestion\Auth\Configs\SpringSecurityConfig.class
 com\sistema\gestion\Models\Admin\Finance\Provider.class
 com\sistema\gestion\Services\Admin\Finance\Billing\WSAAClientService.class
@@ -45,6 +46,7 @@ com\sistema\gestion\Utils\AttendanceStatus.class
 com\sistema\gestion\Models\Profiles\Student.class
 com\sistema\gestion\Services\Admin\Finance\Billing\WSFEClientService.class
 com\sistema\gestion\GestionApplication.class
+com\sistema\gestion\Config\DynamicDBConection\InstitutionFilter.class
 com\sistema\gestion\Controllers\Admin\Management\VirtualCampus\FileController.class
 com\sistema\gestion\Models\ModelClass.class
 com\sistema\gestion\Controllers\Admin\Finance\CashRegisterController.class
