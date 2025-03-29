@@ -39,12 +39,13 @@ public class FileController {
         return fileService.create(exchange, file);
     }
 
-    @PostMapping(path = "/subir", consumes = "multipart/form-data")
-    public Mono<ResponseEntity<String>> subirArchivo(ServerWebExchange exchange, @RequestPart("file") Mono<MultipartFile> file) {
-        return file
-            .flatMap(filePart -> fileService.subirArchivoADrive(filePart)) // Sube el archivo a Drive
-            .map((url) -> ResponseEntity.ok("Archivo subido: " + url));
-    }
+    //TODO: Implementar subida de archivos a Google Drive
+    // @PostMapping(path = "/subir", consumes = "multipart/form-data")
+    // public Mono<ResponseEntity<String>> subirArchivo(ServerWebExchange exchange, @RequestPart("file") Mono<MultipartFile> file) {
+    //     return file
+    //         .flatMap(filePart -> fileService.subirArchivoADrive(filePart)) // Sube el archivo a Drive
+    //         .map((url) -> ResponseEntity.ok("Archivo subido: " + url));
+    // }
 
     @PutMapping("/{id}")
     public Mono<File> updateFile(ServerWebExchange exchange, @PathVariable String id, @RequestBody File file) {

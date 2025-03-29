@@ -10,8 +10,6 @@ import reactor.core.publisher.Mono;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
-import java.nio.file.Files;
-import java.util.Base64;
 
 @Service
 public class WSAAClientService {
