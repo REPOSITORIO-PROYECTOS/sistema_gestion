@@ -87,7 +87,7 @@ export default function LoginPage() {
                     </div>
 
                     <Tabs defaultValue="estudiante" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
+                        <TabsList className="grid w-full grid-cols-2 dark:bg-zinc-900">
                             <TabsTrigger value="estudiante">
                                 Estudiante
                             </TabsTrigger>
