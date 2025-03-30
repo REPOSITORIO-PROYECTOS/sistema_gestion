@@ -32,27 +32,30 @@ public class FileService {
     }
 
     public Flux<File> findAll(ServerWebExchange exchange) {
-        ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
-        if (template == null) {
-            return Flux.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
-        }
-        return template.findAll(File.class);
+        // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
+        // if (template == null) {
+        //     return Flux.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
+        // }
+        // return template.findAll(File.class);
+        return fileRepository.findAll();
     }
 
     public Mono<File> findById(ServerWebExchange exchange, String id) {
-        ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
-        if (template == null) {
-            return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
-        }
-        return template.findById(id, File.class);
+        // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
+        // if (template == null) {
+        //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
+        // }
+        // return template.findById(id, File.class);
+        return fileRepository.findById(id);
     }
 
     public Mono<File> create(ServerWebExchange exchange, File file) {
-        ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
-        if (template == null) {
-            return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
-        }
-        return template.save(file);
+        // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
+        // if (template == null) {
+        //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
+        // }
+        // return template.save(file);
+        return fileRepository.save(file);
     }
 
     // TODO: Implementar subida de archivos a Google Drive
@@ -78,10 +81,11 @@ public class FileService {
     // }
 
     public Mono<String> saveFile(ServerWebExchange exchange, String name, MultipartFile file) {
-        ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
-        if (template == null) {
-            return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
-        }
+        // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
+        // if (template == null) {
+        //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
+        // }
+
         // return subirArchivoADrive(file).flatMap(link -> {
         //     File fileToSave = new File(name, link);
         //     return template.save(fileToSave).flatMap(savedFile -> Mono.just(savedFile.getId()));
@@ -90,19 +94,21 @@ public class FileService {
     }
 
     public Mono<File> update(ServerWebExchange exchange, String id, File file) {
-        ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
-        if (template == null) {
-            return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
-        }
-        file.setId(id);
-        return template.save(file);
+        // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
+        // if (template == null) {
+        //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
+        // }
+        // file.setId(id);
+        // return template.save(file);
+        return fileRepository.save(file);
     }
 
-    public Mono<DeleteResult> delete(ServerWebExchange exchange, String id) {
-        ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
-        if (template == null) {
-            return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
-        }
-        return template.remove(File.class, id);
+    public Mono<Void> delete(ServerWebExchange exchange, String id) {
+        // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
+        // if (template == null) {
+        //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
+        // }
+        // return template.remove(File.class, id);
+        return fileRepository.deleteById(id);
     }
 }

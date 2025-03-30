@@ -52,7 +52,7 @@ public class CourseSubSectionController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<DeleteResult> deleteSubSection(ServerWebExchange exchange, @PathVariable String id) {
+    public Mono<Void> deleteSubSection(ServerWebExchange exchange, @PathVariable String id) {
         return courseSubSectionService.delete(exchange, id);
     }
 

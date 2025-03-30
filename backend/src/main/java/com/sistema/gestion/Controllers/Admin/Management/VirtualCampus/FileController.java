@@ -54,7 +54,7 @@ public class FileController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<DeleteResult> deleteFile(ServerWebExchange exchange, @PathVariable String id) {
+    public Mono<Void> deleteFile(ServerWebExchange exchange, @PathVariable String id) {
         return fileService.delete(exchange, id);
     }
 }

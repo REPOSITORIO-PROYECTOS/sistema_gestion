@@ -31,61 +31,76 @@ public class CourseSubSectionService {
     }
 
     public Flux<CourseSubSection> findAll(ServerWebExchange exchange) {
-        ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
-        if (template == null) {
-            return Flux.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
-        }
-        return template.findAll(CourseSubSection.class);
+        // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
+        // if (template == null) {
+        //     return Flux.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
+        // }
+        // return template.findAll(CourseSubSection.class);
+        return courseSubSectionRepository.findAll();
     }
 
     public Mono<CourseSubSection> findById(ServerWebExchange exchange, String id) {
-        ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
-        if (template == null) {
-            return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
-        }
-        return template.findById(id, CourseSubSection.class);
+        // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
+        // if (template == null) {
+        //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
+        // }
+        // return template.findById(id, CourseSubSection.class);
+        return courseSubSectionRepository.findById(id);
     }
 
     public Mono<CourseSubSection> create(ServerWebExchange exchange, CourseSubSection courseSubSection) {
-        ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
-        if (template == null) {
-            return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
-        }
-        return template.save(courseSubSection);
+        // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
+        // if (template == null) {
+        //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
+        // }
+        // return template.save(courseSubSection);
+        return courseSubSectionRepository.save(courseSubSection);
     }
 
     public Mono<CourseSubSection> update(ServerWebExchange exchange, String id, CourseSubSection courseSubSection) {
-        ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
-        if (template == null) {
-            return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
-        }
-        courseSubSection.setId(id);
-        return template.save(courseSubSection);
+        // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
+        // if (template == null) {
+        //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
+        // }
+        // courseSubSection.setId(id);
+        // return template.save(courseSubSection);
+        return courseSubSectionRepository.save(courseSubSection);
     }
 
-    public Mono<DeleteResult> delete(ServerWebExchange exchange, String id) {
-        ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
-        if (template == null) {
-            return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
-        }
-        return template.remove(CourseSubSection.class, id);
+    public Mono<Void> delete(ServerWebExchange exchange, String id) {
+        // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
+        // if (template == null) {
+        //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
+        // }
+        // return template.remove(CourseSubSection.class, id);
+        return courseSubSectionRepository.deleteById(id);
     }
 
     public Mono<String> addFile(ServerWebExchange exchange, String subSectionId, String name, MultipartFile file) {
-        ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
-        if (template == null) {
-            return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
-        }
+        // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
+        // if (template == null) {
+        //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
+        // }
+        // return fileService.saveFile(exchange, name, file)
+        //     .flatMap(fileId -> template.findById(subSectionId, CourseSubSection.class)
+        //         .flatMap(subSection -> {
+        //             ArrayList<String> filesIds = subSection.getFilesIds() == null ? new ArrayList<>() : subSection.getFilesIds();
+        //             filesIds.add(fileId);
+        //             subSection.setFilesIds(filesIds);
+        //             return template.save(subSection);
+        //         })
+        //         .map(savedSubSection -> fileId)
+        //     );
         return fileService.saveFile(exchange, name, file)
-            .flatMap(fileId -> template.findById(subSectionId, CourseSubSection.class)
-                .flatMap(subSection -> {
-                    ArrayList<String> filesIds = subSection.getFilesIds() == null ? new ArrayList<>() : subSection.getFilesIds();
-                    filesIds.add(fileId);
-                    subSection.setFilesIds(filesIds);
-                    return template.save(subSection);
-                })
-                .map(savedSubSection -> fileId)
-            );
+                .flatMap(fileId -> courseSubSectionRepository.findById(subSectionId)
+                        .flatMap(subSection -> {
+                            ArrayList<String> filesIds = subSection.getFilesIds() == null ? new ArrayList<>() : subSection.getFilesIds();
+                            filesIds.add(fileId);
+                            subSection.setFilesIds(filesIds);
+                            return courseSubSectionRepository.save(subSection);
+                        })
+                        .map(savedSubSection -> fileId)
+                );
     }
     
 }
