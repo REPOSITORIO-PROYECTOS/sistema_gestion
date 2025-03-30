@@ -142,6 +142,17 @@ public class PaymentService {
 				});
 	}
 
+	public Mono<List<PaymentWithStudentDTO>> getPaymentsByDay(String username, Integer year, Integer month, Integer day) {
+		LocalDate startOfDay = LocalDate.of(year, month, day);
+		LocalDate endOfDay = startOfDay.plusDays(1);
+		return userService.getFullName(username)
+				.flatMap(name -> paymentRepo.findByPaymentDueDateBetween(startOfDay, endOfDay)
+						.collectList()
+						.flatMap(payments -> Flux.fromIterable(payments)
+								.flatMap(this::mapPaymentToDTO)
+								.collectList()));
+	}
+
 	public Flux<Payment> registerMonthlyPayments(String username) {
 		YearMonth currentMonth = YearMonth.now();
 		LocalDate startOfMonth = currentMonth.atDay(1);

@@ -1,5 +1,7 @@
 package com.sistema.gestion.Controllers.Admin.Finance;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -165,6 +167,24 @@ public class PaymentController {
 				.map(ResponseEntity::ok)
 				.switchIfEmpty(
 						Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron cuotas adeudadas")));
+	}
+
+	@GetMapping("/pagos-del-dia")
+	@Operation(summary = "Obtener pagos del día", description = "Devuelve una lista de pagos que tienen o no tienen deuda en un día específico.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Lista de pagos obtenida exitosamente."),
+			@ApiResponse(responseCode = "404", description = "No se encontraron pagos del día.")
+	})
+	public Mono<ResponseEntity<List<PaymentWithStudentDTO>>> getPaymentsByDay(
+		Authentication auth,
+		@Parameter(description = "Año para filtrar los pagos", required = true, example = "2024") @RequestParam Integer year,
+		@Parameter(description = "Mes para filtrar los pagos (1-12)", required = true, example = "1") @RequestParam Integer month,
+		@Parameter(description = "Día para filtrar los pagos (1-31)", required = true, example = "1") @RequestParam Integer day
+		) {
+		String username = auth.getName();
+		return paymentService.getPaymentsByDay(username, year, month, day)
+				.map(ResponseEntity::ok)
+				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron pagos del día.")));
 	}
 
 	@Operation(summary = "Generar pagos mensuales", description = "Registra automáticamente los pagos mensuales de los estudiantes activos para los cursos en los que están inscritos.")
