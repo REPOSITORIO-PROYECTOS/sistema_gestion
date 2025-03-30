@@ -39,9 +39,9 @@ public class AuthController {
 	})
 	@PostMapping("/registrar")
 	public Mono<User> registerUser(
-			@Parameter(description = "Datos del usuario a registrar", required = true) @RequestBody User user,
-			Authentication auth) {
-		String username = auth.getName();
+			@Parameter(description = "Datos del usuario a registrar", required = true) @RequestBody User user) {
+		String username = "ROLE_ADMIN";//auth.getName();
+		System.out.println("---------------- REGISTER USER AUTH CONTROLLER ----------------");
 		return authService.registerUser(user, username)
 				.onErrorMap(e -> new RuntimeException("Error al registrar el usuario"));
 	}

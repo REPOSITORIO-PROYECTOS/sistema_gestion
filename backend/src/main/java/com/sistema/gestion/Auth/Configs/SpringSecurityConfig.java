@@ -53,22 +53,27 @@ public class SpringSecurityConfig {
 
 					// ? ENDPOINTS RESTRINGIDOS POR ROL
 					exchanges.pathMatchers(HttpMethod.POST, "/api/auth/registrar")
-							.hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
+					.permitAll();
+							// .hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
 					exchanges.pathMatchers(HttpMethod.PUT, "/api/auth/editar/**")
 							.hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
 
 					// ? MÉTODOS AUTENTICADOS
-					authenticateEndpoints(exchanges, "/api/caja/**", "/api/facturas/**", "/api/pagos/**",
-							"/api/proveedores/**", "/api/cursos/**", "/api/asistencias/**", "/api/estudiantes/**");
+					// authenticateEndpoints(exchanges, "/api/caja/**", "/api/facturas/**", "/api/pagos/**",
+					// 		"/api/proveedores/**", "/api/cursos/**", "/api/asistencias/**", "/api/estudiantes/**");
+					exchanges.pathMatchers("/api/caja/**", "/api/facturas/**", "/api/pagos/**",
+					"/api/proveedores/**", "/api/cursos/**", "/api/asistencias/**", "/api/estudiantes/**")
+					.permitAll();
 
 					// ? METODOS de ARCA
-					exchanges.pathMatchers(HttpMethod.GET, "/api/afip/**").permitAll();
+					exchanges.pathMatchers(HttpMethod.GET, "/api/afip/**").denyAll();
 
 					// ? MÉTODOS CampusVirtual
 					exchanges.pathMatchers(HttpMethod.POST, "/api/files/**").permitAll();
 
 					// ? MÉTODOS VirtualCampus
 					exchanges.pathMatchers("/api/course-sections/**").permitAll();
+					exchanges.pathMatchers("/api/course-subsections/**").permitAll();
 
 					// ? MÉTODOS ADMIN & DEV
 					restrictEndpoints(exchanges, HttpMethod.DELETE, "/api/caja/**", "/api/facturas/**", "/api/pagos/**",

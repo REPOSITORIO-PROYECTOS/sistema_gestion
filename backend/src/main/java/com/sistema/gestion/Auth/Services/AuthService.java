@@ -27,6 +27,7 @@ public class AuthService {
 	private final UserService userService;
 
 	public Mono<User> registerUser(User user, String username) {
+		System.out.println("---------------- REGISTER USER AUTH SERVICE ----------------");
 		return userService.getFullName(username)
 				.flatMap(name -> {
 					return userRepository.findByEmail(user.getEmail())
