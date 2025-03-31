@@ -3,6 +3,7 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\A
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\CustomReactiveAuthenticationManager.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Filters\JwtAuthenticationFilter.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Filters\JwtAuthenticationWebFilter.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Filters\JwtCookieFilter.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Services\AuthService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Services\CustomReactiveUserDetailsService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Auth\Utils\JwtUtil.java

@@ -38,6 +38,10 @@ public class JwtUtil {
 		}
 	}
 
+	public String createToken(String username) {
+		return generateToken(username, new String[] { "ROLE_USER" });
+	}
+
 	public String getUsernameFromToken(String token) {
 		return validateToken(token).getSubject();
 	}
