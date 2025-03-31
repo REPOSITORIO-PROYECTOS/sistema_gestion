@@ -40,26 +40,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     useEffect(() => {
-        // Proteger rutas
-        if (!isLoading) {
-            // Si no hay usuario y no estamos en login, redirigir a login
-            if (!user && pathname !== "/login") {
-                router.push("/login");
-            }
-
-            // Si hay usuario admin y está intentando acceder a rutas de estudiante
-            if (
-                user?.role === "admin" &&
-                pathname.startsWith("/aula-virtual")
-            ) {
-                router.push("/admin");
-            }
-
-            // Si hay usuario estudiante y está intentando acceder a rutas de admin
-            if (user?.role === "estudiante" && pathname.startsWith("/admin")) {
-                router.push("/");
-            }
-        }
+        // // Proteger rutas
+        // if (!isLoading) {
+        //     // Si no hay usuario y no estamos en login, redirigir a login
+        //     if (!user && pathname !== "/login") {
+        //         router.push("/login");
+        //     }
+        //     // Si hay usuario admin y está intentando acceder a rutas de estudiante
+        //     if (
+        //         user?.role === "admin" &&
+        //         pathname.startsWith("/aula-virtual")
+        //     ) {
+        //         router.push("/admin");
+        //     }
+        //     // Si hay usuario estudiante y está intentando acceder a rutas de admin
+        //     if (user?.role === "estudiante" && pathname.startsWith("/admin")) {
+        //         router.push("/");
+        //     }
+        // }
     }, [user, isLoading, pathname, router]);
 
     const login = async (
