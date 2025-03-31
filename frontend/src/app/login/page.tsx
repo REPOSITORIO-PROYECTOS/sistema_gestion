@@ -1,9 +1,12 @@
 "use client";
 
-import type React from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -14,62 +17,74 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
+import { useAuthStore } from "@/context/store";
+
+// Esquema de validación con Zod
+const formSchema = z.object({
+    email: z
+        .string()
+        .email({ message: "Ingresa un correo electrónico válido" })
+        .min(1, { message: "El correo electrónico es requerido" }),
+    password: z
+        .string()
+        .min(6, { message: "La contraseña debe tener al menos 6 caracteres" })
+        .max(50, { message: "La contraseña no debe exceder 50 caracteres" }),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 export default function LoginPage() {
     const router = useRouter();
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    const [activeTab, setActiveTab] = useState<"estudiante" | "admin">(
+        "estudiante"
+    );
+    const [showPassword, setShowPassword] = useState(false);
 
-    const handleLogin = (e: React.FormEvent, role: "estudiante" | "admin") => {
-        e.preventDefault();
-        setLoading(true);
-        setError("");
+    // Usar el store de autenticación
+    const { login, isLoading, error, clearError } = useAuthStore();
 
-        // Simulación de autenticación
-        setTimeout(() => {
-            setLoading(false);
+    // Configuración de react-hook-form con validación de Zod
+    const form = useForm<FormValues>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            email: "",
+            password: "",
+        },
+    });
 
-            // Credenciales de prueba
-            if (
-                role === "admin" &&
-                email === "admin@example.com" &&
-                password === "admin123"
-            ) {
-                // Guardar información de sesión (en una aplicación real usaríamos cookies o localStorage)
-                sessionStorage.setItem(
-                    "user",
-                    JSON.stringify({
-                        email,
-                        role: "admin",
-                        name: "Administrador",
-                    })
-                );
-                router.push("/admin");
-            } else if (
-                role === "estudiante" &&
-                email === "estudiante@example.com" &&
-                password === "estudiante123"
-            ) {
-                // Guardar información de sesión
-                sessionStorage.setItem(
-                    "user",
-                    JSON.stringify({
-                        email,
-                        role: "estudiante",
-                        name: "Estudiante Demo",
-                    })
-                );
-                router.push("/");
-            } else {
-                setError(
-                    "Credenciales incorrectas. Por favor, inténtalo de nuevo."
-                );
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
+    const onSubmit = async (data: FormValues) => {
+        try {
+            // Limpiar errores previos
+            clearError();
+
+            // Llamar a la función login del store
+            const success = await login(data.email, data.password, activeTab);
+
+            // Redireccionar según el rol si el login fue exitoso
+            if (success) {
+                if (activeTab === "admin") {
+                    router.push("/admin");
+                } else {
+                    router.push("/");
+                }
             }
-        }, 1000);
+        } catch (err) {
+            // El error ya se maneja en el store
+            console.error("Error durante el inicio de sesión:", err);
+        }
     };
 
     return (
@@ -86,7 +101,13 @@ export default function LoginPage() {
                         </p>
                     </div>
 
-                    <Tabs defaultValue="estudiante" className="w-full">
+                    <Tabs
+                        value={activeTab}
+                        onValueChange={(value) =>
+                            setActiveTab(value as "estudiante" | "admin")
+                        }
+                        className="w-full"
+                    >
                         <TabsList className="grid w-full grid-cols-2 dark:bg-zinc-900">
                             <TabsTrigger value="estudiante">
                                 Estudiante
@@ -105,67 +126,95 @@ export default function LoginPage() {
                                         estudiante
                                     </CardDescription>
                                 </CardHeader>
-                                <form
-                                    onSubmit={(e) =>
-                                        handleLogin(e, "estudiante")
-                                    }
-                                >
-                                    <CardContent className="space-y-4">
-                                        {error && (
-                                            <div className="rounded-md bg-red-50 p-3 text-sm text-red-500">
-                                                {error}
-                                            </div>
-                                        )}
-                                        <div className="space-y-2">
-                                            <Label htmlFor="email-estudiante">
-                                                Correo electrónico
-                                            </Label>
-                                            <Input
-                                                id="email-estudiante"
-                                                type="email"
-                                                placeholder="tu@email.com"
-                                                value={email}
-                                                onChange={(e) =>
-                                                    setEmail(e.target.value)
-                                                }
-                                                required
+                                <Form {...form}>
+                                    <form
+                                        onSubmit={form.handleSubmit(onSubmit)}
+                                    >
+                                        <CardContent className="space-y-4">
+                                            {error && (
+                                                <div className="rounded-md bg-red-50 p-3 text-sm text-red-500">
+                                                    {error}
+                                                </div>
+                                            )}
+                                            <FormField
+                                                control={form.control}
+                                                name="email"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>
+                                                            Correo electrónico
+                                                        </FormLabel>
+                                                        <FormControl>
+                                                            <Input
+                                                                placeholder="tu@email.com"
+                                                                type="email"
+                                                                {...field}
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
                                             />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <div className="flex items-center justify-between">
-                                                <Label htmlFor="password-estudiante">
-                                                    Contraseña
-                                                </Label>
-                                                <Link
-                                                    href="#"
-                                                    className="text-xs text-blue-500 hover:underline"
-                                                >
-                                                    ¿Olvidaste tu contraseña?
-                                                </Link>
-                                            </div>
-                                            <Input
-                                                id="password-estudiante"
-                                                type="password"
-                                                value={password}
-                                                onChange={(e) =>
-                                                    setPassword(e.target.value)
-                                                }
-                                                required
+                                            <FormField
+                                                control={form.control}
+                                                name="password"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <div className="flex items-center justify-between">
+                                                            <FormLabel>
+                                                                Contraseña
+                                                            </FormLabel>
+                                                            <Link
+                                                                href="#"
+                                                                className="text-xs text-blue-500 hover:underline"
+                                                            >
+                                                                ¿Olvidaste tu
+                                                                contraseña?
+                                                            </Link>
+                                                        </div>
+                                                        <FormControl>
+                                                            <div className="relative">
+                                                                <Input
+                                                                    type={
+                                                                        showPassword
+                                                                            ? "text"
+                                                                            : "password"
+                                                                    }
+                                                                    {...field}
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                                                                    onClick={
+                                                                        togglePasswordVisibility
+                                                                    }
+                                                                >
+                                                                    {showPassword ? (
+                                                                        <EyeOff className="h-4 w-4" />
+                                                                    ) : (
+                                                                        <Eye className="h-4 w-4" />
+                                                                    )}
+                                                                </button>
+                                                            </div>
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
                                             />
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter>
-                                        <Button
-                                            type="submit"
-                                            className="w-full mt-6"
-                                            disabled={loading}
-                                        >
-                                            {loading
-                                                ? "Iniciando sesión..."
-                                                : "Iniciar sesión"}
-                                        </Button>
-                                    </CardFooter>
-                                </form>
+                                        </CardContent>
+                                        <CardFooter>
+                                            <Button
+                                                type="submit"
+                                                className="w-full mt-6"
+                                                disabled={isLoading}
+                                            >
+                                                {isLoading
+                                                    ? "Iniciando sesión..."
+                                                    : "Iniciar sesión"}
+                                            </Button>
+                                        </CardFooter>
+                                    </form>
+                                </Form>
                             </Card>
                         </TabsContent>
 
@@ -180,63 +229,95 @@ export default function LoginPage() {
                                         administrador
                                     </CardDescription>
                                 </CardHeader>
-                                <form onSubmit={(e) => handleLogin(e, "admin")}>
-                                    <CardContent className="space-y-4">
-                                        {error && (
-                                            <div className="rounded-md bg-red-50 p-3 text-sm text-red-500">
-                                                {error}
-                                            </div>
-                                        )}
-                                        <div className="space-y-2">
-                                            <Label htmlFor="email-admin">
-                                                Correo electrónico
-                                            </Label>
-                                            <Input
-                                                id="email-admin"
-                                                type="email"
-                                                placeholder="admin@email.com"
-                                                value={email}
-                                                onChange={(e) =>
-                                                    setEmail(e.target.value)
-                                                }
-                                                required
+                                <Form {...form}>
+                                    <form
+                                        onSubmit={form.handleSubmit(onSubmit)}
+                                    >
+                                        <CardContent className="space-y-4">
+                                            {error && (
+                                                <div className="rounded-md bg-red-50 p-3 text-sm text-red-500">
+                                                    {error}
+                                                </div>
+                                            )}
+                                            <FormField
+                                                control={form.control}
+                                                name="email"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>
+                                                            Correo electrónico
+                                                        </FormLabel>
+                                                        <FormControl>
+                                                            <Input
+                                                                placeholder="admin@email.com"
+                                                                type="email"
+                                                                {...field}
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
                                             />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <div className="flex items-center justify-between">
-                                                <Label htmlFor="password-admin">
-                                                    Contraseña
-                                                </Label>
-                                                <Link
-                                                    href="#"
-                                                    className="text-xs text-blue-500 hover:underline"
-                                                >
-                                                    ¿Olvidaste tu contraseña?
-                                                </Link>
-                                            </div>
-                                            <Input
-                                                id="password-admin"
-                                                type="password"
-                                                value={password}
-                                                onChange={(e) =>
-                                                    setPassword(e.target.value)
-                                                }
-                                                required
+                                            <FormField
+                                                control={form.control}
+                                                name="password"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <div className="flex items-center justify-between">
+                                                            <FormLabel>
+                                                                Contraseña
+                                                            </FormLabel>
+                                                            <Link
+                                                                href="#"
+                                                                className="text-xs text-blue-500 hover:underline"
+                                                            >
+                                                                ¿Olvidaste tu
+                                                                contraseña?
+                                                            </Link>
+                                                        </div>
+                                                        <FormControl>
+                                                            <div className="relative">
+                                                                <Input
+                                                                    type={
+                                                                        showPassword
+                                                                            ? "text"
+                                                                            : "password"
+                                                                    }
+                                                                    {...field}
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                                                                    onClick={
+                                                                        togglePasswordVisibility
+                                                                    }
+                                                                >
+                                                                    {showPassword ? (
+                                                                        <EyeOff className="h-4 w-4" />
+                                                                    ) : (
+                                                                        <Eye className="h-4 w-4" />
+                                                                    )}
+                                                                </button>
+                                                            </div>
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
                                             />
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter>
-                                        <Button
-                                            type="submit"
-                                            className="w-full mt-6"
-                                            disabled={loading}
-                                        >
-                                            {loading
-                                                ? "Iniciando sesión..."
-                                                : "Iniciar sesión"}
-                                        </Button>
-                                    </CardFooter>
-                                </form>
+                                        </CardContent>
+                                        <CardFooter>
+                                            <Button
+                                                type="submit"
+                                                className="w-full mt-6"
+                                                disabled={isLoading}
+                                            >
+                                                {isLoading
+                                                    ? "Iniciando sesión..."
+                                                    : "Iniciar sesión"}
+                                            </Button>
+                                        </CardFooter>
+                                    </form>
+                                </Form>
                             </Card>
                         </TabsContent>
                     </Tabs>
