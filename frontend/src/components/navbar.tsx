@@ -20,6 +20,8 @@ export function Navbar() {
         { href: "/admin/caja", label: "Caja" },
         { href: "/admin/cursos", label: "Cursos" },
         { href: "/admin/usuarios", label: "Usuarios" },
+        { href: "/admin/cuotas", label: "Cuotas" },
+        { href: "/admin/aula-virtual", label: "Aula Virtual" },
     ];
 
     useEffect(() => {
