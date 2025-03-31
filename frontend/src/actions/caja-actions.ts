@@ -3,7 +3,7 @@
 export async function toggleCajaEstado(activa: boolean) {
     try {
         const response = await fetch(
-            `https://sistema-gestion-1.onrender.com/api/caja/cerrar`,
+            `https://sistema-gestion-1.onrender.com/api/caja/estado`,
             {
                 method: "POST",
                 headers: {
