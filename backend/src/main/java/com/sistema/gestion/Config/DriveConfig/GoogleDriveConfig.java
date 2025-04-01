@@ -21,6 +21,7 @@ import java.util.Collections;
 public class GoogleDriveConfig {
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 
+    @Bean
     public Drive googleDriveService() throws IOException, GeneralSecurityException {
         // Cargar credenciales desde el archivo JSON
         GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(new ClassPathResource("credentials.json").getFile()))

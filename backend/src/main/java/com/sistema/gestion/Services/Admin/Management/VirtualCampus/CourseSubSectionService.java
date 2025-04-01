@@ -91,7 +91,7 @@ public class CourseSubSectionService {
         //         })
         //         .map(savedSubSection -> fileId)
         //     );
-        return fileService.saveFile(exchange, name, file)
+        return fileService.saveFile(exchange, file)
                 .flatMap(fileId -> courseSubSectionRepository.findById(subSectionId)
                         .flatMap(subSection -> {
                             ArrayList<String> filesIds = subSection.getFilesIds() == null ? new ArrayList<>() : subSection.getFilesIds();

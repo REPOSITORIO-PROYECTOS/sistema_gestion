@@ -1,5 +1,7 @@
 package com.sistema.gestion.Controllers.Admin.Management.VirtualCampus;
 
+import java.io.IOException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,12 +42,11 @@ public class FileController {
     }
 
     //TODO: Implementar subida de archivos a Google Drive
-    // @PostMapping(path = "/subir", consumes = "multipart/form-data")
-    // public Mono<ResponseEntity<String>> subirArchivo(ServerWebExchange exchange, @RequestPart("file") Mono<MultipartFile> file) {
-    //     return file
-    //         .flatMap(filePart -> fileService.subirArchivoADrive(filePart)) // Sube el archivo a Drive
-    //         .map((url) -> ResponseEntity.ok("Archivo subido: " + url));
-    // }
+    @PostMapping(path = "/subir", consumes = "multipart/form-data")
+    public Mono<ResponseEntity<String>> subirArchivo(ServerWebExchange exchange, @RequestPart("file") MultipartFile archivo) throws IOException {
+        return fileService.saveFile(exchange, archivo) // Sube el archivo a Drive
+            .map((url) -> ResponseEntity.ok("Archivo subido: " + url));
+    }
 
     @PutMapping("/{id}")
     public Mono<File> updateFile(ServerWebExchange exchange, @PathVariable String id, @RequestBody File file) {

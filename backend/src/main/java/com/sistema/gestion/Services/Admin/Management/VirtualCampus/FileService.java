@@ -24,11 +24,11 @@ import reactor.core.publisher.Flux;
 public class FileService {
 
     private final FileRepository fileRepository;
-    //private final Drive googleDriveService;
+    private final Drive googleDriveService;
 
-    public FileService(FileRepository filesRepository/*, Drive googleDriveService */) {
+    public FileService(FileRepository filesRepository, Drive googleDriveService) {
         this.fileRepository = filesRepository;
-        //this.googleDriveService = googleDriveService;
+        this.googleDriveService = googleDriveService;
     }
 
     public Flux<File> findAll(ServerWebExchange exchange) {
@@ -59,38 +59,38 @@ public class FileService {
     }
 
     // TODO: Implementar subida de archivos a Google Drive
-    // public Mono<String> subirArchivoADrive(MultipartFile file) {
-    //     return Mono.fromCallable(() -> {
-    //         // Crear metadatos del archivo en Google Drive
-    //         com.google.api.services.drive.model.File fileMetadata = new com.google.api.services.drive.model.File();
-    //         fileMetadata.setName(file.getOriginalFilename());
-    //         fileMetadata.setParents(Collections.singletonList("<FOLDER_ID>")); 
+    public Mono<String> subirArchivoADrive(MultipartFile file) {
+        return Mono.fromCallable(() -> {
+            // Crear metadatos del archivo en Google Drive
+            com.google.api.services.drive.model.File fileMetadata = new com.google.api.services.drive.model.File();
+            fileMetadata.setName(file.getOriginalFilename());
+            fileMetadata.setParents(Collections.singletonList("<FOLDER_ID>")); 
 
-    //         // Crear el contenido del archivo
-    //         AbstractInputStreamContent fileContent = new InputStreamContent(
-    //                 file.getContentType(), file.getInputStream());
+            // Crear el contenido del archivo
+            AbstractInputStreamContent fileContent = new InputStreamContent(
+                    file.getContentType(), file.getInputStream());
 
-    //         // Subir el archivo a Google Drive
-    //         com.google.api.services.drive.model.File googleFile = googleDriveService.files()
-    //                 .create(fileMetadata, fileContent)
-    //                 .setFields("id, webViewLink")
-    //                 .execute();
+            // Subir el archivo a Google Drive
+            com.google.api.services.drive.model.File googleFile = googleDriveService.files()
+                    .create(fileMetadata, fileContent)
+                    .setFields("id, webViewLink")
+                    .execute();
 
-    //         return googleFile.getWebViewLink(); // Retornar la URL del archivo en Drive
-    //     });
-    // }
+            return googleFile.getWebViewLink(); // Retornar la URL del archivo en Drive
+        });
+    }
 
-    public Mono<String> saveFile(ServerWebExchange exchange, String name, MultipartFile file) {
+    public Mono<String> saveFile(ServerWebExchange exchange, MultipartFile file) {
         // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
         // if (template == null) {
         //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
         // }
 
-        // return subirArchivoADrive(file).flatMap(link -> {
-        //     File fileToSave = new File(name, link);
-        //     return template.save(fileToSave).flatMap(savedFile -> Mono.just(savedFile.getId()));
-        // });
-        return Mono.just("");
+        return subirArchivoADrive(file).flatMap(link -> {
+            File fileToSave = new File(file.getOriginalFilename(), link);
+            return fileRepository.save(fileToSave).flatMap(savedFile -> Mono.just(savedFile.getId()));
+        });
+        //return Mono.just("");
     }
 
     public Mono<File> update(ServerWebExchange exchange, String id, File file) {
