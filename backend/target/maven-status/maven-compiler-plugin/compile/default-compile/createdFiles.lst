@@ -40,6 +40,7 @@ com\sistema\gestion\Exceptions\GlobalExceptionHandler.class
 com\sistema\gestion\Auth\Services\AuthService.class
 com\sistema\gestion\Config\DynamicDBConection\DynamicMongoConfig.class
 com\sistema\gestion\Auth\Configs\SpringSecurityConfig.class
+com\sistema\gestion\Auth\Filters\JwtCookieFilter.class
 com\sistema\gestion\Models\Admin\Finance\Provider.class
 com\sistema\gestion\Services\Admin\Finance\Billing\WSAAClientService.class
 com\sistema\gestion\Utils\AttendanceStatus.class
