@@ -3,12 +3,12 @@ package com.sistema.gestion.Controllers.Admin.Management.VirtualCampus;
 import java.io.IOException;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ServerWebExchange;
 
-import com.mongodb.client.result.DeleteResult;
 import com.sistema.gestion.Models.Admin.Management.VirtualCampus.File;
 import com.sistema.gestion.Services.Admin.Management.VirtualCampus.FileService;
 
@@ -41,15 +41,14 @@ public class FileController {
         return fileService.create(exchange, file);
     }
 
-    //TODO: Implementar subida de archivos a Google Drive
-    @PostMapping(path = "/subir", consumes = "multipart/form-data")
-    public Mono<ResponseEntity<String>> subirArchivo(ServerWebExchange exchange, @RequestPart("file") MultipartFile archivo) throws IOException {
-        return fileService.saveFile(exchange, archivo) // Sube el archivo a Drive
+    @PostMapping(path = "/subir", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Mono<ResponseEntity<String>> subirArchivo(ServerWebExchange exchange, @RequestPart(value="file") Mono<FilePart> file) throws IOException {
+        return fileService.saveFile(exchange, file) // Sube el archivo a Drive
             .map((url) -> ResponseEntity.ok("Archivo subido: " + url));
     }
 
     @PutMapping("/{id}")
-    public Mono<File> updateFile(ServerWebExchange exchange, @PathVariable String id, @RequestBody File file) {
+    public Mono<File> updateFile(ServerWebExchange exchange, @PathVariable String id, @RequestPart Mono<FilePart> file) {
         return fileService.update(exchange, id, file);
     }
 

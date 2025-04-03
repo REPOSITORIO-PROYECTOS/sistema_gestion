@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
@@ -24,7 +23,7 @@ public class GoogleDriveConfig {
     @Bean
     public Drive googleDriveService() throws IOException, GeneralSecurityException {
         // Cargar credenciales desde el archivo JSON
-        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(new ClassPathResource("credentials.json").getFile()))
+        GoogleCredentials credentials = GoogleCredentials.fromStream(new ClassPathResource("credentials.json").getInputStream())
                 .createScoped(Collections.singletonList(DriveScopes.DRIVE));
 
         // Convertir GoogleCredentials a HttpRequestInitializer

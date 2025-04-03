@@ -60,13 +60,13 @@ public class SpringSecurityConfig {
 					// ? MÉTODOS AUTENTICADOS
 					authenticateEndpoints(exchanges, "/api/caja/**", "/api/facturas/**", "/api/pagos/**",
 							"/api/proveedores/**", "/api/cursos/**", "/api/asistencias/**", "/api/estudiantes/**",
-							"/api/course-sections/**", "/api/course-subsections/**", "/api/files/**");
+							"/api/course-sections/**", "/api/course-subsections/**", "/api/grades/**", "/api/files/**");
 
 					// ? METODOS de ARCA
 					exchanges.pathMatchers(HttpMethod.GET, "/api/afip/**").denyAll();
 
 					// ? MÉTODOS de Archivos
-					exchanges.pathMatchers(HttpMethod.POST, "/api/files/**").permitAll();//.hasAnyAuthority("ROLE_ADMIN");
+					exchanges.pathMatchers(HttpMethod.POST, "/api/files/subir").hasAnyAuthority("ROLE_ADMIN");
 					exchanges.pathMatchers(HttpMethod.PUT, "/api/files/**").hasAnyAuthority("ROLE_ADMIN");
 					exchanges.pathMatchers(HttpMethod.DELETE, "/api/files/**").hasAnyAuthority("ROLE_ADMIN");
 					exchanges.pathMatchers(HttpMethod.GET, "/api/files/**").permitAll();
@@ -80,6 +80,12 @@ public class SpringSecurityConfig {
 					exchanges.pathMatchers(HttpMethod.PUT, "/api/course-subsections/**").hasAnyAuthority("ROLE_ADMIN");
 					exchanges.pathMatchers(HttpMethod.DELETE, "/api/course-sections/**").hasAnyAuthority("ROLE_ADMIN");
 					exchanges.pathMatchers(HttpMethod.DELETE, "/api/course-subsections/**").hasAnyAuthority("ROLE_ADMIN");
+
+					// ? MÉTODOS de Notas de evaluaciones
+					exchanges.pathMatchers(HttpMethod.GET, "/api/grades/**").authenticated();
+					exchanges.pathMatchers(HttpMethod.POST, "/api/grades/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_TEACHER");
+					exchanges.pathMatchers(HttpMethod.PUT, "/api/grades/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_TEACHER");
+					exchanges.pathMatchers(HttpMethod.DELETE, "/api/grades/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_TEACHER");
 
 					// ? MÉTODOS ADMIN & DEV
 					restrictEndpoints(exchanges, HttpMethod.DELETE, "/api/caja/**", "/api/facturas/**", "/api/pagos/**",

@@ -50,12 +50,12 @@ public class AuthService {
 							.flatMap(existingUser -> {
 								existingUser.setModifiedBy(name);
 								existingUser.setUpdatedAt(LocalDateTime.now());
-								existingUser.setName(user.getName());
-								existingUser.setSurname(user.getSurname());
-								existingUser.setPhone(user.getPhone());
-								existingUser.setEmail(user.getEmail());
-								existingUser.setDni(user.getDni());
-								existingUser.setRoles(user.getRoles());
+								existingUser.setName(user.getName() != null ? user.getName() : existingUser.getName());
+								existingUser.setSurname(user.getSurname() != null ? user.getSurname() : existingUser.getSurname());
+								existingUser.setPhone(user.getPhone() != null ? user.getPhone() : existingUser.getPhone());
+								existingUser.setEmail(user.getEmail() != null ? user.getEmail() : existingUser.getEmail());
+								existingUser.setDni(user.getDni() != null ? user.getDni() : existingUser.getDni());
+								existingUser.setRoles(user.getRoles() != null ? user.getRoles() : existingUser.getRoles());
 								if (user.getPassword() != null && !user.getPassword().isEmpty()
 										&& !user.getPassword().isBlank()) {
 									existingUser.setPassword(passwordEncoder.encode(user.getPassword()));

@@ -17,6 +17,7 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\C
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\InvoiceController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\PaymentController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Finance\ProviderController.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Management\Academics\GradeController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Management\CourseController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Management\StudentAttendanceController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Admin\Management\VirtualCampus\CourseSectionController.java
@@ -43,6 +44,7 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\M
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Finance\Payment.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Finance\Provider.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Management\Course.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Management\Grade.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Management\StudentAttendance.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Management\VirtualCampus\CourseSection.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Management\VirtualCampus\CourseSubSection.java
@@ -74,6 +76,7 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\S
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Finance\InvoiceService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Finance\PaymentService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Finance\ProviderService.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Management\Academics\GradeService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Management\CourseService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Management\StudentAttendanceService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Management\VirtualCampus\CourseSectionService.java

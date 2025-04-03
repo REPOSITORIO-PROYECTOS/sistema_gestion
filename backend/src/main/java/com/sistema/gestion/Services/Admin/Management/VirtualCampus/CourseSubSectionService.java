@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 import org.springframework.boot.autoconfigure.mustache.MustacheProperties.Reactive;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ServerWebExchange;
@@ -76,7 +77,7 @@ public class CourseSubSectionService {
         return courseSubSectionRepository.deleteById(id);
     }
 
-    public Mono<String> addFile(ServerWebExchange exchange, String subSectionId, String name, MultipartFile file) {
+    public Mono<String> addFile(ServerWebExchange exchange, String subSectionId, String name, Mono<FilePart> file) {
         // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
         // if (template == null) {
         //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));

@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.mustache.MustacheProperties.Reacti
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ServerWebExchange;
@@ -57,7 +58,7 @@ public class CourseSubSectionController {
     }
 
     @PostMapping("/{subSectionId}/addFile")
-    public Mono<ResponseEntity<String>> addFile(ServerWebExchange exchange, @PathVariable String subSectionId, @RequestPart("fileName") String name, @RequestPart("newFile") MultipartFile file) {
+    public Mono<ResponseEntity<String>> addFile(ServerWebExchange exchange, @PathVariable String subSectionId, @RequestPart("fileName") String name, @RequestPart("newFile") Mono<FilePart> file) {
         return courseSubSectionService.addFile(exchange, subSectionId, name, file).map(id -> ResponseEntity.ok("Id del archivo subido: " + id));
     }
 }
