@@ -1,21 +1,44 @@
-"use client"
+"use client";
 
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form"
-import { CircleAlert, Loader2Icon, Plus } from "lucide-react"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "./ui/alert-dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "./ui/select";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "./ui/form";
+import { CircleAlert, Loader2Icon, Plus } from "lucide-react";
 import MultipleSelector from "@/components/ui/multiselect";
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useLoading } from "@/hooks/useLoading"
-import { useEffect, useState } from "react"
-import { useFetch } from "@/hooks/useFetch"
-import { useForm } from "react-hook-form"
-import { Textarea } from "./ui/textarea"
-import { Button } from "./ui/button"
-import { ScopedMutator } from "swr"
-import { Input } from "./ui/input"
-import { toast } from "sonner"
-import * as z from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useLoading } from "@/hooks/useLoading";
+import { useEffect, useState } from "react";
+import { useFetch } from "@/hooks/useFetch";
+import { useForm } from "react-hook-form";
+import { Textarea } from "./ui/textarea";
+import { Button } from "./ui/button";
+import { ScopedMutator } from "swr";
+import { Input } from "./ui/input";
+import { toast } from "sonner";
+import * as z from "zod";
 
 const formSchema = z.object({
     title: z.string().min(2, {
@@ -25,37 +48,48 @@ const formSchema = z.object({
     status: z.enum(["ACTIVE", "INACTIVE"], {
         required_error: "Por favor seleccione un estado.",
     }),
-    monthlyPrice: z.number({
-        required_error: "El precio mensual es requerido."
-    }).min(0, {
-        message: "El precio mensual debe ser mayor o igual a 0.",
-    }),
+    monthlyPrice: z
+        .number({
+            required_error: "El precio mensual es requerido.",
+        })
+        .min(0, {
+            message: "El precio mensual debe ser mayor o igual a 0.",
+        }),
     studentsIds: z.array(z.string()).optional(),
-    teacherId: z.string().optional()
-})
+    teacherId: z.string().optional(),
+});
 
 interface AgregarCursoProps {
     isEditable?: boolean;
     datos?: {
-        id: string
-        title: string
-        description: string
-        status: 'ACTIVE' | 'INACTIVE'
-        monthlyPrice: number
-        studentsIds: string[]
-        teacherId: string
+        id: string;
+        title: string;
+        description: string;
+        status: "ACTIVE" | "INACTIVE";
+        monthlyPrice: number;
+        studentsIds: string[];
+        teacherId: string;
     };
     mutate: ScopedMutator | (() => void); // Acepta tanto ScopedMutator como una función sin argumentos
-    onClose?: () => void
+    onClose?: () => void;
 }
 
-export default function FormCurso({ isEditable = false, datos, mutate, onClose }: AgregarCursoProps) {
-    const [studentOptions, setStudentOptions] = useState<{ label: string; value: string }[]>([])
-    const [teacherOptions, setTeacherOptions] = useState<{ label: string; value: string }[]>([])
-    const [isLoading, setIsLoading] = useState(true)
-    const [open, setOpen] = useState(false)
-    const { finishLoading, loading, startLoading } = useLoading()
-    const fetch = useFetch()
+export default function FormCurso({
+    isEditable = false,
+    datos,
+    mutate,
+    onClose,
+}: AgregarCursoProps) {
+    const [studentOptions, setStudentOptions] = useState<
+        { label: string; value: string }[]
+    >([]);
+    const [teacherOptions, setTeacherOptions] = useState<
+        { label: string; value: string }[]
+    >([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [open, setOpen] = useState(false);
+    const { finishLoading, loading, startLoading } = useLoading();
+    const fetch = useFetch();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -66,47 +100,53 @@ export default function FormCurso({ isEditable = false, datos, mutate, onClose }
             studentsIds: datos?.studentsIds ?? [],
             teacherId: datos?.teacherId || "",
         },
-    })
+    });
 
     useEffect(() => {
         const fetchOptions = async () => {
-            setIsLoading(true)
+            setIsLoading(true);
             try {
                 const [studentsResponse, teachersResponse] = await Promise.all([
                     fetch({
-                        endpoint: 'estudiantes/todos?page=0&size=1000',
-                        method: 'GET',
+                        endpoint: "estudiantes/paged?page=0&size=1000",
+                        method: "GET",
                     }),
                     fetch({
-                        endpoint: 'profesores/todos?page=0&size=1000',
-                        method: 'GET',
-                    })
-                ])
+                        endpoint: "profesores/paged?page=0&size=1000",
+                        method: "GET",
+                    }),
+                ]);
                 if (studentsResponse && studentsResponse.content) {
-                    const students = studentsResponse.content
-                    const studentOptions = students.map((student: any) => ({ label: `${student.name} ${student.surname}`, value: student.id }))
-                    setStudentOptions(studentOptions)
+                    const students = studentsResponse.content;
+                    const studentOptions = students.map((student: any) => ({
+                        label: `${student.name} ${student.surname}`,
+                        value: student.id,
+                    }));
+                    setStudentOptions(studentOptions);
                 }
                 if (teachersResponse && teachersResponse.content) {
-                    const teachers = teachersResponse.content
-                    const teacherOptions = teachers.map((teacher: any) => ({ label: `${teacher.name} ${teacher.surname}`, value: teacher.id }))
-                    setTeacherOptions(teacherOptions)
+                    const teachers = teachersResponse.content;
+                    const teacherOptions = teachers.map((teacher: any) => ({
+                        label: `${teacher.name} ${teacher.surname}`,
+                        value: teacher.id,
+                    }));
+                    setTeacherOptions(teacherOptions);
                 }
             } catch (error: any) {
                 const errorMessage =
-                    (typeof error === 'object' && error.response
+                    (typeof error === "object" && error.response
                         ? error.response.data?.message
                         : error?.message) ||
                     "Error al cargar las opciones. Inténtalo de nuevo.";
-                console.error("Error en fetchOptions: ", errorMessage)
-                toast.error(errorMessage)
+                console.error("Error en fetchOptions: ", errorMessage);
+                toast.error(errorMessage);
             } finally {
-                setIsLoading(false)
+                setIsLoading(false);
             }
-        }
+        };
 
-        fetchOptions()
-    }, [])
+        fetchOptions();
+    }, []);
 
     async function onSubmit(data: z.infer<typeof formSchema>) {
         const formData = {
@@ -116,17 +156,17 @@ export default function FormCurso({ isEditable = false, datos, mutate, onClose }
             monthlyPrice: Number.parseFloat(data.monthlyPrice.toString()),
             studentsIds: data.studentsIds,
             teacherId: data.teacherId,
-        }
-        startLoading()
+        };
+        startLoading();
         try {
-            const endpoint = isEditable ? `cursos/${datos?.id}` : 'cursos'
+            const endpoint = isEditable ? `cursos/${datos?.id}` : "cursos";
             const response = await fetch({
                 endpoint,
-                method: isEditable ? 'PUT' : 'POST',
-                formData
-            })
+                method: isEditable ? "PUT" : "POST",
+                formData,
+            });
             if (response) {
-                console.log(response)
+                console.log(response);
                 // Llamada a mutate compatible con ambos casos
                 if (typeof mutate === "function") {
                     if (isEditable) {
@@ -135,33 +175,45 @@ export default function FormCurso({ isEditable = false, datos, mutate, onClose }
                         mutate(undefined, true); // Si es una función sin argumentos, llámala sin parámetros
                     }
                 }
-                toast.success(isEditable ? "Curso actualizado correctamente." : "Curso creado correctamente.")
-                isEditable ? onClose?.() : setOpen(false)
-                form.reset()
+                toast.success(
+                    isEditable
+                        ? "Curso actualizado correctamente."
+                        : "Curso creado correctamente."
+                );
+                isEditable ? onClose?.() : setOpen(false);
+                form.reset();
             }
-            return response
+            return response;
         } catch (error: any) {
             const errorMessage =
-                (typeof error === 'object' && error.response
+                (typeof error === "object" && error.response
                     ? error.response.data?.message
                     : error?.message) ||
-                (isEditable ? "Error al actualizar el curso. Inténtalo de nuevo." : "Error al crear el curso. Inténtalo de nuevo.");
-            console.error("Error en onSubmit: ", errorMessage)
-            toast.error(errorMessage)
+                (isEditable
+                    ? "Error al actualizar el curso. Inténtalo de nuevo."
+                    : "Error al crear el curso. Inténtalo de nuevo.");
+            console.error("Error en onSubmit: ", errorMessage);
+            toast.error(errorMessage);
         } finally {
-            finishLoading()
+            finishLoading();
         }
     }
 
     return (
         <div className="flex items-center gap-3">
-            <AlertDialog open={isEditable ? true : open} onOpenChange={isEditable ? onClose : setOpen}>
+            <AlertDialog
+                open={isEditable ? true : open}
+                onOpenChange={isEditable ? onClose : setOpen}
+            >
                 <AlertDialogTrigger asChild>
-                    {isEditable ? (
-                        null
-                    ) : (
+                    {isEditable ? null : (
                         <Button className="ml-auto" variant="outline">
-                            <Plus className="-ms-1 me-2 opacity-60" size={16} strokeWidth={2} aria-hidden="true" />
+                            <Plus
+                                className="-ms-1 me-2 opacity-60"
+                                size={16}
+                                strokeWidth={2}
+                                aria-hidden="true"
+                            />
                             Agregar Curso
                         </Button>
                     )}
@@ -172,15 +224,29 @@ export default function FormCurso({ isEditable = false, datos, mutate, onClose }
                             className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border"
                             aria-hidden="true"
                         >
-                            <CircleAlert className="opacity-80" size={16} strokeWidth={2} />
+                            <CircleAlert
+                                className="opacity-80"
+                                size={16}
+                                strokeWidth={2}
+                            />
                         </div>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>{isEditable ? "Editar Curso" : "Formulario de Curso"}</AlertDialogTitle>
-                            <AlertDialogDescription>Por favor, complete todos los campos del formulario.</AlertDialogDescription>
+                            <AlertDialogTitle>
+                                {isEditable
+                                    ? "Editar Curso"
+                                    : "Formulario de Curso"}
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Por favor, complete todos los campos del
+                                formulario.
+                            </AlertDialogDescription>
                         </AlertDialogHeader>
                     </div>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4 py-6 px-2 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300">
+                        <form
+                            onSubmit={form.handleSubmit(onSubmit)}
+                            className="space-y-4 mt-4 py-6 px-2 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300"
+                        >
                             <FormField
                                 control={form.control}
                                 name="title"
@@ -213,15 +279,22 @@ export default function FormCurso({ isEditable = false, datos, mutate, onClose }
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Estado</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value}
+                                        >
                                             <FormControl>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Seleccione un estado" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                <SelectItem value="ACTIVE">Activo</SelectItem>
-                                                <SelectItem value="INACTIVE">Inactivo</SelectItem>
+                                                <SelectItem value="ACTIVE">
+                                                    Activo
+                                                </SelectItem>
+                                                <SelectItem value="INACTIVE">
+                                                    Inactivo
+                                                </SelectItem>
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />
@@ -238,20 +311,34 @@ export default function FormCurso({ isEditable = false, datos, mutate, onClose }
                                             <Input
                                                 type="number"
                                                 {...field}
-                                                onChange={(e) => field.onChange(Number.parseFloat(e.target.value))}
+                                                onChange={(e) =>
+                                                    field.onChange(
+                                                        Number.parseFloat(
+                                                            e.target.value
+                                                        )
+                                                    )
+                                                }
                                             />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
-                            {
-                                isLoading ? <Loader2Icon className="animate-spin" size={16} strokeWidth={2} /> : <FormField
+                            {isLoading ? (
+                                <Loader2Icon
+                                    className="animate-spin"
+                                    size={16}
+                                    strokeWidth={2}
+                                />
+                            ) : (
+                                <FormField
                                     control={form.control}
                                     name="studentsIds"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Estudiantes (opcional)</FormLabel>
+                                            <FormLabel>
+                                                Estudiantes (opcional)
+                                            </FormLabel>
                                             <FormControl>
                                                 <MultipleSelector
                                                     options={studentOptions}
@@ -259,10 +346,24 @@ export default function FormCurso({ isEditable = false, datos, mutate, onClose }
                                                     selected={
                                                         field.value?.map(
                                                             (id: string) =>
-                                                                studentOptions.find((option) => option.value === id) || { value: id, label: id },
+                                                                studentOptions.find(
+                                                                    (option) =>
+                                                                        option.value ===
+                                                                        id
+                                                                ) || {
+                                                                    value: id,
+                                                                    label: id,
+                                                                }
                                                         ) || []
                                                     }
-                                                    onChange={(selected) => field.onChange(selected.map((option) => option.value))}
+                                                    onChange={(selected) =>
+                                                        field.onChange(
+                                                            selected.map(
+                                                                (option) =>
+                                                                    option.value
+                                                            )
+                                                        )
+                                                    }
                                                     placeholder="Seleccionar estudiantes..."
                                                 />
                                             </FormControl>
@@ -270,53 +371,98 @@ export default function FormCurso({ isEditable = false, datos, mutate, onClose }
                                         </FormItem>
                                     )}
                                 />
-                            }
-                            {
-                                isLoading ? <Loader2Icon className="animate-spin" size={16} strokeWidth={2} /> :
-                                    <FormField
-                                        control={form.control}
-                                        name="teacherId"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Profesor</FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Seleccione un profesor" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-
-                                                        {
-                                                            teacherOptions.length === 0 ? <SelectItem value="no-disponible" disabled>Profesores no disponibles</SelectItem> :
-                                                                teacherOptions.map((teacher) => (
-                                                                    <SelectItem key={teacher.value} value={teacher.value}>
-                                                                        {teacher.label}
-                                                                    </SelectItem>
-                                                                ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                            }
+                            )}
+                            {isLoading ? (
+                                <Loader2Icon
+                                    className="animate-spin"
+                                    size={16}
+                                    strokeWidth={2}
+                                />
+                            ) : (
+                                <FormField
+                                    control={form.control}
+                                    name="teacherId"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Profesor</FormLabel>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Seleccione un profesor" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {teacherOptions.length ===
+                                                    0 ? (
+                                                        <SelectItem
+                                                            value="no-disponible"
+                                                            disabled
+                                                        >
+                                                            Profesores no
+                                                            disponibles
+                                                        </SelectItem>
+                                                    ) : (
+                                                        teacherOptions.map(
+                                                            (teacher) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        teacher.value
+                                                                    }
+                                                                    value={
+                                                                        teacher.value
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        teacher.label
+                                                                    }
+                                                                </SelectItem>
+                                                            )
+                                                        )
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
                         </form>
                     </Form>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setOpen(false)}>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={form.handleSubmit(onSubmit)}>
-                            {
-                                loading ? <Loader2Icon className="animate-spin" size={16} strokeWidth={2} /> :
-                                    <Plus className="-ms-1 me-2 opacity-60" size={16} strokeWidth={2} aria-hidden="true" />
-                            }
-                            {
-                                loading ? (isEditable ? "Actualizando..." : "Creando...") : (isEditable ? "Actualizar" : "Crear")
-                            }
+                        <AlertDialogCancel onClick={() => setOpen(false)}>
+                            Cancelar
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={form.handleSubmit(onSubmit)}
+                        >
+                            {loading ? (
+                                <Loader2Icon
+                                    className="animate-spin"
+                                    size={16}
+                                    strokeWidth={2}
+                                />
+                            ) : (
+                                <Plus
+                                    className="-ms-1 me-2 opacity-60"
+                                    size={16}
+                                    strokeWidth={2}
+                                    aria-hidden="true"
+                                />
+                            )}
+                            {loading
+                                ? isEditable
+                                    ? "Actualizando..."
+                                    : "Creando..."
+                                : isEditable
+                                ? "Actualizar"
+                                : "Crear"}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
         </div>
-    )
+    );
 }
