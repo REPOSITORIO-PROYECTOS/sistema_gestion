@@ -51,41 +51,46 @@ public class SpringSecurityConfig {
 					exchanges.pathMatchers("/webjars/**", "/swagger-ui.html", "/swagger-ui/**",
 							"/v3/api-docs/**", "/swagger-resources/**").permitAll();
 
+					exchanges.pathMatchers(HttpMethod.GET, "/api/**").permitAll();
+
 					// ? ENDPOINTS RESTRINGIDOS POR ROL
-					exchanges.pathMatchers(HttpMethod.POST, "/api/auth/registrar")
-							.hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
-					exchanges.pathMatchers(HttpMethod.PUT, "/api/auth/editar/**")
-							.hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
+					// exchanges.pathMatchers(HttpMethod.POST, "/api/auth/registrar")
+					// 		.hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
+					// exchanges.pathMatchers(HttpMethod.PUT, "/api/auth/editar/**")
+					// 		.hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
 
 					// ? MÉTODOS AUTENTICADOS
-					authenticateEndpoints(exchanges, "/api/caja/**", "/api/facturas/**", "/api/pagos/**",
-							"/api/proveedores/**", "/api/cursos/**", "/api/asistencias/**", "/api/estudiantes/**",
-							"/api/course-sections/**", "/api/course-subsections/**", "/api/grades/**", "/api/files/**");
+					// authenticateEndpoints(exchanges, "/api/caja/**", "/api/facturas/**", "/api/pagos/**",
+					// 		"/api/proveedores/**", "/api/cursos/**", "/api/asistencias/**", "/api/estudiantes/**",
+					// 		"/api/course-sections/**", "/api/course-subsections/**", "/api/grades/**", "/api/files/**");
 
 					// ? METODOS de ARCA
 					exchanges.pathMatchers(HttpMethod.GET, "/api/afip/**").denyAll();
 
 					// ? MÉTODOS de Archivos
-					exchanges.pathMatchers(HttpMethod.POST, "/api/files/subir").hasAnyAuthority("ROLE_ADMIN");
-					exchanges.pathMatchers(HttpMethod.PUT, "/api/files/**").hasAnyAuthority("ROLE_ADMIN");
-					exchanges.pathMatchers(HttpMethod.DELETE, "/api/files/**").hasAnyAuthority("ROLE_ADMIN");
+					// exchanges.pathMatchers(HttpMethod.POST, "/api/files/subir").hasAnyAuthority("ROLE_ADMIN");
+					// exchanges.pathMatchers(HttpMethod.PUT, "/api/files/**").hasAnyAuthority("ROLE_ADMIN");
+					// exchanges.pathMatchers(HttpMethod.DELETE, "/api/files/**").hasAnyAuthority("ROLE_ADMIN");
+					exchanges.pathMatchers(HttpMethod.POST, "/api/files/subir").permitAll();
+					exchanges.pathMatchers(HttpMethod.PUT, "/api/files/**").permitAll();
+					exchanges.pathMatchers(HttpMethod.DELETE, "/api/files/**").permitAll();
 					exchanges.pathMatchers(HttpMethod.GET, "/api/files/**").permitAll();
 
 					// ? MÉTODOS VirtualCampus
-					exchanges.pathMatchers(HttpMethod.GET, "/api/course-sections/**").authenticated();
-					exchanges.pathMatchers(HttpMethod.GET, "/api/course-subsections/**").authenticated();
-					exchanges.pathMatchers(HttpMethod.POST, "/api/course-sections/**").hasAnyAuthority("ROLE_ADMIN");
-					exchanges.pathMatchers(HttpMethod.POST, "/api/course-subsections/**").hasAnyAuthority("ROLE_ADMIN");
-					exchanges.pathMatchers(HttpMethod.PUT, "/api/course-sections/**").hasAnyAuthority("ROLE_ADMIN");
-					exchanges.pathMatchers(HttpMethod.PUT, "/api/course-subsections/**").hasAnyAuthority("ROLE_ADMIN");
-					exchanges.pathMatchers(HttpMethod.DELETE, "/api/course-sections/**").hasAnyAuthority("ROLE_ADMIN");
-					exchanges.pathMatchers(HttpMethod.DELETE, "/api/course-subsections/**").hasAnyAuthority("ROLE_ADMIN");
+					// exchanges.pathMatchers(HttpMethod.GET, "/api/course-sections/**").authenticated();
+					// exchanges.pathMatchers(HttpMethod.GET, "/api/course-subsections/**").authenticated();
+					// exchanges.pathMatchers(HttpMethod.POST, "/api/course-sections/**").hasAnyAuthority("ROLE_ADMIN");
+					// exchanges.pathMatchers(HttpMethod.POST, "/api/course-subsections/**").hasAnyAuthority("ROLE_ADMIN");
+					// exchanges.pathMatchers(HttpMethod.PUT, "/api/course-sections/**").hasAnyAuthority("ROLE_ADMIN");
+					// exchanges.pathMatchers(HttpMethod.PUT, "/api/course-subsections/**").hasAnyAuthority("ROLE_ADMIN");
+					// exchanges.pathMatchers(HttpMethod.DELETE, "/api/course-sections/**").hasAnyAuthority("ROLE_ADMIN");
+					// exchanges.pathMatchers(HttpMethod.DELETE, "/api/course-subsections/**").hasAnyAuthority("ROLE_ADMIN");
 
 					// ? MÉTODOS de Notas de evaluaciones
-					exchanges.pathMatchers(HttpMethod.GET, "/api/grades/**").authenticated();
-					exchanges.pathMatchers(HttpMethod.POST, "/api/grades/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_TEACHER");
-					exchanges.pathMatchers(HttpMethod.PUT, "/api/grades/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_TEACHER");
-					exchanges.pathMatchers(HttpMethod.DELETE, "/api/grades/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_TEACHER");
+					// exchanges.pathMatchers(HttpMethod.GET, "/api/grades/**").authenticated();
+					// exchanges.pathMatchers(HttpMethod.POST, "/api/grades/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_TEACHER");
+					// exchanges.pathMatchers(HttpMethod.PUT, "/api/grades/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_TEACHER");
+					// exchanges.pathMatchers(HttpMethod.DELETE, "/api/grades/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_TEACHER");
 
 					// ? MÉTODOS ADMIN & DEV
 					restrictEndpoints(exchanges, HttpMethod.DELETE, "/api/caja/**", "/api/facturas/**", "/api/pagos/**",

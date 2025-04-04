@@ -76,9 +76,9 @@ type Course = {
 };
 
 export default function EditCourseContentPage({
-    params,
+    params
 }: {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }) {
     const { id } = use(params);
     //   const { user, isLoading } = useAuth()

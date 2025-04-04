@@ -56,7 +56,7 @@ type Course = {
     sections: Section[];
 };
 
-export default function CourseDetail({ params }: { params: { id: string } }) {
+export default function CourseDetail({ params }: { params: Promise<{ id: string }> }) {
     const courseData: Course = {
         createdAt: "07-02-2025T18:53",
         updatedAt: null,
