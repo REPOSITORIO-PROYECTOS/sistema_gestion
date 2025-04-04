@@ -32,8 +32,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+} from "@/components/ui/pagination";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
 import {
     Select,
     SelectContent,
@@ -99,12 +107,13 @@ type Item = {
     phone: string;
     password: string;
     institution: string;
-    rol: 'director' | 'alumno' | 'docente' | 'preceptor';
+    rol: "director" | "alumno" | "docente" | "preceptor";
 };
 
 // Custom filter function for multi-column searching
 const multiColumnFilterFn: FilterFn<Item> = (row, columnId, filterValue) => {
-    const searchableRowContent = `${row.original.name} ${row.original.surname} ${row.original.email}`.toLowerCase();
+    const searchableRowContent =
+        `${row.original.name} ${row.original.surname} ${row.original.email}`.toLowerCase();
     const searchTerm = (filterValue ?? "").toLowerCase();
     return searchableRowContent.includes(searchTerm);
 };
@@ -121,9 +130,12 @@ const columns: ColumnDef<Item>[] = [
         header: ({ table }) => (
             <Checkbox
                 checked={
-                    table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")
+                    table.getIsAllPageRowsSelected() ||
+                    (table.getIsSomePageRowsSelected() && "indeterminate")
                 }
-                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                onCheckedChange={(value) =>
+                    table.toggleAllPageRowsSelected(!!value)
+                }
                 aria-label="Select all"
             />
         ),
@@ -145,7 +157,9 @@ const columns: ColumnDef<Item>[] = [
             <div className="flex items-center gap-2">
                 <div>
                     <div className="">{row.getValue("name")}</div>
-                    <div className="text-sm text-muted-foreground">{row.original.surname}</div>
+                    <div className="text-sm text-muted-foreground">
+                        {row.original.surname}
+                    </div>
                 </div>
             </div>
         ),
@@ -168,35 +182,40 @@ const columns: ColumnDef<Item>[] = [
         accessorKey: "phone",
         size: 160,
     },
-    {
-        header: "Contraseña",
-        accessorKey: "password",
-        cell: ({ row }) => (
-            //ocultar contraseña con asteriscos
-            <div className="flex items-center gap-2">
-                <div>
-                    <div className="">{
-                        (row.getValue("password") as string).split('').map((char, index) => {
-                            return index < 3 ? char : '●'
-                        }).join('')
-                    }</div>
-                </div>
-            </div>
-        ),
-        size: 160,
-    },
-    {
-        header: "Institución",
-        accessorKey: "istitution",
-        size: 160,
-    },
+    // {
+    //     header: "Contraseña",
+    //     accessorKey: "password",
+    //     cell: ({ row }) => (
+    //         //ocultar contraseña con asteriscos
+    //         <div className="flex items-center gap-2">
+    //             <div>
+    //                 <div className="">
+    //                     {(row.getValue("password") as string)
+    //                         .split("")
+    //                         .map((char, index) => {
+    //                             return index < 3 ? char : "●";
+    //                         })
+    //                         .join("")}
+    //                 </div>
+    //             </div>
+    //         </div>
+    //     ),
+    //     size: 160,
+    // },
+    // {
+    //     header: "Institución",
+    //     accessorKey: "istitution",
+    //     size: 160,
+    // },
     {
         header: "Rol",
         accessorKey: "rol",
         cell: ({ row }) => (
             <Badge
                 className={cn(
-                    row.getValue("rol") === "director" ? "bg-yellow-700 text-primary-foreground" : "bg-blue-600 text-background",
+                    row.getValue("rol") === "director"
+                        ? "bg-yellow-700 text-primary-foreground"
+                        : "bg-blue-600 text-background"
                 )}
             >
                 {row.getValue("rol")}
@@ -214,14 +233,16 @@ const columns: ColumnDef<Item>[] = [
     },
 ];
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function TableUsers() {
     const id = useId();
-    const { finishLoading, loading, startLoading } = useLoading()
-    const fetch = useFetch()
+    const { finishLoading, loading, startLoading } = useLoading();
+    const fetch = useFetch();
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+        {}
+    );
     const [pagination, setPagination] = useState<PaginationState>({
         pageIndex: 0,
         pageSize: 5,
@@ -255,14 +276,36 @@ export default function TableUsers() {
         return `https://sistema-gestion-1.onrender.com/api/usuarios/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
     }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm]);
 
-    const { data: swrData, error, isLoading, mutate } = useSWR(swrUrl, fetcher, {
+    const {
+        data: swrData,
+        error,
+        isLoading,
+        mutate,
+    } = useSWR(swrUrl, fetcher, {
         keepPreviousData: true,
     });
 
+    console.log("Estructura swrData completa:", swrData);
+    console.log("Contenido de usuarios:", swrData?.content);
+    console.log("Total elementos:", swrData?.totalElements);
+
     useEffect(() => {
         if (swrData) {
-            setData(swrData);
-            setTotalElements(swrData.length);
+            // Mapea los datos para ajustar los campos al formato esperado
+            const mappedData = swrData.content.map(
+                (user: { roles: string | any[] }) => ({
+                    ...user,
+                    // Convierte el array de roles a un valor único para el filtro
+                    rol:
+                        user.roles && user.roles.length > 0
+                            ? user.roles[0]
+                            : "sin rol",
+                })
+            );
+
+            setData(mappedData);
+            // Usa totalElements en lugar de length
+            setTotalElements(swrData.totalElements);
         }
     }, [swrData]);
 
@@ -283,7 +326,8 @@ export default function TableUsers() {
             startLoading();
             const selectedRows = table.getSelectedRowModel().rows;
             const updatedData = data.filter(
-                (item) => !selectedRows.some((row) => row.original.id === item.id)
+                (item) =>
+                    !selectedRows.some((row) => row.original.id === item.id)
             );
             setData(updatedData);
 
@@ -295,8 +339,13 @@ export default function TableUsers() {
                         method: "delete",
                     });
                 } catch (error: any) {
-                    console.error(`Error deleting row ${row.original.id}:`, error);
-                    toast.error(`Error al eliminar el curso ${row.original.id}.`);
+                    console.error(
+                        `Error deleting row ${row.original.id}:`,
+                        error
+                    );
+                    toast.error(
+                        `Error al eliminar el curso ${row.original.id}.`
+                    );
                 }
             }
             await mutate();
@@ -335,10 +384,17 @@ export default function TableUsers() {
     // Get unique status values
     const uniqueStatusValues = useMemo(() => {
         const statusColumn = table.getColumn("rol");
-        console.log(statusColumn)
         if (!statusColumn) return [];
-        const values = Array.from(statusColumn.getFacetedUniqueValues().keys());
-        return values.sort();
+
+        try {
+            const values = Array.from(
+                statusColumn.getFacetedUniqueValues().keys()
+            );
+            return values.filter(Boolean).sort(); // Filtra valores null/undefined
+        } catch (error) {
+            console.error("Error al obtener valores únicos:", error);
+            return [];
+        }
     }, [table.getColumn("rol")?.getFacetedUniqueValues()]);
 
     // Get counts for each status
@@ -349,12 +405,16 @@ export default function TableUsers() {
     }, [table.getColumn("rol")?.getFacetedUniqueValues()]);
 
     const selectedStatuses = useMemo(() => {
-        const filterValue = table.getColumn("rol")?.getFilterValue() as string[];
+        const filterValue = table
+            .getColumn("rol")
+            ?.getFilterValue() as string[];
         return filterValue ?? [];
     }, [table.getColumn("rol")?.getFilterValue()]);
 
     const handleStatusChange = (checked: boolean, value: string) => {
-        const filterValue = table.getColumn("rol")?.getFilterValue() as string[];
+        const filterValue = table
+            .getColumn("rol")
+            ?.getFilterValue() as string[];
         const newFilterValue = filterValue ? [...filterValue] : [];
 
         if (checked) {
@@ -366,8 +426,14 @@ export default function TableUsers() {
             }
         }
 
-        table.getColumn("rol")?.setFilterValue(newFilterValue.length ? newFilterValue : undefined);
+        table
+            .getColumn("rol")
+            ?.setFilterValue(
+                newFilterValue.length ? newFilterValue : undefined
+            );
     };
+
+    console.log(uniqueStatusValues);
 
     return (
         <div className="container mx-auto my-10 space-y-4">
@@ -381,7 +447,9 @@ export default function TableUsers() {
                             ref={inputRef}
                             className={cn(
                                 "peer min-w-60 ps-9",
-                                Boolean(table.getColumn("name")?.getFilterValue()) && "pe-9",
+                                Boolean(
+                                    table.getColumn("name")?.getFilterValue()
+                                ) && "pe-9"
                             )}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -390,11 +458,15 @@ export default function TableUsers() {
                             aria-label="Filtrar por nombre del curso"
                         />
                         <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
-                            <ListFilter size={16} strokeWidth={2} aria-hidden="true" />
+                            <ListFilter
+                                size={16}
+                                strokeWidth={2}
+                                aria-hidden="true"
+                            />
                         </div>
                         {Boolean(table.getColumn("name")?.getFilterValue()) && (
                             <button
-                                className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+                                className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
                                 aria-label="Clear filter"
                                 onClick={() => {
                                     setSearchTerm("");
@@ -403,7 +475,11 @@ export default function TableUsers() {
                                     }
                                 }}
                             >
-                                <CircleX size={16} strokeWidth={2} aria-hidden="true" />
+                                <CircleX
+                                    size={16}
+                                    strokeWidth={2}
+                                    aria-hidden="true"
+                                />
                             </button>
                         )}
                     </div>
@@ -427,14 +503,28 @@ export default function TableUsers() {
                         </PopoverTrigger>
                         <PopoverContent className="min-w-36 p-3" align="start">
                             <div className="space-y-3">
-                                <div className="text-xs font-medium text-muted-foreground">Filtros</div>
+                                <div className="text-xs font-medium text-muted-foreground">
+                                    Filtros
+                                </div>
                                 <div className="space-y-3">
                                     {uniqueStatusValues.map((value, i) => (
-                                        <div key={value} className="flex items-center gap-2">
+                                        <div
+                                            key={`status-${value || i}`}
+                                            className="flex items-center gap-2"
+                                        >
                                             <Checkbox
                                                 id={`${id}-${i}`}
-                                                checked={selectedStatuses.includes(value)}
-                                                onCheckedChange={(checked: boolean) => handleStatusChange(checked, value)}
+                                                checked={selectedStatuses.includes(
+                                                    value
+                                                )}
+                                                onCheckedChange={(
+                                                    checked: boolean
+                                                ) =>
+                                                    handleStatusChange(
+                                                        checked,
+                                                        value
+                                                    )
+                                                }
                                             />
                                             <Label
                                                 htmlFor={`${id}-${i}`}
@@ -477,8 +567,12 @@ export default function TableUsers() {
                                             key={column.id}
                                             className="capitalize"
                                             checked={column.getIsVisible()}
-                                            onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                                            onSelect={(event) => event.preventDefault()}
+                                            onCheckedChange={(value) =>
+                                                column.toggleVisibility(!!value)
+                                            }
+                                            onSelect={(event) =>
+                                                event.preventDefault()
+                                            }
                                         >
                                             {column.columnDef.header?.toString()}
                                         </DropdownMenuCheckboxItem>
@@ -501,7 +595,10 @@ export default function TableUsers() {
                                     />
                                     Borrar
                                     <span className="-me-1 ms-3 inline-flex h-5 max-h-full items-center rounded border border-border bg-background px-1 font-[inherit] text-[0.625rem] font-medium text-muted-foreground/70">
-                                        {table.getSelectedRowModel().rows.length}
+                                        {
+                                            table.getSelectedRowModel().rows
+                                                .length
+                                        }
                                     </span>
                                 </Button>
                             </AlertDialogTrigger>
@@ -511,20 +608,40 @@ export default function TableUsers() {
                                         className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border"
                                         aria-hidden="true"
                                     >
-                                        <CircleAlert className="opacity-80" size={16} strokeWidth={2} />
+                                        <CircleAlert
+                                            className="opacity-80"
+                                            size={16}
+                                            strokeWidth={2}
+                                        />
                                     </div>
                                     <AlertDialogHeader>
-                                        <AlertDialogTitle>Estas absolutamente seguro?</AlertDialogTitle>
+                                        <AlertDialogTitle>
+                                            Estas absolutamente seguro?
+                                        </AlertDialogTitle>
                                         <AlertDialogDescription>
-                                            Esta acción no se puede deshacer. Esto eliminará permanentemente{" "}
-                                            {table.getSelectedRowModel().rows.length}{" "}
-                                            {table.getSelectedRowModel().rows.length === 1 ? "fila" : "filas"}.
+                                            Esta acción no se puede deshacer.
+                                            Esto eliminará permanentemente{" "}
+                                            {
+                                                table.getSelectedRowModel().rows
+                                                    .length
+                                            }{" "}
+                                            {table.getSelectedRowModel().rows
+                                                .length === 1
+                                                ? "fila"
+                                                : "filas"}
+                                            .
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                 </div>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleDeleteRows}>Delete</AlertDialogAction>
+                                    <AlertDialogCancel>
+                                        Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={handleDeleteRows}
+                                    >
+                                        Delete
+                                    </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
@@ -539,34 +656,51 @@ export default function TableUsers() {
                 <Table className="table-fixed">
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id} className="hover:bg-transparent">
+                            <TableRow
+                                key={headerGroup.id}
+                                className="hover:bg-transparent"
+                            >
                                 {headerGroup.headers.map((header) => {
                                     return (
                                         <TableHead
                                             key={header.id}
-                                            style={{ width: `${header.getSize()}px` }}
+                                            style={{
+                                                width: `${header.getSize()}px`,
+                                            }}
                                             className="h-11"
                                         >
                                             {header.isPlaceholder ? null : header.column.getCanSort() ? (
                                                 <div
                                                     className={cn(
                                                         header.column.getCanSort() &&
-                                                        "flex h-full cursor-pointer select-none items-center justify-between gap-2",
+                                                            "flex h-full cursor-pointer select-none items-center justify-between gap-2"
                                                     )}
                                                     onClick={header.column.getToggleSortingHandler()}
                                                     onKeyDown={(e) => {
                                                         // Enhanced keyboard handling for sorting
                                                         if (
                                                             header.column.getCanSort() &&
-                                                            (e.key === "Enter" || e.key === " ")
+                                                            (e.key ===
+                                                                "Enter" ||
+                                                                e.key === " ")
                                                         ) {
                                                             e.preventDefault();
-                                                            header.column.getToggleSortingHandler()?.(e);
+                                                            header.column.getToggleSortingHandler()?.(
+                                                                e
+                                                            );
                                                         }
                                                     }}
-                                                    tabIndex={header.column.getCanSort() ? 0 : undefined}
+                                                    tabIndex={
+                                                        header.column.getCanSort()
+                                                            ? 0
+                                                            : undefined
+                                                    }
                                                 >
-                                                    {flexRender(header.column.columnDef.header, header.getContext())}
+                                                    {flexRender(
+                                                        header.column.columnDef
+                                                            .header,
+                                                        header.getContext()
+                                                    )}
                                                     {{
                                                         asc: (
                                                             <ChevronUp
@@ -584,10 +718,16 @@ export default function TableUsers() {
                                                                 aria-hidden="true"
                                                             />
                                                         ),
-                                                    }[header.column.getIsSorted() as string] ?? null}
+                                                    }[
+                                                        header.column.getIsSorted() as string
+                                                    ] ?? null}
                                                 </div>
                                             ) : (
-                                                flexRender(header.column.columnDef.header, header.getContext())
+                                                flexRender(
+                                                    header.column.columnDef
+                                                        .header,
+                                                    header.getContext()
+                                                )
                                             )}
                                         </TableHead>
                                     );
@@ -611,17 +751,35 @@ export default function TableUsers() {
                             <>
                                 {table.getRowModel().rows?.length ? (
                                     table.getRowModel().rows.map((row) => (
-                                        <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                                            {row.getVisibleCells().map((cell) => (
-                                                <TableCell key={cell.id} className="last:py-0">
-                                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                                </TableCell>
-                                            ))}
+                                        <TableRow
+                                            key={row.id}
+                                            data-state={
+                                                row.getIsSelected() &&
+                                                "selected"
+                                            }
+                                        >
+                                            {row
+                                                .getVisibleCells()
+                                                .map((cell) => (
+                                                    <TableCell
+                                                        key={cell.id}
+                                                        className="last:py-0"
+                                                    >
+                                                        {flexRender(
+                                                            cell.column
+                                                                .columnDef.cell,
+                                                            cell.getContext()
+                                                        )}
+                                                    </TableCell>
+                                                ))}
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={columns.length} className="h-24 text-center">
+                                        <TableCell
+                                            colSpan={columns.length}
+                                            className="h-24 text-center"
+                                        >
                                             No hay resultados.
                                         </TableCell>
                                     </TableRow>
@@ -645,12 +803,18 @@ export default function TableUsers() {
                             table.setPageSize(Number(value));
                         }}
                     >
-                        <SelectTrigger id={id} className="w-fit whitespace-nowrap">
+                        <SelectTrigger
+                            id={id}
+                            className="w-fit whitespace-nowrap"
+                        >
                             <SelectValue placeholder="Select number of results" />
                         </SelectTrigger>
                         <SelectContent className="[&_*[role=option]>span]:end-2 [&_*[role=option]>span]:start-auto [&_*[role=option]]:pe-8 [&_*[role=option]]:ps-2">
                             {[5, 10, 25, 50].map((pageSize) => (
-                                <SelectItem key={pageSize} value={pageSize.toString()}>
+                                <SelectItem
+                                    key={pageSize}
+                                    value={pageSize.toString()}
+                                >
                                     {pageSize}
                                 </SelectItem>
                             ))}
@@ -660,16 +824,24 @@ export default function TableUsers() {
 
                 {/* Page number information */}
                 <div className="flex grow justify-end whitespace-nowrap text-sm text-muted-foreground">
-                    <p className="whitespace-nowrap text-sm text-muted-foreground" aria-live="polite">
+                    <p
+                        className="whitespace-nowrap text-sm text-muted-foreground"
+                        aria-live="polite"
+                    >
                         <span className="text-foreground">
-                            {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}-
+                            {table.getState().pagination.pageIndex *
+                                table.getState().pagination.pageSize +
+                                1}
+                            -
                             {Math.min(
-                                table.getState().pagination.pageIndex * table.getState().pagination.pageSize +
-                                table.getState().pagination.pageSize,
+                                table.getState().pagination.pageIndex *
+                                    table.getState().pagination.pageSize +
+                                    table.getState().pagination.pageSize,
                                 totalElements
                             )}
                         </span>{" "}
-                        de <span className="text-foreground">{totalElements}</span>
+                        de{" "}
+                        <span className="text-foreground">{totalElements}</span>
                     </p>
                 </div>
 
@@ -687,7 +859,11 @@ export default function TableUsers() {
                                     disabled={!table.getCanPreviousPage()}
                                     aria-label="Go to first page"
                                 >
-                                    <ChevronFirst size={16} strokeWidth={2} aria-hidden="true" />
+                                    <ChevronFirst
+                                        size={16}
+                                        strokeWidth={2}
+                                        aria-hidden="true"
+                                    />
                                 </Button>
                             </PaginationItem>
                             {/* Previous page button */}
@@ -700,7 +876,11 @@ export default function TableUsers() {
                                     disabled={!table.getCanPreviousPage()}
                                     aria-label="Go to previous page"
                                 >
-                                    <ChevronLeft size={16} strokeWidth={2} aria-hidden="true" />
+                                    <ChevronLeft
+                                        size={16}
+                                        strokeWidth={2}
+                                        aria-hidden="true"
+                                    />
                                 </Button>
                             </PaginationItem>
                             {/* Next page button */}
@@ -713,7 +893,11 @@ export default function TableUsers() {
                                     disabled={!table.getCanNextPage()}
                                     aria-label="Go to next page"
                                 >
-                                    <ChevronRight size={16} strokeWidth={2} aria-hidden="true" />
+                                    <ChevronRight
+                                        size={16}
+                                        strokeWidth={2}
+                                        aria-hidden="true"
+                                    />
                                 </Button>
                             </PaginationItem>
                             {/* Last page button */}
@@ -722,11 +906,19 @@ export default function TableUsers() {
                                     size="icon"
                                     variant="outline"
                                     className="disabled:pointer-events-none disabled:opacity-50"
-                                    onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                                    onClick={() =>
+                                        table.setPageIndex(
+                                            table.getPageCount() - 1
+                                        )
+                                    }
                                     disabled={!table.getCanNextPage()}
                                     aria-label="Go to last page"
                                 >
-                                    <ChevronLast size={16} strokeWidth={2} aria-hidden="true" />
+                                    <ChevronLast
+                                        size={16}
+                                        strokeWidth={2}
+                                        aria-hidden="true"
+                                    />
                                 </Button>
                             </PaginationItem>
                         </PaginationContent>
@@ -738,21 +930,32 @@ export default function TableUsers() {
 }
 
 const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
-    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
     return (
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <div className="flex justify-end">
-                        <Button size="icon" variant="ghost" className="shadow-none" aria-label="Edit item">
-                            <Ellipsis size={16} strokeWidth={2} aria-hidden="true" />
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            className="shadow-none"
+                            aria-label="Edit item"
+                        >
+                            <Ellipsis
+                                size={16}
+                                strokeWidth={2}
+                                aria-hidden="true"
+                            />
                         </Button>
                     </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuGroup>
-                        <DropdownMenuItem onSelect={() => setIsEditDialogOpen(true)}>
+                        <DropdownMenuItem
+                            onSelect={() => setIsEditDialogOpen(true)}
+                        >
                             <span>Editar</span>
                             <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                         </DropdownMenuItem>
@@ -771,10 +974,16 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                             <DropdownMenuSubTrigger>Mas</DropdownMenuSubTrigger>
                             <DropdownMenuPortal>
                                 <DropdownMenuSubContent>
-                                    <DropdownMenuItem>Ejemplo 1</DropdownMenuItem>
-                                    <DropdownMenuItem>Ejemplo 2</DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        Ejemplo 1
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        Ejemplo 2
+                                    </DropdownMenuItem>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem>Ejemplo 3</DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        Ejemplo 3
+                                    </DropdownMenuItem>
                                 </DropdownMenuSubContent>
                             </DropdownMenuPortal>
                         </DropdownMenuSub>
@@ -792,7 +1001,12 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                 </DropdownMenuContent>
             </DropdownMenu>
             {isEditDialogOpen && (
-                <UserForm isEditable datos={row.original} mutate={mutate} onClose={() => setIsEditDialogOpen(false)} />
+                <UserForm
+                    isEditable
+                    datos={row.original}
+                    mutate={mutate}
+                    onClose={() => setIsEditDialogOpen(false)}
+                />
             )}
         </>
     );
