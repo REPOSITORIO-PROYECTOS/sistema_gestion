@@ -252,7 +252,7 @@ export default function TableUsers() {
     }, [searchTerm]);
 
     const swrUrl = useMemo(() => {
-        return `https://sistema-gestion-1.onrender.com/api/usuarios/todos?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
+        return `https://sistema-gestion-1.onrender.com/api/usuarios/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
     }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm]);
 
     const { data: swrData, error, isLoading, mutate } = useSWR(swrUrl, fetcher, {

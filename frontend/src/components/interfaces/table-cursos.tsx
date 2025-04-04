@@ -151,12 +151,12 @@ const columns: ColumnDef<Item>[] = [
         accessorKey: "description",
         size: 320,
     },
-    {
-        header: "Precio mensual",
-        accessorKey: "monthlyPrice",
-        size: 160,
-        filterFn: multiColumnFilterFn,
-    },
+    // {
+    //     header: "Precio mensual",
+    //     accessorKey: "monthlyPrice",
+    //     size: 160,
+    //     filterFn: multiColumnFilterFn,
+    // },
     {
         header: "Profesor",
         accessorKey: "teacherId.name",
