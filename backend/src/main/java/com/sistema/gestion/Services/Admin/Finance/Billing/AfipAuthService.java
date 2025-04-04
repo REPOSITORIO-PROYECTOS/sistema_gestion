@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
-import java.security.Signature;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -21,7 +20,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaCertStore;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
@@ -39,7 +37,7 @@ public class AfipAuthService {
 
     private static final String CERT_PATH = "src/main/resources/certificado.crt";
     private static final String KEY_PATH = "src/main/resources/clavePrivada.key";
-    private static final String WSAA_URL = "https://wsaahomo.afip.gov.ar/ws/services/LoginCms";
+    //private static final String WSAA_URL = "https://wsaahomo.afip.gov.ar/ws/services/LoginCms";
     private static final String SERVICE = "wsfe";
 
     

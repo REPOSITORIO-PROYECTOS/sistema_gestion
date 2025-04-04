@@ -2,7 +2,6 @@ package com.sistema.gestion.Controllers.Profiles;
 
 import com.sistema.gestion.DTO.PagedResponse;
 import com.sistema.gestion.DTO.UserInfo;
-import com.sistema.gestion.Models.Admin.Finance.Payment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

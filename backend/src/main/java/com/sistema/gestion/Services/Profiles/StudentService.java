@@ -3,7 +3,6 @@ package com.sistema.gestion.Services.Profiles;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-import com.sistema.gestion.Models.Admin.Management.Course;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

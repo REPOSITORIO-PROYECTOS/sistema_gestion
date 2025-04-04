@@ -1,17 +1,13 @@
 package com.sistema.gestion.Services.Profiles;
 
-import java.time.LocalDateTime;
-
 import com.sistema.gestion.DTO.PagedResponse;
 import com.sistema.gestion.DTO.UserInfo;
-import com.sistema.gestion.Models.Admin.Management.Course;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.sistema.gestion.Models.Profiles.User;
 import com.sistema.gestion.Repositories.Profiles.UserRepository;
 
 import reactor.core.publisher.Flux;

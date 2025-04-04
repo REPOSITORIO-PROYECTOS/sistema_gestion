@@ -1,7 +1,5 @@
 package com.sistema.gestion.Config.DynamicDBConection;
 
-import com.mongodb.ConnectionString;
-import com.mongodb.MongoClientSettings;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
 import org.springframework.context.annotation.Bean;

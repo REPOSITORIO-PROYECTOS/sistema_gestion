@@ -1,14 +1,11 @@
 package com.sistema.gestion.Controllers.Admin.Management.VirtualCampus;
 
-import com.mongodb.client.result.DeleteResult;
 import com.sistema.gestion.Models.Admin.Management.VirtualCampus.CourseSection;
 import com.sistema.gestion.Models.Admin.Management.VirtualCampus.CourseSubSection;
 import com.sistema.gestion.Services.Admin.Management.VirtualCampus.CourseSectionService;
 
-import io.swagger.v3.oas.models.servers.Server;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
