@@ -33,8 +33,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+} from "@/components/ui/pagination";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
 import {
     Select,
     SelectContent,
@@ -86,11 +94,11 @@ import {
 } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import AgregarCurso from "../form-curso";
-import React from 'react';
-import { useLoading } from '@/hooks/useLoading';
-import { useFetch } from '@/hooks/useFetch';
-import { toast } from 'sonner';
-import PersonaForm from '../form-persona';
+import React from "react";
+import { useLoading } from "@/hooks/useLoading";
+import { useFetch } from "@/hooks/useFetch";
+import { toast } from "sonner";
+import PersonaForm from "../form-persona";
 import FormCurso from "../form-curso";
 import Link from "next/link";
 
@@ -98,9 +106,9 @@ type Item = {
     id: string;
     title: string;
     description: string;
-    status: 'ACTIVE' | 'INACTIVE'
+    status: "ACTIVE" | "INACTIVE";
     monthlyPrice: number;
-    studentsIds: string[]
+    studentsIds: string[];
     teacherId: string;
 };
 
@@ -111,7 +119,11 @@ const multiColumnFilterFn: FilterFn<Item> = (row, columnId, filterValue) => {
     return searchableRowContent.includes(searchTerm);
 };
 
-const statusFilterFn: FilterFn<Item> = (row, columnId, filterValue: string[]) => {
+const statusFilterFn: FilterFn<Item> = (
+    row,
+    columnId,
+    filterValue: string[]
+) => {
     if (!filterValue?.length) return true;
     const status = row.getValue(columnId) as string;
     return filterValue.includes(status);
@@ -123,9 +135,12 @@ const columns: ColumnDef<Item>[] = [
         header: ({ table }) => (
             <Checkbox
                 checked={
-                    table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")
+                    table.getIsAllPageRowsSelected() ||
+                    (table.getIsSomePageRowsSelected() && "indeterminate")
                 }
-                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                onCheckedChange={(value) =>
+                    table.toggleAllPageRowsSelected(!!value)
+                }
                 aria-label="Select all"
             />
         ),
@@ -168,7 +183,9 @@ const columns: ColumnDef<Item>[] = [
         cell: ({ row }) => (
             <Badge
                 className={cn(
-                    row.getValue("status") === "Inactive" ? "bg-muted-foreground/60 text-primary-foreground" : "bg-blue-600 text-background",
+                    row.getValue("status") === "Inactive"
+                        ? "bg-muted-foreground/60 text-primary-foreground"
+                        : "bg-blue-600 text-background"
                 )}
             >
                 {row.getValue("status")}
@@ -186,14 +203,16 @@ const columns: ColumnDef<Item>[] = [
     },
 ];
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function TablePerson() {
     const id = useId();
-    const { finishLoading, loading, startLoading } = useLoading()
-    const fetch = useFetch()
+    const { finishLoading, loading, startLoading } = useLoading();
+    const fetch = useFetch();
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+        {}
+    );
     const [pagination, setPagination] = useState<PaginationState>({
         pageIndex: 0,
         pageSize: 10,
@@ -227,7 +246,12 @@ export default function TablePerson() {
         return `https://sistema-gestion-1.onrender.com/api/cursos/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
     }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm]);
 
-    const { data: swrData, error, isLoading, mutate } = useSWR(swrUrl, fetcher, {
+    const {
+        data: swrData,
+        error,
+        isLoading,
+        mutate,
+    } = useSWR(swrUrl, fetcher, {
         keepPreviousData: true,
     });
 
@@ -255,7 +279,8 @@ export default function TablePerson() {
             startLoading();
             const selectedRows = table.getSelectedRowModel().rows;
             const updatedData = data.filter(
-                (item) => !selectedRows.some((row) => row.original.id === item.id)
+                (item) =>
+                    !selectedRows.some((row) => row.original.id === item.id)
             );
             setData(updatedData);
 
@@ -266,8 +291,13 @@ export default function TablePerson() {
                         method: "delete",
                     });
                 } catch (error: any) {
-                    console.error(`Error deleting row ${row.original.id}:`, error);
-                    toast.error(`Error al eliminar el curso ${row.original.id}.`);
+                    console.error(
+                        `Error deleting row ${row.original.id}:`,
+                        error
+                    );
+                    toast.error(
+                        `Error al eliminar el curso ${row.original.id}.`
+                    );
                 }
             }
             await mutate();
@@ -319,12 +349,16 @@ export default function TablePerson() {
     }, [table.getColumn("status")?.getFacetedUniqueValues()]);
 
     const selectedStatuses = useMemo(() => {
-        const filterValue = table.getColumn("status")?.getFilterValue() as string[];
+        const filterValue = table
+            .getColumn("status")
+            ?.getFilterValue() as string[];
         return filterValue ?? [];
     }, [table.getColumn("status")?.getFilterValue()]);
 
     const handleStatusChange = (checked: boolean, value: string) => {
-        const filterValue = table.getColumn("status")?.getFilterValue() as string[];
+        const filterValue = table
+            .getColumn("status")
+            ?.getFilterValue() as string[];
         const newFilterValue = filterValue ? [...filterValue] : [];
 
         if (checked) {
@@ -336,7 +370,11 @@ export default function TablePerson() {
             }
         }
 
-        table.getColumn("status")?.setFilterValue(newFilterValue.length ? newFilterValue : undefined);
+        table
+            .getColumn("status")
+            ?.setFilterValue(
+                newFilterValue.length ? newFilterValue : undefined
+            );
     };
 
     return (
@@ -351,7 +389,9 @@ export default function TablePerson() {
                             ref={inputRef}
                             className={cn(
                                 "peer min-w-60 ps-9",
-                                Boolean(table.getColumn("title")?.getFilterValue()) && "pe-9",
+                                Boolean(
+                                    table.getColumn("title")?.getFilterValue()
+                                ) && "pe-9"
                             )}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -360,11 +400,17 @@ export default function TablePerson() {
                             aria-label="Filtrar por nombre del curso"
                         />
                         <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
-                            <ListFilter size={16} strokeWidth={2} aria-hidden="true" />
+                            <ListFilter
+                                size={16}
+                                strokeWidth={2}
+                                aria-hidden="true"
+                            />
                         </div>
-                        {Boolean(table.getColumn("title")?.getFilterValue()) && (
+                        {Boolean(
+                            table.getColumn("title")?.getFilterValue()
+                        ) && (
                             <button
-                                className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+                                className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
                                 aria-label="Clear filter"
                                 onClick={() => {
                                     setSearchTerm("");
@@ -373,7 +419,11 @@ export default function TablePerson() {
                                     }
                                 }}
                             >
-                                <CircleX size={16} strokeWidth={2} aria-hidden="true" />
+                                <CircleX
+                                    size={16}
+                                    strokeWidth={2}
+                                    aria-hidden="true"
+                                />
                             </button>
                         )}
                     </div>
@@ -397,14 +447,28 @@ export default function TablePerson() {
                         </PopoverTrigger>
                         <PopoverContent className="min-w-36 p-3" align="start">
                             <div className="space-y-3">
-                                <div className="text-xs font-medium text-muted-foreground">Filtros</div>
+                                <div className="text-xs font-medium text-muted-foreground">
+                                    Filtros
+                                </div>
                                 <div className="space-y-3">
                                     {uniqueStatusValues.map((value, i) => (
-                                        <div key={value} className="flex items-center gap-2">
+                                        <div
+                                            key={value}
+                                            className="flex items-center gap-2"
+                                        >
                                             <Checkbox
                                                 id={`${id}-${i}`}
-                                                checked={selectedStatuses.includes(value)}
-                                                onCheckedChange={(checked: boolean) => handleStatusChange(checked, value)}
+                                                checked={selectedStatuses.includes(
+                                                    value
+                                                )}
+                                                onCheckedChange={(
+                                                    checked: boolean
+                                                ) =>
+                                                    handleStatusChange(
+                                                        checked,
+                                                        value
+                                                    )
+                                                }
                                             />
                                             <Label
                                                 htmlFor={`${id}-${i}`}
@@ -447,8 +511,12 @@ export default function TablePerson() {
                                             key={column.id}
                                             className="capitalize"
                                             checked={column.getIsVisible()}
-                                            onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                                            onSelect={(event) => event.preventDefault()}
+                                            onCheckedChange={(value) =>
+                                                column.toggleVisibility(!!value)
+                                            }
+                                            onSelect={(event) =>
+                                                event.preventDefault()
+                                            }
                                         >
                                             {column.columnDef.header?.toString()}
                                         </DropdownMenuCheckboxItem>
@@ -471,7 +539,10 @@ export default function TablePerson() {
                                     />
                                     Borrar
                                     <span className="-me-1 ms-3 inline-flex h-5 max-h-full items-center rounded border border-border bg-background px-1 font-[inherit] text-[0.625rem] font-medium text-muted-foreground/70">
-                                        {table.getSelectedRowModel().rows.length}
+                                        {
+                                            table.getSelectedRowModel().rows
+                                                .length
+                                        }
                                     </span>
                                 </Button>
                             </AlertDialogTrigger>
@@ -481,20 +552,40 @@ export default function TablePerson() {
                                         className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border"
                                         aria-hidden="true"
                                     >
-                                        <CircleAlert className="opacity-80" size={16} strokeWidth={2} />
+                                        <CircleAlert
+                                            className="opacity-80"
+                                            size={16}
+                                            strokeWidth={2}
+                                        />
                                     </div>
                                     <AlertDialogHeader>
-                                        <AlertDialogTitle>Estas absolutamente seguro?</AlertDialogTitle>
+                                        <AlertDialogTitle>
+                                            Estas absolutamente seguro?
+                                        </AlertDialogTitle>
                                         <AlertDialogDescription>
-                                            Esta acción no se puede deshacer. Esto eliminará permanentemente{" "}
-                                            {table.getSelectedRowModel().rows.length}{" "}
-                                            {table.getSelectedRowModel().rows.length === 1 ? "fila" : "filas"}.
+                                            Esta acción no se puede deshacer.
+                                            Esto eliminará permanentemente{" "}
+                                            {
+                                                table.getSelectedRowModel().rows
+                                                    .length
+                                            }{" "}
+                                            {table.getSelectedRowModel().rows
+                                                .length === 1
+                                                ? "fila"
+                                                : "filas"}
+                                            .
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                 </div>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleDeleteRows}>Delete</AlertDialogAction>
+                                    <AlertDialogCancel>
+                                        Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={handleDeleteRows}
+                                    >
+                                        Delete
+                                    </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
@@ -509,34 +600,51 @@ export default function TablePerson() {
                 <Table className="table-fixed">
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id} className="hover:bg-transparent">
+                            <TableRow
+                                key={headerGroup.id}
+                                className="hover:bg-transparent"
+                            >
                                 {headerGroup.headers.map((header) => {
                                     return (
                                         <TableHead
                                             key={header.id}
-                                            style={{ width: `${header.getSize()}px` }}
+                                            style={{
+                                                width: `${header.getSize()}px`,
+                                            }}
                                             className="h-11"
                                         >
                                             {header.isPlaceholder ? null : header.column.getCanSort() ? (
                                                 <div
                                                     className={cn(
                                                         header.column.getCanSort() &&
-                                                        "flex h-full cursor-pointer select-none items-center justify-between gap-2",
+                                                            "flex h-full cursor-pointer select-none items-center justify-between gap-2"
                                                     )}
                                                     onClick={header.column.getToggleSortingHandler()}
                                                     onKeyDown={(e) => {
                                                         // Enhanced keyboard handling for sorting
                                                         if (
                                                             header.column.getCanSort() &&
-                                                            (e.key === "Enter" || e.key === " ")
+                                                            (e.key ===
+                                                                "Enter" ||
+                                                                e.key === " ")
                                                         ) {
                                                             e.preventDefault();
-                                                            header.column.getToggleSortingHandler()?.(e);
+                                                            header.column.getToggleSortingHandler()?.(
+                                                                e
+                                                            );
                                                         }
                                                     }}
-                                                    tabIndex={header.column.getCanSort() ? 0 : undefined}
+                                                    tabIndex={
+                                                        header.column.getCanSort()
+                                                            ? 0
+                                                            : undefined
+                                                    }
                                                 >
-                                                    {flexRender(header.column.columnDef.header, header.getContext())}
+                                                    {flexRender(
+                                                        header.column.columnDef
+                                                            .header,
+                                                        header.getContext()
+                                                    )}
                                                     {{
                                                         asc: (
                                                             <ChevronUp
@@ -554,10 +662,16 @@ export default function TablePerson() {
                                                                 aria-hidden="true"
                                                             />
                                                         ),
-                                                    }[header.column.getIsSorted() as string] ?? null}
+                                                    }[
+                                                        header.column.getIsSorted() as string
+                                                    ] ?? null}
                                                 </div>
                                             ) : (
-                                                flexRender(header.column.columnDef.header, header.getContext())
+                                                flexRender(
+                                                    header.column.columnDef
+                                                        .header,
+                                                    header.getContext()
+                                                )
                                             )}
                                         </TableHead>
                                     );
@@ -581,17 +695,35 @@ export default function TablePerson() {
                             <>
                                 {table.getRowModel().rows?.length ? (
                                     table.getRowModel().rows.map((row) => (
-                                        <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                                            {row.getVisibleCells().map((cell) => (
-                                                <TableCell key={cell.id} className="last:py-0">
-                                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                                </TableCell>
-                                            ))}
+                                        <TableRow
+                                            key={row.id}
+                                            data-state={
+                                                row.getIsSelected() &&
+                                                "selected"
+                                            }
+                                        >
+                                            {row
+                                                .getVisibleCells()
+                                                .map((cell) => (
+                                                    <TableCell
+                                                        key={cell.id}
+                                                        className="last:py-0"
+                                                    >
+                                                        {flexRender(
+                                                            cell.column
+                                                                .columnDef.cell,
+                                                            cell.getContext()
+                                                        )}
+                                                    </TableCell>
+                                                ))}
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={columns.length} className="h-24 text-center">
+                                        <TableCell
+                                            colSpan={columns.length}
+                                            className="h-24 text-center"
+                                        >
                                             No hay resultados.
                                         </TableCell>
                                     </TableRow>
@@ -615,12 +747,18 @@ export default function TablePerson() {
                             table.setPageSize(Number(value));
                         }}
                     >
-                        <SelectTrigger id={id} className="w-fit whitespace-nowrap">
+                        <SelectTrigger
+                            id={id}
+                            className="w-fit whitespace-nowrap"
+                        >
                             <SelectValue placeholder="Select number of results" />
                         </SelectTrigger>
                         <SelectContent className="[&_*[role=option]>span]:end-2 [&_*[role=option]>span]:start-auto [&_*[role=option]]:pe-8 [&_*[role=option]]:ps-2">
                             {[5, 10, 25, 50].map((pageSize) => (
-                                <SelectItem key={pageSize} value={pageSize.toString()}>
+                                <SelectItem
+                                    key={pageSize}
+                                    value={pageSize.toString()}
+                                >
                                     {pageSize}
                                 </SelectItem>
                             ))}
@@ -630,16 +768,24 @@ export default function TablePerson() {
 
                 {/* Page number information */}
                 <div className="flex grow justify-end whitespace-nowrap text-sm text-muted-foreground">
-                    <p className="whitespace-nowrap text-sm text-muted-foreground" aria-live="polite">
+                    <p
+                        className="whitespace-nowrap text-sm text-muted-foreground"
+                        aria-live="polite"
+                    >
                         <span className="text-foreground">
-                            {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}-
+                            {table.getState().pagination.pageIndex *
+                                table.getState().pagination.pageSize +
+                                1}
+                            -
                             {Math.min(
-                                table.getState().pagination.pageIndex * table.getState().pagination.pageSize +
-                                table.getState().pagination.pageSize,
+                                table.getState().pagination.pageIndex *
+                                    table.getState().pagination.pageSize +
+                                    table.getState().pagination.pageSize,
                                 totalElements
                             )}
                         </span>{" "}
-                        de <span className="text-foreground">{totalElements}</span>
+                        de{" "}
+                        <span className="text-foreground">{totalElements}</span>
                     </p>
                 </div>
 
@@ -657,7 +803,11 @@ export default function TablePerson() {
                                     disabled={!table.getCanPreviousPage()}
                                     aria-label="Go to first page"
                                 >
-                                    <ChevronFirst size={16} strokeWidth={2} aria-hidden="true" />
+                                    <ChevronFirst
+                                        size={16}
+                                        strokeWidth={2}
+                                        aria-hidden="true"
+                                    />
                                 </Button>
                             </PaginationItem>
                             {/* Previous page button */}
@@ -670,7 +820,11 @@ export default function TablePerson() {
                                     disabled={!table.getCanPreviousPage()}
                                     aria-label="Go to previous page"
                                 >
-                                    <ChevronLeft size={16} strokeWidth={2} aria-hidden="true" />
+                                    <ChevronLeft
+                                        size={16}
+                                        strokeWidth={2}
+                                        aria-hidden="true"
+                                    />
                                 </Button>
                             </PaginationItem>
                             {/* Next page button */}
@@ -683,7 +837,11 @@ export default function TablePerson() {
                                     disabled={!table.getCanNextPage()}
                                     aria-label="Go to next page"
                                 >
-                                    <ChevronRight size={16} strokeWidth={2} aria-hidden="true" />
+                                    <ChevronRight
+                                        size={16}
+                                        strokeWidth={2}
+                                        aria-hidden="true"
+                                    />
                                 </Button>
                             </PaginationItem>
                             {/* Last page button */}
@@ -692,11 +850,19 @@ export default function TablePerson() {
                                     size="icon"
                                     variant="outline"
                                     className="disabled:pointer-events-none disabled:opacity-50"
-                                    onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                                    onClick={() =>
+                                        table.setPageIndex(
+                                            table.getPageCount() - 1
+                                        )
+                                    }
                                     disabled={!table.getCanNextPage()}
                                     aria-label="Go to last page"
                                 >
-                                    <ChevronLast size={16} strokeWidth={2} aria-hidden="true" />
+                                    <ChevronLast
+                                        size={16}
+                                        strokeWidth={2}
+                                        aria-hidden="true"
+                                    />
                                 </Button>
                             </PaginationItem>
                         </PaginationContent>
@@ -708,25 +874,40 @@ export default function TablePerson() {
 }
 
 const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
-    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     return (
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <div className="flex justify-end">
-                        <Button size="icon" variant="ghost" className="shadow-none" aria-label="Edit item">
-                            <Ellipsis size={16} strokeWidth={2} aria-hidden="true" />
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            className="shadow-none"
+                            aria-label="Edit item"
+                        >
+                            <Ellipsis
+                                size={16}
+                                strokeWidth={2}
+                                aria-hidden="true"
+                            />
                         </Button>
                     </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuGroup>
-                        <DropdownMenuItem onSelect={() => setIsEditDialogOpen(true)}>
+                        <DropdownMenuItem
+                            onSelect={() => setIsEditDialogOpen(true)}
+                        >
                             <span>Editar</span>
                             <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
-                            <Link href={`cursos/${row.original.id}/asistencias`}>Asistencia</Link>
+                            <Link
+                                href={`cursos/${row.original.id}/asistencias`}
+                            >
+                                Asistencia
+                            </Link>
                             <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
                         </DropdownMenuItem>
                     </DropdownMenuGroup>
@@ -740,10 +921,16 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                             <DropdownMenuSubTrigger>Mas</DropdownMenuSubTrigger>
                             <DropdownMenuPortal>
                                 <DropdownMenuSubContent>
-                                    <DropdownMenuItem>Ejemplo 1</DropdownMenuItem>
-                                    <DropdownMenuItem>Ejemplo 2</DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        Ejemplo 1
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        Ejemplo 2
+                                    </DropdownMenuItem>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem>Ejemplo 3</DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        Ejemplo 3
+                                    </DropdownMenuItem>
                                 </DropdownMenuSubContent>
                             </DropdownMenuPortal>
                         </DropdownMenuSub>
@@ -761,7 +948,12 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                 </DropdownMenuContent>
             </DropdownMenu>
             {isEditDialogOpen && (
-                <FormCurso isEditable datos={row.original} mutate={mutate} onClose={() => setIsEditDialogOpen(false)} />
+                <FormCurso
+                    isEditable
+                    datos={row.original}
+                    mutate={mutate}
+                    onClose={() => setIsEditDialogOpen(false)}
+                />
             )}
         </>
     );
