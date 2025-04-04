@@ -1,19 +1,18 @@
-import axios, { AxiosRequestConfig, Method } from 'axios'
-import { useRouter } from 'next/navigation'
+import axios, { AxiosRequestConfig, Method } from "axios";
+import { useRouter } from "next/navigation";
 // import useStore from "@/context/store";
-import { toast } from 'sonner'
-
+import { toast } from "sonner";
 
 interface AuthFetchProps {
-    endpoint: string
-    redirectRoute?: string
-    formData?: any
-    options?: AxiosRequestConfig<any>
-    method?: Method
+    endpoint: string;
+    redirectRoute?: string;
+    formData?: any;
+    options?: AxiosRequestConfig<any>;
+    method?: Method;
 }
 
 export function useFetch() {
-    const router = useRouter()
+    const router = useRouter();
     // const { setUser } = useStore((state) => ({
     //     setUser: state.setUser,
     // }));
@@ -23,15 +22,15 @@ export function useFetch() {
         formData,
         redirectRoute,
         options,
-        method = 'post' // default method is post
+        method = "post", // default method is post
     }: AuthFetchProps) => {
         try {
             const { data } = await axios({
                 url: `https://sistema-gestion-1.onrender.com/api/${endpoint}`,
                 method,
                 data: formData,
-                ...options
-            })
+                ...options,
+            });
 
             if (data.message) {
                 toast.success(data.message, {
@@ -42,14 +41,14 @@ export function useFetch() {
             //     setUser(data.userLogged)
             // }
             if (redirectRoute) {
-                router.push(redirectRoute)
+                router.push(redirectRoute);
                 router.refresh();
             }
-            return data
+            return data;
         } catch (error: any) {
             console.log(error.response.data.message);
         }
-    }
+    };
 
-    return authRouter
+    return authRouter;
 }
