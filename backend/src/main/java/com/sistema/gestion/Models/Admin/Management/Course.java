@@ -1,5 +1,6 @@
 package com.sistema.gestion.Models.Admin.Management;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 import org.springframework.data.annotation.Id;
@@ -38,4 +39,6 @@ public class Course extends ModelClass {
 
     @NotNull(message = "El ID del profesor no puede ser nulo.")
     private String teacherId;
+
+    private ArrayList<String> sectionsIds;
 }

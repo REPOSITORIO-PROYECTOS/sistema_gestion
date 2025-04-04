@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,7 +34,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/cursos")
-@Tag(name = "Cursos", description = "Operaciones relacionadas con los cursos: altas, bajas, modificaciones, y registro de estudiantes a los cursos existentes")
+@Tag(name = "Course Controller", description = "Operaciones relacionadas con los cursos: altas, bajas, modificaciones, y registro de estudiantes a los cursos existentes")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class CourseController {
@@ -53,8 +54,13 @@ public class CourseController {
 			@ApiResponse(responseCode = "400", description = "Error en los datos proporcionados.")
 	})
 	@PostMapping
-	public Mono<ResponseEntity<Course>> createCourse(@RequestBody @Valid Course course) {
-		String user = "ADMIN"; // Se cambia cuando se implemente la seguridad
+	public Mono<ResponseEntity<Course>> createCourse(
+			Authentication auth,
+			@RequestBody @Valid Course course
+	) {
+
+		String user = auth.getName();
+
 		return courseService.saveCourse(course, user)
 				.map(savedCourse -> ResponseEntity.status(HttpStatus.CREATED).body(savedCourse))
 				.onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -68,9 +74,12 @@ public class CourseController {
 	})
 	@PutMapping("/{courseId}")
 	public Mono<ResponseEntity<Course>> updateCourse(
+			Authentication auth,
 			@PathVariable @Parameter(description = "ID del curso a actualizar", required = true) String courseId,
 			@RequestBody @Valid Course course) {
-		String user = "ADMIN"; // Ejemplo, se debería obtener el usuario actual
+
+		String user = auth.getName();
+
 		return courseService.updateCourse(course, courseId, user)
 				.map(savedCourse -> ResponseEntity.status(HttpStatus.CREATED).body(savedCourse))
 				.onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -89,12 +98,10 @@ public class CourseController {
 			@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Cuerpo de la solicitud que contiene el ID del estudiante", required = true, content = @Content(mediaType = "application/json", schema = @Schema(example = "{\"studentId\": \"idDeEjemplo\"}"))) @RequestBody Map<String, String> requestBody) {
 		String studentId = requestBody.get("studentId");
 		if (studentId == null) {
-			return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-					"El campo 'studentId' es obligatorio"));
+			return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "El campo 'studentId' es obligatorio"));
 		}
 		return courseService.registerStudentInCourse(courseId, studentId)
-				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-						"No se pudo inscribir al estudiante en el curso")));
+				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,  "No se pudo inscribir al estudiante en el curso")));
 	}
 
 	@Operation(summary = "Eliminar un estudiante de un curso", description = "Permite eliminar la inscripción de un estudiante en el curso especificado mediante su ID.")

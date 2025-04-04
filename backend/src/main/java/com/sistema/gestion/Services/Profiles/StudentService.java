@@ -21,111 +21,114 @@ import reactor.core.publisher.Flux;
 @RequiredArgsConstructor
 public class StudentService {
 
-  private final StudentRepository studentRepository;
-  private final CourseRepository courseRepository;
+	private final StudentRepository studentRepository;
+	private final CourseRepository courseRepository;
+	private final UserService userService;
 
-  public Mono<PagedResponse<Student>> findAll(int page, int size, String keyword) {
-    PageRequest pageRequest = PageRequest.of(page, size);
+	// ? ==================== MÉTODOS PÚBLICOS ====================
 
-    if (keyword != null && !keyword.isEmpty()) {
-      Mono<Long> totalElementsMono = studentRepository.countByDniOrSurname(keyword);
-      Flux<Student> studentFlux = studentRepository.findByDniOrSurname(keyword, pageRequest);
+	public Mono<PagedResponse<Student>> findAll(int page, int size, String keyword) {
+		PageRequest pageRequest = PageRequest.of(page, size);
 
-      return Mono.zip(totalElementsMono, studentFlux.collectList())
-          .map(tuple -> new PagedResponse<>(
-              tuple.getT2(), // Lista de cursos filtrados
-              tuple.getT1(), // Total de registros filtrados
-              page,
-              size));
-    }
+		if (keyword != null && !keyword.isEmpty()) {
+			return searchStudents(keyword, pageRequest);
+		}
 
-    Mono<Long> totalElementsMono = studentRepository.countAll();
-    Flux<Student> studentsFlux = studentRepository.findAllBy(pageRequest);
+		return getAllStudentsPaged(pageRequest);
+	}
 
-    return Mono.zip(totalElementsMono, studentsFlux.collectList())
-        .map(tuple -> new PagedResponse<>(
-            tuple.getT2(), // Lista de estudiantes
-            tuple.getT1(), // Total de registros
-            page,
-            size));
-  }
+	public Mono<Long> findAllCount() {
+		return studentRepository.count();
+	}
 
-  public Mono<PagedResponse<Student>> searchStudents(String query, int page, int size) {
-    PageRequest pageRequest = PageRequest.of(page, size);
+	public Mono<Student> createStudentWithCourses(Student student, String username) {
+		return userService.getFullName(username)
+				.flatMap(fullName -> {
+					student.setCreatedBy(fullName);
+					student.setCreatedAt(LocalDateTime.now());
+					return studentRepository.save(student)
+							.flatMap(savedStudent -> enrollStudentInCourses(savedStudent));
+				})
+				.onErrorMap(e -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+						"Error al inscribir al estudiante en los cursos", e));
+	}
 
-    // Contar total de coincidencias en DNI o Apellido
-    Mono<Long> totalElementsMono = studentRepository.countByDniOrSurname(query);
-    // Obtener lista de coincidencias con paginación
-    Flux<Student> studentsFlux = studentRepository.findByDniOrSurname(query, pageRequest);
+	public Mono<Student> findById(String id) {
+		return studentRepository.findById(id)
+				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+						"No se encontró el estudiante con ID: " + id)))
+				.onErrorMap(e -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+						"Error al buscar el estudiante", e));
+	}
 
-    return Mono.zip(totalElementsMono, studentsFlux.collectList())
-        .map(tuple -> new PagedResponse<>(
-            tuple.getT2(), // Lista de estudiantes encontrados
-            tuple.getT1(), // Total de registros encontrados
-            page,
-            size));
-  }
+	public Mono<Student> updateStudent(String id, Student student, String username) {
+		return userService.getFullName(username)
+				.flatMap(fullName -> studentRepository.findById(id)
+						.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+								"No se encontró el estudiante con ID: " + id)))
+						.flatMap(existingStudent -> {
+							existingStudent.setName(student.getName());
+							existingStudent.setSurname(student.getSurname());
+							existingStudent.setEmail(student.getEmail());
+							existingStudent.setPhone(student.getPhone());
+							existingStudent.setUpdatedAt(LocalDateTime.now());
+							existingStudent.setModifiedBy(fullName);
+							return studentRepository.save(existingStudent);
+						}))
+				.onErrorMap(e -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+						"Error al actualizar el estudiante", e));
+	}
 
-  public Mono<Long> findAllCount() {
-    return studentRepository.count();
-  }
+	public Mono<Void> deleteStudent(String id) {
+		return studentRepository.findById(id)
+				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+						"No se encontró el estudiante con ID: " + id)))
+				.flatMap(student -> studentRepository.deleteById(id))
+				.onErrorMap(e -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+						"Error al eliminar el estudiante", e));
+	}
 
-  public Mono<Student> createStudentWithCourses(Student student, String user) {
-    student.setCreatedBy(user);
+	// ==================== MÉTODOS PRIVADOS ====================
 
-    return studentRepository.save(student)
-        .flatMap(savedStudent -> {
-          Set<String> courseIds = savedStudent.getCoursesIds();
+	private Mono<PagedResponse<Student>> getAllStudentsPaged(PageRequest pageRequest) {
+		Mono<Long> totalElementsMono = studentRepository.countAll();
+		Flux<Student> studentsFlux = studentRepository.findAllBy(pageRequest);
 
-          if (courseIds == null || courseIds.isEmpty()) {
-            return Mono.just(savedStudent);
-          }
+		return Mono.zip(totalElementsMono, studentsFlux.collectList())
+				.map(tuple -> new PagedResponse<>(
+						tuple.getT2(), // Lista de estudiantes
+						tuple.getT1(), // Total de registros
+						pageRequest.getPageNumber(),
+						pageRequest.getPageSize()));
+	}
 
-          return Flux.fromIterable(courseIds)
-              .flatMap(courseId -> courseRepository.findById(courseId)
-                  .switchIfEmpty(
-                      Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Curso no encontrado: " + courseId)))
-                  .flatMap(course -> {
-                    course.getStudentsIds().add(savedStudent.getId()); // Agregamos el estudiante al curso
-                    return courseRepository.save(course); // Guardamos el curso actualizado
-                  }))
-              .then(Mono.just(savedStudent)); // Devolvemos el estudiante guardado
-        })
-        .onErrorMap(e -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-            "Error al inscribir al estudiante en los cursos", e));
-  }
+	private Mono<PagedResponse<Student>> searchStudents(String query, PageRequest pageRequest) {
+		Mono<Long> totalElementsMono = studentRepository.countByDniOrSurname(query);
+		Flux<Student> studentsFlux = studentRepository.findByDniOrSurname(query, pageRequest);
 
-  public Mono<Student> findById(String id) {
-    return studentRepository.findById(id)
-        .switchIfEmpty(
-            Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el estudiante con ID: " + id)))
-        .onErrorMap(
-            e -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al buscar el estudiante", e));
-  }
+		return Mono.zip(totalElementsMono, studentsFlux.collectList())
+				.map(tuple -> new PagedResponse<>(
+						tuple.getT2(), // Lista de estudiantes encontrados
+						tuple.getT1(), // Total de registros encontrados
+						pageRequest.getPageNumber(),
+						pageRequest.getPageSize()));
+	}
 
-  public Mono<Student> updateStudent(String id, Student student, String user) {
-    return studentRepository.findById(id)
-        .switchIfEmpty(
-            Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el estudiante con ID: " + id)))
-        .flatMap(existingStudent -> {
-          existingStudent.setName(student.getName());
-          existingStudent.setSurname(student.getSurname());
-          existingStudent.setUpdatedAt(LocalDateTime.now());
-          existingStudent.setModifiedBy(user);
-          existingStudent.setEmail(student.getEmail());
-          existingStudent.setPhone(student.getPhone());
-          return studentRepository.save(existingStudent)
-              .onErrorMap(e -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                  "Error al actualizar el estudiante", e));
-        });
-  }
+	private Mono<Student> enrollStudentInCourses(Student student) {
+		Set<String> courseIds = student.getCoursesIds();
 
-  public Mono<Void> deleteStudent(String id) {
-    return studentRepository.findById(id)
-        .switchIfEmpty(
-            Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el estudiante con ID: " + id)))
-        .flatMap(student -> studentRepository.deleteById(id)
-            .onErrorMap(e -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                "Error al eliminar el estudiante", e)));
-  }
+		if (courseIds == null || courseIds.isEmpty()) {
+			return Mono.just(student); // Si no hay cursos, devolver el estudiante sin cambios
+		}
+
+		return Flux.fromIterable(courseIds)
+				.flatMap(courseId -> courseRepository.findById(courseId)
+						.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+								"Curso no encontrado: " + courseId)))
+						.flatMap(course -> {
+							course.getStudentsIds().add(student.getId()); // Agregar el estudiante al curso
+							return courseRepository.save(course); // Guardar el curso actualizado
+						}))
+				.then(Mono.just(student)); // Devolver el estudiante guardado
+	}
 }

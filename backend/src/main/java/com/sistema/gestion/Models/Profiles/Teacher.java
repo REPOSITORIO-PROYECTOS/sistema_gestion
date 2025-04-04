@@ -36,6 +36,9 @@ public class Teacher extends ModelClass{
     @Indexed(unique = true)
     private String dni;
 
+    @NotBlank(message = "La institución no puede estar en blanco.")
+    private String institution;
+
     private String phone;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")

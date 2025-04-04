@@ -13,18 +13,18 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ErrorLog {
-  @Id
-  private String id;
-  private String message;
-  private String exceptionType;
-  private String stackTrace;
-  private String path;
-  private String method;
-  private String user;
-  private String requestBody;
-  private Map<String, String> headers;
-  private String customMessage;
-  private Map<String, String> queryParams;
-  private boolean resolved = false;
-  private LocalDateTime timestamp;
+	@Id
+	private String id;
+	private String message;
+	private String exceptionType;
+	private String stackTrace;
+	private String path;
+	private String method;
+	private String user;
+	private String requestBody;
+	private Map<String, String> headers;
+	private String customMessage;
+	private Map<String, String> queryParams;
+	private boolean resolved = false;
+	private LocalDateTime timestamp;
 }

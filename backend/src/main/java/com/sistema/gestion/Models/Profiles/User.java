@@ -1,5 +1,8 @@
 package com.sistema.gestion.Models.Profiles;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 
@@ -25,22 +28,24 @@ public class User extends ModelClass {
     @Size(min = 3, max = 20, message = "El apellido debe contener entre 3 a 20 caracteres.")
     private String surname;
 
-    @Email(message = "Ingrese un mail válido.")
-    @NotBlank(message = "El mail no puede estar en blanco.")
-    @Indexed(unique = true)
-    private String email;
-
     @NotBlank(message = "El DNI no puede estar en blanco.")
     @Indexed(unique = true)
     private String dni;
 
     private String phone;
 
+    // TODO: Idear Relacion unica con la institucion
+    @NotBlank(message = "La institución no puede estar en blanco.")
+    private String institution;
+
+    @NotBlank(message = "El correo electrónico no puede estar vacío")
+    @Email(message = "Debe proporcionar un correo electrónico válido")
+    @Indexed(unique = true)
+    private String email;
+
+    @NotBlank(message = "La contraseña no puede estar vacía")
     private String password;
 
-    // TODO: Idear Relacion unica con la institucion
-    private String istitution;
-
     @NotBlank(message = "El rol no puede estar en blanco.")
-    private String rol;
+    private Set<String> roles = new HashSet<>();
 }
