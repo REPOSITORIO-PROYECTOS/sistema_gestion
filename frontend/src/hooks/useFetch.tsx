@@ -27,7 +27,7 @@ export function useFetch() {
     }: AuthFetchProps) => {
         try {
             const { data } = await axios({
-                url: `https://sistema-gestion-bovz.onrender.com/api/${endpoint}`,
+                url: `https://sistema-gestion-1.onrender.com/api/${endpoint}`,
                 method,
                 data: formData,
                 ...options

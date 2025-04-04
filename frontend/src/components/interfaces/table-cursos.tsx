@@ -224,7 +224,7 @@ export default function TablePerson() {
     }, [searchTerm]);
 
     const swrUrl = useMemo(() => {
-        return `https://sistema-gestion-bovz.onrender.com/api/cursos/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
+        return `https://sistema-gestion-1.onrender.com/api/cursos/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
     }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm]);
 
     const { data: swrData, error, isLoading, mutate } = useSWR(swrUrl, fetcher, {

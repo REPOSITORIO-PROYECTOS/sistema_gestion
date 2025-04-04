@@ -92,40 +92,36 @@ export default function UserForm({ isEditable = false, datos, mutate, onClose }:
         },
     })
 
-    console.log(datos)
+    // useEffect(() => {
+    //     const getCourseOptions = async () => {
+    //         setIsLoading(true)
+    //         try {
+    //             const response = await fetch({
+    //                 endpoint: "cursos/paged",
+    //                 method: "GET",
+    //             })
+    //             if (response) {
+    //                 const courses = response.content
+    //                 if (courses) {
+    //                     const options = courses.map((course: any) => ({ label: course.title, value: course.id }))
+    //                     setCourseOptions(options)
+    //                 } else {
+    //                     toast.error("Error al cargar los cursos. Inténtalo de nuevo.")
+    //                 }
+    //             }
+    //         } catch (error: any) {
+    //             const errorMessage =
+    //                 (typeof error === "object" && error.response ? error.response.data?.message : error?.message) ||
+    //                 "Error al cargar los cursos. Inténtalo de nuevo."
+    //             console.error("Error en getCourseOptions: ", errorMessage)
+    //             toast.error(errorMessage)
+    //         } finally {
+    //             setIsLoading(false)
+    //         }
+    //     }
 
-    useEffect(() => {
-        const getCourseOptions = async () => {
-            setIsLoading(true)
-            try {
-                const response = await fetch({
-                    endpoint: "cursos/paged",
-                    method: "GET",
-                })
-                if (response) {
-                    const courses = response.content
-                    if (courses) {
-                        const options = courses.map((course: any) => ({ label: course.title, value: course.id }))
-                        setCourseOptions(options)
-                    } else {
-                        toast.error("Error al cargar los cursos. Inténtalo de nuevo.")
-                    }
-                }
-            } catch (error: any) {
-                const errorMessage =
-                    (typeof error === "object" && error.response ? error.response.data?.message : error?.message) ||
-                    "Error al cargar los cursos. Inténtalo de nuevo."
-                console.error("Error en getCourseOptions: ", errorMessage)
-                toast.error(errorMessage)
-            } finally {
-                setIsLoading(false)
-            }
-        }
-
-        getCourseOptions()
-    }, [fetch]) // Added fetch to dependencies
-
-    console.log("algo intermedio")
+    //     getCourseOptions()
+    // }, [fetch]) // Added fetch to dependencies
 
     async function onSubmit(data: z.infer<typeof formSchema>) {
         const formData = {
