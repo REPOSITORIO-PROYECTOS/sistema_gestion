@@ -1,6 +1,5 @@
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Navbar } from "@/components/navbar";
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
 
