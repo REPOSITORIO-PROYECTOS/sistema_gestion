@@ -1,0 +1,17 @@
+los aumentos de cuotas son por niveles y por alumnos en particular porcentualmente
+
+En los pagos, se debe poder seleccionar una o mas coutas para pagar a la vez en caso de que un padre quiera pagar las cuotas de sus hijos a la vez
+
+se debe hacer un perfil de padres a la cual se le referenciara el id del perfil de los hijos que tenga acceso a los pagos y las notas de sus hijos
+
+generar un boletin de notas y asistencia (hacer desde el front)
+
+en casos de pagos atrasados, se debe poder añadir un porcentaje de recargo
+
+
+Faltante en el backend
+crear los endpoints de crear editar y eliminar usuarios
+hacer el flujo para manejar el caso en que un padre tenga a mas de 1 hijo inscripto
+hacer el flujo para que el perfil padres pueda ver las notas de sus hijos
+testear endpoints de caja
+crear colección que contendrá los datos de la institucion
