@@ -95,7 +95,6 @@ import React from "react";
 import { useFetch } from "@/hooks/useFetch";
 import { useLoading } from "@/hooks/useLoading";
 import { toast } from "sonner";
-import PersonaForm from "../form-persona";
 import UserForm from "../form-user";
 
 type Item = {
@@ -182,31 +181,6 @@ const columns: ColumnDef<Item>[] = [
         accessorKey: "phone",
         size: 160,
     },
-    // {
-    //     header: "Contraseña",
-    //     accessorKey: "password",
-    //     cell: ({ row }) => (
-    //         //ocultar contraseña con asteriscos
-    //         <div className="flex items-center gap-2">
-    //             <div>
-    //                 <div className="">
-    //                     {(row.getValue("password") as string)
-    //                         .split("")
-    //                         .map((char, index) => {
-    //                             return index < 3 ? char : "●";
-    //                         })
-    //                         .join("")}
-    //                 </div>
-    //             </div>
-    //         </div>
-    //     ),
-    //     size: 160,
-    // },
-    // {
-    //     header: "Institución",
-    //     accessorKey: "istitution",
-    //     size: 160,
-    // },
     {
         header: "Rol",
         accessorKey: "rol",
