@@ -65,7 +65,6 @@ import {
     PaginationState,
     Row,
     SortingState,
-    Updater,
     VisibilityState,
     flexRender,
     getCoreRowModel,
@@ -93,12 +92,10 @@ import {
     Trash,
 } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import AgregarCurso from "../form-curso";
 import React from "react";
 import { useLoading } from "@/hooks/useLoading";
 import { useFetch } from "@/hooks/useFetch";
 import { toast } from "sonner";
-import PersonaForm from "../form-persona";
 import FormCurso from "../form-curso";
 import Link from "next/link";
 
@@ -166,12 +163,6 @@ const columns: ColumnDef<Item>[] = [
         accessorKey: "description",
         size: 320,
     },
-    // {
-    //     header: "Precio mensual",
-    //     accessorKey: "monthlyPrice",
-    //     size: 160,
-    //     filterFn: multiColumnFilterFn,
-    // },
     {
         header: "Profesor",
         accessorKey: "teacherId.name",
@@ -914,7 +905,11 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                         <DropdownMenuItem>
-                            <span>Archivar</span>
+                            <Link
+                                href={`cursos/${row.original.id}/editar-contenido`}
+                            >
+                                Editar contenido
+                            </Link>
                             <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
                         </DropdownMenuItem>
                         <DropdownMenuSub>
