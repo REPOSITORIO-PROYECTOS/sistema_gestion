@@ -82,6 +82,19 @@ public class StudentController {
 						HttpStatus.BAD_REQUEST, "Error al crear estudiante")));
 	}
 
+	@PostMapping("/crearConPadres")
+	@ResponseStatus(HttpStatus.CREATED)
+	public Mono<Student> createStudentWithParents(
+			Authentication auth,
+			@Parameter(description = "Datos del estudiante", required = true) @RequestBody @Valid Student student) {
+
+		String user = auth.getName();
+
+		return studentService.createStudentWithCoursesAndParents(student, user)
+				.onErrorResume(e -> Mono.error(new ResponseStatusException(
+						HttpStatus.BAD_REQUEST, "Error al crear estudiante")));
+	}
+
 	@Operation(summary = "Actualizar estudiante", description = "Actualiza un estudiante existente")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Estudiante actualizado exitosamente"),

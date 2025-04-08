@@ -1,73 +1,64 @@
 package com.sistema.gestion.Services.Admin.Management.Academics;
 
-import com.sistema.gestion.Config.DynamicDBConection.DynamicMongoConfig;
 import com.sistema.gestion.Models.Admin.Management.Grade;
-
-import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
+import com.sistema.gestion.Repositories.Admin.Management.GradeRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
 public class GradeService {
 
-    private final DynamicMongoConfig dynamicMongoConfig;
+    private final GradeRepository gradeRepository;
 
-    public GradeService(DynamicMongoConfig dynamicMongoConfig) {
-        this.dynamicMongoConfig = dynamicMongoConfig;
+    public GradeService(GradeRepository gradeRepository) {
+        this.gradeRepository = gradeRepository;
     }
 
-    private Mono<ReactiveMongoTemplate> getTemplate(ServerWebExchange exchange) {
-        return dynamicMongoConfig.getTemplateFromRequest(exchange);
+    public Mono<Grade> createGrade(Grade grade) {
+        return gradeRepository.save(grade);
     }
 
-    public Mono<Grade> createGrade(ServerWebExchange exchange, Grade grade) {
-        return getTemplate(exchange)
-                .flatMap(template -> template.save(grade));
+    public Mono<Grade> getGradeById(String id) {
+        return gradeRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Nota no encontrada con ID: " + id)));
     }
 
-    public Mono<Grade> getGradeById(ServerWebExchange exchange, String id) {
-        return getTemplate(exchange)
-                .flatMap(template -> template.findById(id, Grade.class));
+    public Flux<Grade> getGradesByStudentAndCourse(String studentId, String courseId) {
+        return gradeRepository.findAllByStudentIdAndCourseId(studentId, courseId)
+                .switchIfEmpty(Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "No se encontraron notas para el estudiante y curso especificado")));
     }
 
-    public Flux<Grade> getGradesByStudentAndCourse(ServerWebExchange exchange, String studentId, String courseId) {
-        return getTemplate(exchange)
-                .flatMapMany(template -> {
-                    Query query = new Query();
-                    query.addCriteria(Criteria.where("studentId").is(studentId).and("courseId").is(courseId));
-                    return template.find(query, Grade.class);
+    public Flux<Grade> getGradesByStudentId(String studentId) {
+        return gradeRepository.findAllByStudentId(studentId)
+                .switchIfEmpty(Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "No se encontraron notas para el estudiante con ID: " + studentId)))
+                .onErrorMap(e -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Error al obtener las notas del estudiante", e));
+    }
+
+    public Mono<Grade> updateGrade(String id, Grade updatedGrade) {
+        return gradeRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Nota no encontrada con ID: " + id)))
+                .flatMap(existingGrade -> {
+                    existingGrade.setStudentId(updatedGrade.getStudentId());
+                    existingGrade.setCourseId(updatedGrade.getCourseId());
+                    existingGrade.setGrade(updatedGrade.getGrade());
+                    existingGrade.setEvaluationDate(updatedGrade.getEvaluationDate());
+                    existingGrade.setComments(updatedGrade.getComments());
+                    return gradeRepository.save(existingGrade);
                 });
     }
 
-    public Flux<Grade> getGradesByInstitution(ServerWebExchange exchange, String institution) {
-        return getTemplate(exchange)
-                .flatMapMany(template -> {
-                    Query query = new Query();
-                    query.addCriteria(Criteria.where("institution").is(institution));
-                    return template.find(query, Grade.class);
-                });
-    }
-
-    public Mono<Grade> updateGrade(ServerWebExchange exchange, String id, Grade updatedGrade) {
-        return getTemplate(exchange)
-                .flatMap(template -> template.findById(id, Grade.class)
-                        .flatMap(existingGrade -> {
-                            existingGrade.setStudentId(updatedGrade.getStudentId());
-                            existingGrade.setCourseId(updatedGrade.getCourseId());
-                            existingGrade.setGrade(updatedGrade.getGrade());
-                            existingGrade.setEvaluationDate(updatedGrade.getEvaluationDate());
-                            existingGrade.setComments(updatedGrade.getComments());
-                            return template.save(existingGrade);
-                        }));
-    }
-
-    public Mono<Void> deleteGrade(ServerWebExchange exchange, String id) {
-        return getTemplate(exchange)
-                .flatMap(template -> template.remove(Query.query(Criteria.where("id").is(id)), Grade.class))
-                .then();
+    public Mono<Void> deleteGrade(String id) {
+        return gradeRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Nota no encontrada con ID: " + id)))
+                .flatMap(existingGrade -> gradeRepository.deleteById(id));
     }
 }

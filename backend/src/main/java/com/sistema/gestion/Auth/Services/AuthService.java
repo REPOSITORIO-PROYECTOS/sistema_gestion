@@ -95,3 +95,49 @@ public class AuthService {
 				.flatMap(userRepository::delete);
 	}
 }
+
+
+/*
+ public class AuthService {
+    
+    // Métodos para registrar diferentes tipos de usuarios
+    public Mono<User> registerUser(Map<String, Object> userDetails, String username) {
+        // Lógica para registrar un usuario general
+    }
+    
+    public Mono<Student> registerStudent(Map<String, Object> userDetails, String username) {
+        // Lógica para registrar un estudiante
+    }
+
+    public Mono<Teacher> registerTeacher(Map<String, Object> userDetails, String username) {
+        // Lógica para registrar un profesor
+    }
+
+    // Métodos para actualizar diferentes tipos de usuarios
+    public Mono<User> updateUser(Map<String, Object> userDetails, String username, String userId) {
+        // Lógica para actualizar un usuario
+    }
+
+    public Mono<Student> updateStudent(Map<String, Object> userDetails, String username, String userId) {
+        // Lógica para actualizar un estudiante
+    }
+
+    public Mono<Teacher> updateTeacher(Map<String, Object> userDetails, String username, String userId) {
+        // Lógica para actualizar un profesor
+    }
+
+    // Métodos para eliminar diferentes tipos de usuarios
+    public Mono<Void> deleteUser(String userId) {
+        // Lógica para eliminar un usuario
+    }
+
+    public Mono<Void> deleteStudent(String userId) {
+        // Lógica para eliminar un estudiante
+    }
+
+    public Mono<Void> deleteTeacher(String userId) {
+        // Lógica para eliminar un profesor
+    }
+}
+
+ */

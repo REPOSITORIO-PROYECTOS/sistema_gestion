@@ -25,29 +25,24 @@ public class GradeController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<Grade> createGrade(ServerWebExchange exchange, @Valid @RequestBody Grade grade) {
-        return gradeService.createGrade(exchange, grade);
+        return gradeService.createGrade(grade);
     }
 
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Grade>> getGradeById(ServerWebExchange exchange, @PathVariable String id) {
-        return gradeService.getGradeById(exchange, id)
+        return gradeService.getGradeById(id)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/student/{studentId}/course/{courseId}")
     public Flux<Grade> getGradesByStudentAndCourse(ServerWebExchange exchange, @PathVariable String studentId, @PathVariable String courseId) {
-        return gradeService.getGradesByStudentAndCourse(exchange, studentId, courseId);
+        return gradeService.getGradesByStudentAndCourse(studentId, courseId);
     }
-
-    // @GetMapping("/institution/{institution}")
-    // public Flux<Grade> getGradesByInstitution(ServerWebExchange exchange, @PathVariable String institution) {
-    //     return gradeService.getGradesByInstitution(exchange, institution);
-    // }
 
     @PutMapping("/{id}")
     public Mono<ResponseEntity<Grade>> updateGrade(ServerWebExchange exchange, @PathVariable String id, @Valid @RequestBody Grade grade) {
-        return gradeService.updateGrade(exchange, id, grade)
+        return gradeService.updateGrade(id, grade)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
@@ -55,7 +50,7 @@ public class GradeController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> deleteGrade(ServerWebExchange exchange, @PathVariable String id) {
-        return gradeService.deleteGrade(exchange, id);
+        return gradeService.deleteGrade(id);
     }
 }
 
