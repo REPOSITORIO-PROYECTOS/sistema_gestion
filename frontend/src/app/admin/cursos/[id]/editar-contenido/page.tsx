@@ -64,6 +64,7 @@ type Subsection = {
 type Section = {
     id: string;
     title: string;
+    description: string;
     subsections: Subsection[];
 };
 
@@ -116,6 +117,7 @@ export default function EditCourseContentPage({
     const [sectionForm, setSectionForm] = useState({
         id: "",
         title: "",
+        description: "",
     });
 
     const [subsectionForm, setSubsectionForm] = useState({
@@ -179,6 +181,7 @@ export default function EditCourseContentPage({
                     sections: sectionsData.map((section: any) => ({
                         id: section._id,
                         title: section.title,
+                        description: section.description,
                         subsections: section.subsections.map(
                             (subsection: any) => ({
                                 id: subsection._id,
@@ -210,6 +213,7 @@ export default function EditCourseContentPage({
         setSectionForm({
             id: "",
             title: "",
+            description: "",
         });
     };
 
@@ -239,6 +243,7 @@ export default function EditCourseContentPage({
         setSectionForm({
             id: section.id,
             title: section.title,
+            description: section.description,
         });
         setIsSectionDialogOpen(true);
     };
@@ -267,35 +272,68 @@ export default function EditCourseContentPage({
     };
 
     // Guardar sección (nueva o editada)
-    const handleSaveSection = () => {
-        if (sectionForm.id) {
-            // Editar existente
-            setCourse({
-                ...course,
-                sections: course.sections.map((section) =>
-                    section.id === sectionForm.id
-                        ? { ...section, title: sectionForm.title }
-                        : section
-                ),
-            });
-        } else {
-            // Crear nueva
-            const newId = `section-${Date.now()}`;
-            setCourse({
-                ...course,
-                sections: [
-                    ...course.sections,
+    const handleSaveSection = async () => {
+        try {
+            if (sectionForm.id) {
+                // TODO: Implementar edición de sección existente
+                setCourse({
+                    ...course,
+                    sections: course.sections.map((section) =>
+                        section.id === sectionForm.id
+                            ? {
+                                  ...section,
+                                  title: sectionForm.title,
+                                  description: sectionForm.description,
+                              }
+                            : section
+                    ),
+                });
+            } else {
+                // Crear nueva sección
+                const response = await fetch(
+                    "https://sistema-gestion-1.onrender.com/api/course-sections/createSection",
                     {
-                        id: newId,
-                        title: sectionForm.title,
-                        subsections: [],
-                    },
-                ],
-            });
-        }
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            id: `section-${Date.now()}`,
+                            name: sectionForm.title,
+                            description: sectionForm.description,
+                            courseId: id,
+                            subSectionsIds: [],
+                        }),
+                    }
+                );
 
-        setIsSectionDialogOpen(false);
-        resetSectionForm();
+                if (!response.ok) {
+                    throw new Error("Error al crear la sección");
+                }
+
+                const newSection = await response.json();
+
+                // Actualizar el estado local
+                setCourse({
+                    ...course,
+                    sections: [
+                        ...course.sections,
+                        {
+                            id: newSection._id,
+                            title: newSection.name,
+                            description: newSection.description,
+                            subsections: [],
+                        },
+                    ],
+                });
+            }
+
+            setIsSectionDialogOpen(false);
+            resetSectionForm();
+        } catch (error) {
+            console.error("Error al guardar la sección:", error);
+            // TODO: Mostrar mensaje de error al usuario
+        }
     };
 
     // Guardar subsección (nueva o editada)
@@ -540,6 +578,23 @@ export default function EditCourseContentPage({
                                         })
                                     }
                                     placeholder="Ej: Introducción al curso"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="section-description">
+                                    Descripción de la sección
+                                </Label>
+                                <Textarea
+                                    id="section-description"
+                                    value={sectionForm.description}
+                                    onChange={(e) =>
+                                        setSectionForm({
+                                            ...sectionForm,
+                                            description: e.target.value,
+                                        })
+                                    }
+                                    placeholder="Describa el contenido de esta sección"
+                                    rows={3}
                                 />
                             </div>
                         </div>
@@ -1017,6 +1072,23 @@ export default function EditCourseContentPage({
                                     })
                                 }
                                 placeholder="Ej: Introducción al curso"
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="section-description">
+                                Descripción de la sección
+                            </Label>
+                            <Textarea
+                                id="section-description"
+                                value={sectionForm.description}
+                                onChange={(e) =>
+                                    setSectionForm({
+                                        ...sectionForm,
+                                        description: e.target.value,
+                                    })
+                                }
+                                placeholder="Describa el contenido de esta sección"
+                                rows={3}
                             />
                         </div>
                     </div>
