@@ -1,6 +1,7 @@
 package com.sistema.gestion.Services.Profiles;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.data.domain.PageRequest;
@@ -8,9 +9,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.fasterxml.jackson.core.format.InputAccessor.Std;
 import com.sistema.gestion.DTO.PagedResponse;
+import com.sistema.gestion.Models.Admin.Management.Grade;
 import com.sistema.gestion.Models.Profiles.Student;
 import com.sistema.gestion.Repositories.Admin.Management.CourseRepository;
+import com.sistema.gestion.Repositories.Admin.Management.GradeRepository;
+import com.sistema.gestion.Repositories.Profiles.ParentsRepository;
 import com.sistema.gestion.Repositories.Profiles.StudentRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -23,6 +28,8 @@ public class StudentService {
 
 	private final StudentRepository studentRepository;
 	private final CourseRepository courseRepository;
+	private final ParentsRepository parentsRepository;
+	private final GradeRepository gradeRepository;
 	private final UserService userService;
 
 	// ? ==================== MÉTODOS PÚBLICOS ====================
@@ -51,6 +58,27 @@ public class StudentService {
 				})
 				.onErrorMap(e -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
 						"Error al inscribir al estudiante en los cursos", e));
+	}
+
+	public Flux<Grade> getGradesByStudentId(String studentId) {
+        return gradeRepository.findAllByStudentId(studentId)
+                .switchIfEmpty(Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "No se encontraron notas para el estudiante con ID: " + studentId)))
+                .onErrorMap(e -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Error al obtener las notas del estudiante", e));
+    }
+
+	public Mono<Student> createStudentWithCoursesAndParents(Student student, String username) {
+		return userService.getFullName(username)
+				.flatMap(fullName -> {
+					student.setCreatedBy(fullName);
+					student.setCreatedAt(LocalDateTime.now());
+					return studentRepository.save(student)
+							.flatMap(savedStudent -> enrollStudentInCourses(savedStudent))
+							.flatMap(savedStudent -> enrollStudentInParents(savedStudent));
+				})
+				.onErrorMap(e -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+						"Error al inscribir al estudiante en los cursos y sus padres", e));
 	}
 
 	public Mono<Student> findById(String id) {
@@ -131,4 +159,25 @@ public class StudentService {
 						}))
 				.then(Mono.just(student)); // Devolver el estudiante guardado
 	}
+
+	private Mono<Student> enrollStudentInParents(Student student) {
+    String parentId = student.getParentId();
+
+    if (parentId == null || parentId.isEmpty()) {
+        return Mono.just(student); // Si no hay padre asociado, devolver el estudiante sin cambios
+    }
+
+    return parentsRepository.findById(parentId)
+            .switchIfEmpty(Mono.error(new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Padre no encontrado: " + parentId)))
+            .flatMap(parent -> {
+                if (parent.getChildren() == null) {
+                    parent.setChildren(new HashSet<>());
+                }
+                parent.getChildren().add(student.getId());
+                return parentsRepository.save(parent);
+            })
+            .thenReturn(student); // Devolver el estudiante sin modificar
+}
+
 }

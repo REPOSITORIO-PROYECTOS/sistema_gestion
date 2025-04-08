@@ -4,44 +4,21 @@ import java.time.LocalDate;
 import java.util.Set;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.sistema.gestion.Models.ModelClass;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class Student extends ModelClass {
+public class Student extends ProfileClass {
     @Id
     private String id;
 
-    @NotBlank(message = "El nombre no puede estar en blanco.")
-    @Size(min = 3, max = 20, message = "El nombre debe contener entre 3 a 20 caracteres.")
-    private String name;
-
-    @NotBlank(message = "El apellido no puede estar en blanco.")
-    @Size(min = 3, max = 20, message = "El apellido debe contener entre 3 a 20 caracteres.")
-    private String surname;
-
-    @Email(message = "Ingrese un mail válido.")
-    @Indexed(unique = true)
-    private String email;
-
-    @Indexed(unique = true)
-    private String dni;
-
-    @NotBlank(message = "La institución no puede estar en blanco.")
-    private String institution;
-
     private String status;
 
-    private String phone;
+    private String parentId;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate dateOfBirth;
