@@ -25,7 +25,7 @@ public class UserService {
         if (keyword != null && !keyword.isEmpty()) {
             Mono<Long> totalElementsMono = userRepository.countByKeyword(keyword);
             Flux<UserInfo> userFlux = userRepository.findByKeywordPaged(keyword, pageRequest)
-                    .map(UserInfo::new);
+                    .map(user -> new UserInfo(user));
 
             return Mono.zip(totalElementsMono, userFlux.collectList())
                     .map(tuple -> new PagedResponse<>(
@@ -37,7 +37,7 @@ public class UserService {
 
         Mono<Long> totalElementsMono = userRepository.count();
         Flux<UserInfo> userFlux = userRepository.findUsersPaged(pageRequest)
-                .map(UserInfo::new);
+                .map(user -> new UserInfo(user));
 
         return Mono.zip(totalElementsMono, userFlux.collectList())
                 .map(tuple -> new PagedResponse<>(
@@ -74,9 +74,9 @@ public class UserService {
         return userRepository.findById(id)
                 .flatMap(existingUser -> {
                     // Actualiza los campos necesarios con los nuevos datos
-                    existingUser.setName(userInfo.getName());
-                    existingUser.setSurname(userInfo.getSurname());
-                    existingUser.setEmail(userInfo.getEmail());
+                    existingUser.setName(userInfo.getUser().getName());
+                    existingUser.setSurname(userInfo.getUser().getSurname());
+                    existingUser.setEmail(userInfo.getUser().getEmail());
                     // Otros campos que puedas necesitar actualizar
                     return userRepository.save(existingUser);
                 })
