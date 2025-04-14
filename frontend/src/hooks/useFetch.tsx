@@ -28,7 +28,7 @@ export function useFetch() {
     }: AuthFetchProps) => {
         try {
             const { data } = await axios({
-                url: `http://localhost:3030${endpoint}`,
+                url: `https://sistema-gestion-1.onrender.com${endpoint}`,
                 method,
                 headers,
                 data: formData,
