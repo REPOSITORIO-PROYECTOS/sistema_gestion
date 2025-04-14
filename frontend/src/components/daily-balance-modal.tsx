@@ -65,7 +65,7 @@ export function DailyBalanceModal() {
         try {
             // Using the provided endpoint with query parameters
             const response = await fetch(
-                `https://sistema-gestion-1.onrender.com/api/caja/balance-mensual?year=${year}&month=${month}`
+                `https://sistema-gestion-1.onrender.com/api/caja/balance-mensual?year=${year}&month=${month}`,
             );
 
             if (!response.ok) {
@@ -193,7 +193,7 @@ export function DailyBalanceModal() {
                 )}
 
                 {data && (
-                    <div className="space-y-6">
+                    <div className="space-y-6 max-h-96 overflow-y-scroll">
                         <div className="grid grid-cols-2 gap-4">
                             <Card>
                                 <CardHeader className="pb-2">

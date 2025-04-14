@@ -3,12 +3,7 @@ package com.sistema.gestion.Controllers.Admin.Finance;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.sistema.gestion.Models.Admin.Finance.CashRegister;
@@ -22,6 +17,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
+
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/caja")
@@ -39,7 +36,7 @@ public class CashRegisterController {
 			@ApiResponse(responseCode = "404", description = "No hay caja abierta")
 	})
 	@PostMapping("/estado")
-	public Mono<ResponseEntity<CashRegister>> status(Authentication auth, @RequestParam String operacion) {
+	public Mono<ResponseEntity<CashRegister>> status(Authentication auth, @RequestPart String operacion) {
 		if(operacion.equals("abrir")){
 			return cashRegisterService.openCashRegister(auth.getName())
 					.map(ResponseEntity::ok);
@@ -57,42 +54,6 @@ public class CashRegisterController {
 			return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Operación no reconocida o no se ha especificado."));
 		}
 	}
-
-	// @Operation(summary = "Abrir una caja", description = "Crea una nueva caja si no hay ninguna abierta actualmente.")
-	// @ApiResponses(value = {
-	// 		@ApiResponse(responseCode = "200", description = "Caja abierta correctamente"),
-	// 		@ApiResponse(responseCode = "400", description = "Ya existe una caja abierta o error al abrirla")
-	// })
-	// @PostMapping("/abrir")
-	// public Mono<ResponseEntity<CashRegister>> openCashRegister(Authentication auth) {
-	// 	String username = auth.getName();
-	// 	return cashRegisterService.openCashRegister(username)
-	// 			.map(ResponseEntity::ok);
-	// }
-
-	// @Operation(summary = "Cerrar una caja", description = "Cierra la caja abierta actualmente y calcula el total acumulado.")
-	// @ApiResponses(value = {
-	// 		@ApiResponse(responseCode = "200", description = "Caja cerrada correctamente"),
-	// 		@ApiResponse(responseCode = "400", description = "No hay una caja abierta o error al cerrarla")
-	// })
-	// @PostMapping("/cerrar")
-	// public Mono<ResponseEntity<CashRegister>> closeCashRegister(Authentication auth) {
-	// 	String username = auth.getName();
-	// 	return cashRegisterService.closeCashRegister(username)
-	// 			.map(ResponseEntity::ok);
-	// }
-
-	// @Operation(summary = "Consultar caja abierta", description = "Obtiene los detalles de la caja abierta actualmente, incluyendo un cálculo provisional de los pagos realizados.")
-	// @ApiResponses(value = {
-	// 		@ApiResponse(responseCode = "200", description = "Caja abierta obtenida correctamente"),
-	// 		@ApiResponse(responseCode = "404", description = "No hay caja abierta")
-	// })
-	// @GetMapping("/estado")
-	// public Mono<ResponseEntity<CashRegister>> getOpenCashRegister() {
-	// 	return cashRegisterService.getOpenCashRegister()
-	// 			.map(ResponseEntity::ok)
-	// 			.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay caja abierta.")));
-	// }
 
 	@GetMapping("/balance-mensual")
 	@Operation(summary = "Obtener balance mensual de la caja", description = "Devuelve el balance mensual con todos los cierres de caja realizados durante el mes especificado, incluyendo ingresos y egresos diarios, y un balance total.")
@@ -114,4 +75,26 @@ public class CashRegisterController {
 				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
 						"No se encontraron cierres de caja para el mes especificado")));
 	}
+
+	// @PostMapping("/pago-curso")
+	// @Operation(summary = "Registrar pago de curso", description = "Registra un ingreso en la caja correspondiente a un pago de curso")
+	// @ApiResponses(value = {
+	// 		@ApiResponse(responseCode = "200", description = "Pago registrado correctamente"),
+	// 		@ApiResponse(responseCode = "400", description = "No hay una caja abierta o parámetros inválidos"),
+	// 		@ApiResponse(responseCode = "500", description = "Error interno al registrar el pago")
+	// })
+	// public Mono<ResponseEntity<String>> registrarPagoCurso(
+	// 		Authentication auth,
+	// 		@RequestParam String paymentId,
+	// 		@RequestParam Double monto,
+	// 		@RequestParam(required = false) String descripcion
+	// ) {
+	// 	if (monto == null || monto.compareTo(0.0) <= 0) {
+	// 		return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "El monto debe ser mayor a cero"));
+	// 	}
+
+	// 	return cashRegisterService.registerCoursePayment(paymentId, monto)
+	// 			.thenReturn(ResponseEntity.ok("Pago registrado correctamente"))
+	// 			.onErrorResume(e -> Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al registrar el pago: " + e.getMessage())));
+	// }
 }

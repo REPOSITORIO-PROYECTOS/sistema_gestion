@@ -37,6 +37,8 @@ public class UserController {
 		return userService.getUsersPaged(page, size, keyword);
 	}
 
+	
+
 	@Operation(summary = "Obtener usuario por ID", description = "Devuelve un usuario específico por su ID.")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Usuario obtenido exitosamente."),

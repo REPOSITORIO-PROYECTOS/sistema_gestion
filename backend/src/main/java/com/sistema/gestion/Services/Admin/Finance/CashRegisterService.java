@@ -193,6 +193,21 @@ public class CashRegisterService {
 				});
 	}
 
+	// public Mono<Void> registerCoursePayment(String paymentId, double amount) {
+	// 	return cashRegisterRepo.findFirstByIsClosedFalse()
+	// 			.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "No hay una caja abierta actualmente.")))
+	// 			.flatMap(openCashRegister -> 
+	// 				paymentRepo.findById(paymentId)
+	// 					.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el pago con el ID especificado.")))
+	// 					.flatMap(payment -> {
+	// 						payment.setPaidAmount(payment.getPaidAmount() + amount);
+	// 						payment.setLastPaymentDate(LocalDateTime.now());
+	// 						//payment.setCashRegisterId(openCashRegister.getId());
+	// 						return paymentRepo.save(payment).then();
+	// 					})
+	// 			);
+	// }
+
 	public Mono<Void> deleteAllCashRegisters() {
 		return cashRegisterRepo.deleteAll().then(Mono.empty());
 	}

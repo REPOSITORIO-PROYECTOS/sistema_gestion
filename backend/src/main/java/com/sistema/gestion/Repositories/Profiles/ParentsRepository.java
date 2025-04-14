@@ -17,6 +17,8 @@ public interface ParentsRepository extends ReactiveMongoRepository<Parent, Strin
     @Query("{}")
     Flux<Parent> findAllBy(PageRequest pageRequest);
 
+    Mono<Parent> findByEmail(String email);
+
     // Conteo total de registros
     @Query(value = "{}", count = true)
     Mono<Long> countAll();

@@ -14,7 +14,7 @@ export type User = {
     token: string;
     username: string;
     name: string;
-    role: "admin" | "estudiante" | string[];
+    role: "ROLE_ADMIN" | "ROLE_STUDENT" | "ROLE_USER" | "ROLE_TEACHER" | "ROLE_PARENT" | string[];
 } | null;
 
 // Definición del estado de autenticación
@@ -26,7 +26,7 @@ interface AuthState {
     login: (
         email: string,
         password: string,
-        role: "admin" | "estudiante"
+        role: "ROLE_ADMIN" | "ROLE_STUDENT"
     ) => Promise<boolean>;
     logout: () => void;
     clearError: () => void;
@@ -45,18 +45,18 @@ export const useAuthStore = create<AuthState>()(
             login: async (
                 email: string,
                 password: string,
-                role: "admin" | "estudiante"
+                role: "ROLE_ADMIN" | "ROLE_STUDENT"
             ) => {
                 set({ isLoading: true, error: null });
 
                 try {
                     // Llamada al endpoint de autenticación
                     const response = await fetch(
-                        "https://sistema-gestion-1.onrender.com/api/auth/login",
+                        "http://localhost:3030/api/auth/login",
                         {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ email, password, role }),
+                            body: JSON.stringify({ username: email, password }),
                         }
                     );
 
@@ -75,7 +75,7 @@ export const useAuthStore = create<AuthState>()(
                             ...userData,
                             // Asegurar que role sea compatible con el tipo esperado
                             role: Array.isArray(userData.role)
-                                ? (userData.role[0] as "admin" | "estudiante")
+                                ? (userData.role[0] as "ROLE_ADMIN" | "ROLE_STUDENT" | "ROLE_USER" | "ROLE_TEACHER" | "ROLE_PARENT")
                                 : userData.role,
                         },
                         isAuthenticated: true,
@@ -103,7 +103,7 @@ export const useAuthStore = create<AuthState>()(
                     error: null,
                 });
                 // Limpiar sessionStorage para mantener compatibilidad
-                sessionStorage.removeItem("user");
+                //sessionStorage.removeItem("user");
             },
 
             // Limpiar errores

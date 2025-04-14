@@ -1,4 +1,4 @@
-"use server";
+"use server"
 
 export async function toggleCajaEstado(activa: boolean) {
     try {
@@ -7,9 +7,9 @@ export async function toggleCajaEstado(activa: boolean) {
             {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ activa }),
+                body: JSON.stringify({ operacion:"abrir" }),
                 // Importante: agregar esta opción si la API está en otro dominio
                 cache: "no-store",
             }
