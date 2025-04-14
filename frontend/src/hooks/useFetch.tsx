@@ -1,3 +1,4 @@
+import { useAuthStore } from "@/context/store";
 import axios, { AxiosRequestConfig, Method } from "axios";
 import { useRouter } from "next/navigation";
 // import useStore from "@/context/store";
@@ -14,6 +15,7 @@ interface AuthFetchProps {
 
 export function useFetch() {
     const router = useRouter();
+    const { user } = useAuthStore();
     // const { setUser } = useStore((state) => ({
     //     setUser: state.setUser,
     // }));
@@ -49,7 +51,7 @@ export function useFetch() {
             }
             return data;
         } catch (error: any) {
-            console.log(error.response.data.message);
+            console.log(error.response?.data.message);
         }
     };
 

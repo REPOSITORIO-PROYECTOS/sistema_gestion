@@ -197,10 +197,10 @@ const columns: ColumnDef<Item>[] = [
 
 export default function TablePerson() {
     const { user } = useAuthStore();
-        const fetcher = (url: string) => fetch({endpoint:url, method:"GET", headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user?.token}`,
-        }}).then((res) => res.json());
+    const fetcher = (url: string) => fetch({endpoint:url, method:"GET", headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user?.token}`,
+    }}).then((res) => res.json());
     const id = useId();
     const { finishLoading, loading, startLoading } = useLoading();
     const fetch = useFetch();

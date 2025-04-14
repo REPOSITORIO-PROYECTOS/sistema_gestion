@@ -52,7 +52,7 @@ public class SpringSecurityConfig {
 							"/v3/api-docs/**", "/swagger-resources/**").permitAll();
 
 					//exchanges.pathMatchers(HttpMethod.GET, "/api/**").permitAll();
-
+					
 					// ? ENDPOINTS RESTRINGIDOS POR ROL
 					exchanges.pathMatchers(HttpMethod.POST, "/api/auth/registrar")
 							.hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");

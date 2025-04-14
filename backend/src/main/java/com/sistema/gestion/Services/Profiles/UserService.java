@@ -25,7 +25,11 @@ public class UserService {
         if (keyword != null && !keyword.isEmpty()) {
             Mono<Long> totalElementsMono = userRepository.countByKeyword(keyword);
             Flux<UserInfo> userFlux = userRepository.findByKeywordPaged(keyword, pageRequest)
-                    .map(user -> new UserInfo(user));
+                    .map(user -> {
+                        UserInfo userInfo = new UserInfo();
+                        userInfo.setUser(user);
+                        return userInfo;
+                    });
 
             return Mono.zip(totalElementsMono, userFlux.collectList())
                     .map(tuple -> new PagedResponse<>(
@@ -37,7 +41,11 @@ public class UserService {
 
         Mono<Long> totalElementsMono = userRepository.count();
         Flux<UserInfo> userFlux = userRepository.findUsersPaged(pageRequest)
-                .map(user -> new UserInfo(user));
+                .map(user -> {
+                        UserInfo userInfo = new UserInfo();
+                        userInfo.setUser(user);
+                        return userInfo;
+                });
 
         return Mono.zip(totalElementsMono, userFlux.collectList())
                 .map(tuple -> new PagedResponse<>(
@@ -49,7 +57,11 @@ public class UserService {
 
     public Mono<UserInfo> findById(String id) {
         return userRepository.findById(id)
-                .map(UserInfo::new)
+                .map(user -> {
+                        UserInfo userInfo = new UserInfo();
+                        userInfo.setUser(user);
+                        return userInfo;
+                })
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "No se encontró el usuario con ID: " + id)));
     }
@@ -80,7 +92,11 @@ public class UserService {
                     // Otros campos que puedas necesitar actualizar
                     return userRepository.save(existingUser);
                 })
-                .map(UserInfo::new)
+                .map(user -> {
+                        UserInfo userInf = new UserInfo();
+                        userInf.setUser(user);
+                        return userInf;
+                })
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "No se encontró el usuario con ID: " + id)));
     }

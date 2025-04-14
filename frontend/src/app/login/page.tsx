@@ -44,8 +44,8 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function LoginPage() {
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState<"estudiante" | "admin">(
-        "estudiante"
+    const [activeTab, setActiveTab] = useState<"ROLE_STUDENT" | "ROLE_ADMIN">(
+        "ROLE_STUDENT"
     );
     const [showPassword, setShowPassword] = useState(false);
 
@@ -75,7 +75,7 @@ export default function LoginPage() {
 
             // Redireccionar según el rol si el login fue exitoso
             if (success) {
-                if (activeTab === "admin") {
+                if (activeTab === "ROLE_ADMIN") {
                     router.push("/admin");
                 } else {
                     router.push("/");
@@ -104,20 +104,20 @@ export default function LoginPage() {
                     <Tabs
                         value={activeTab}
                         onValueChange={(value) =>
-                            setActiveTab(value as "estudiante" | "admin")
+                            setActiveTab(value as "ROLE_STUDENT" | "ROLE_ADMIN")
                         }
                         className="w-full"
                     >
                         <TabsList className="grid w-full grid-cols-2 dark:bg-zinc-900">
-                            <TabsTrigger value="estudiante">
+                            <TabsTrigger value="ROLE_STUDENT">
                                 Estudiante
                             </TabsTrigger>
-                            <TabsTrigger value="admin">
+                            <TabsTrigger value="ROLE_ADMIN">
                                 Administrador
                             </TabsTrigger>
                         </TabsList>
 
-                        <TabsContent value="estudiante">
+                        <TabsContent value="ROLE_STUDENT">
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Acceso Estudiantes</CardTitle>
@@ -218,7 +218,7 @@ export default function LoginPage() {
                             </Card>
                         </TabsContent>
 
-                        <TabsContent value="admin">
+                        <TabsContent value="ROLE_ADMIN">
                             <Card>
                                 <CardHeader>
                                     <CardTitle>
