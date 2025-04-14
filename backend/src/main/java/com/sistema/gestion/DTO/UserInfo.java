@@ -20,19 +20,20 @@ public class UserInfo {
 	private Parent parent;
 	private User user;
 
-	public UserInfo(User user) {
-		this.user = user;
-	}
+	// public UserInfo(User user) {
+	// 	this.user = user;
+	// }
 
-	public UserInfo(Student student) {
-		this.student = student;
-	}
+	// @JsonCreator
+	// public UserInfo(@JsonProperty("student") Student student) {
+	// 	this.student = student;
+	// }
 
-	public UserInfo(Teacher teacher) {
-		this.teacher = teacher;
-	}
+	// public UserInfo(Teacher teacher) {
+	// 	this.teacher = teacher;
+	// }
 
-	public UserInfo(Parent parent) {
-		this.parent = parent;
-	}
+	// public UserInfo(Parent parent) {
+	// 	this.parent = parent;
+	// }
 }

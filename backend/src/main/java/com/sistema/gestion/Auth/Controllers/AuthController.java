@@ -167,17 +167,34 @@ public class AuthController {
             @RequestParam String userType,
             @RequestBody UserInfo userDetails,
             Authentication auth) {
+                System.out.println("------------------------------------USUARIO RECIBIDO------------------------------");
         String username = auth.getName();
         
         switch (userType.toLowerCase()) {
             case "student":
-                return authService.registerStudent(userDetails, username).map(user -> new UserInfo(user));  // Registrar estudiante
+                return authService.registerStudent(userDetails, username).map(user -> {
+                    UserInfo userInfo = new UserInfo();
+                    userInfo.setStudent(user);
+                    return userInfo;
+                });  // Registrar estudiante
             case "teacher":
-                return authService.registerTeacher(userDetails, username).map(user -> new UserInfo(user));  // Registrar profesor
+                return authService.registerTeacher(userDetails, username).map(user -> {
+                    UserInfo userInfo = new UserInfo();
+                    userInfo.setTeacher(user);
+                    return userInfo;
+                });  // Registrar profesor
             case "user":
-                return authService.registerUser(userDetails, username).map(user -> new UserInfo(user));
+                return authService.registerUser(userDetails, username).map(user -> {
+                    UserInfo userInfo = new UserInfo();
+                    userInfo.setUser(user);
+                    return userInfo;
+                });
             case "parent":
-                return authService.registerParent(userDetails, username).map(user -> new UserInfo(user));
+                return authService.registerParent(userDetails, username).map(user -> {
+                    UserInfo userInfo = new UserInfo();
+                    userInfo.setParent(user);
+                    return userInfo;
+                });
             default:
                 return Mono.empty();
                   // Registrar usuario
@@ -201,13 +218,29 @@ public class AuthController {
 
         switch (userType.toLowerCase()) {
             case "student":
-                return authService.updateStudent(userDetails, username, userId).map(user -> new UserInfo(user));  // Actualizar estudiante
+                return authService.updateStudent(userDetails, username, userId).map(user -> {
+                    UserInfo userInfo = new UserInfo();
+                    userInfo.setStudent(user);
+                    return userInfo;
+                });  // Actualizar estudiante
             case "teacher":
-                return authService.updateTeacher(userDetails, username, userId).map(user -> new UserInfo(user));   // Actualizar profesor
+                return authService.updateTeacher(userDetails, username, userId).map(user -> {
+                    UserInfo userInfo = new UserInfo();
+                    userInfo.setTeacher(user);
+                    return userInfo;
+                });   // Actualizar profesor
             case "user":
-                return authService.updateUser(userDetails, username, userId).map(user -> new UserInfo(user));   // Actualizar usuario
+                return authService.updateUser(userDetails, username, userId).map(user -> {
+                    UserInfo userInfo = new UserInfo();
+                    userInfo.setUser(user);
+                    return userInfo;
+                });   // Actualizar usuario
             case "parent":
-                return authService.updateParent(userDetails, username, username).map(user -> new UserInfo(user));
+                return authService.updateParent(userDetails, username, username).map(user -> {
+                    UserInfo userInfo = new UserInfo();
+                    userInfo.setParent(user);
+                    return userInfo;
+                });
             default:
                 return Mono.empty();   // Actualizar usuario
         }

@@ -1,7 +1,6 @@
 package com.sistema.gestion.Auth.Services;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -294,24 +293,93 @@ import reactor.core.publisher.Mono;
     }
 
 	public Mono<UserCredentialsDTO> login(String username, String password) {
-				return userRepository.findByEmail(username)
-						.switchIfEmpty(Mono.error(new UserNotFoundException("Usuario no encontrado")))
-						.flatMap(user -> {
-							if (passwordEncoder.matches(password, user.getPassword())) {
-								String token = jwtUtil.generateToken(user.getEmail(),
-										user.getRoles().toArray(new String[0]));
-								return userService.getFullName(username)
-										.flatMap(name -> {
-											UserCredentialsDTO credentialsDTO = new UserCredentialsDTO();
-											credentialsDTO.setToken(token);
-											credentialsDTO.setName(name);
-											credentialsDTO.setUsername(username);
-											credentialsDTO.setRole(user.getRoles());
-											return Mono.just(credentialsDTO);
-										});
-							} else {
-								return Mono.error(new RuntimeException("Credenciales incorrectas"));
-							}
-						});
-			}
+        return userRepository.findByEmail(username)
+        .flatMap(user -> authenticateUser(user, username, password))
+        .switchIfEmpty(
+            studentRepository.findByEmail(username)
+                .flatMap(student -> authenticateStudent(student, username, password))
+                .switchIfEmpty(
+                    teacherRepository.findByEmail(username)
+                        .flatMap(teacher -> authenticateTeacher(teacher, username, password))
+                        .switchIfEmpty(
+                            parentRepository.findByEmail(username)
+                                .flatMap(parent -> authenticateParent(parent, username, password))
+                                .switchIfEmpty(Mono.error(new UserNotFoundException("Usuario no encontrado")))
+                        )
+                )
+        );
+    }
+
+    public Mono<UserCredentialsDTO> authenticateStudent(Student user, String username, String password) {
+        if (passwordEncoder.matches(password, user.getPassword())) {
+            String token = jwtUtil.generateToken(user.getEmail(),
+                    user.getRoles().toArray(new String[0]));
+            return userService.getFullName(username)
+                    .flatMap(name -> {
+                        UserCredentialsDTO credentialsDTO = new UserCredentialsDTO();
+                        credentialsDTO.setToken(token);
+                        credentialsDTO.setName(name);
+                        credentialsDTO.setUsername(username);
+                        credentialsDTO.setRole(user.getRoles());
+                        return Mono.just(credentialsDTO);
+                    });
+        } else {
+            return Mono.error(new RuntimeException("Credenciales incorrectas"));
+        }
+    }
+
+    public Mono<UserCredentialsDTO> authenticateUser(User user, String username, String password) {
+        if (passwordEncoder.matches(password, user.getPassword())) {
+            String token = jwtUtil.generateToken(user.getEmail(),
+                    user.getRoles().toArray(new String[0]));
+            return userService.getFullName(username)
+                    .flatMap(name -> {
+                        UserCredentialsDTO credentialsDTO = new UserCredentialsDTO();
+                        credentialsDTO.setToken(token);
+                        credentialsDTO.setName(name);
+                        credentialsDTO.setUsername(username);
+                        credentialsDTO.setRole(user.getRoles());
+                        return Mono.just(credentialsDTO);
+                    });
+        } else {
+            return Mono.error(new RuntimeException("Credenciales incorrectas"));
+        }
+    }
+
+    public Mono<UserCredentialsDTO> authenticateParent(Parent user, String username, String password) {
+        if (passwordEncoder.matches(password, user.getPassword())) {
+            String token = jwtUtil.generateToken(user.getEmail(),
+                    user.getRoles().toArray(new String[0]));
+            return userService.getFullName(username)
+                    .flatMap(name -> {
+                        UserCredentialsDTO credentialsDTO = new UserCredentialsDTO();
+                        credentialsDTO.setToken(token);
+                        credentialsDTO.setName(name);
+                        credentialsDTO.setUsername(username);
+                        credentialsDTO.setRole(user.getRoles());
+                        return Mono.just(credentialsDTO);
+                    });
+        } else {
+            return Mono.error(new RuntimeException("Credenciales incorrectas"));
+        }
+    }
+
+    public Mono<UserCredentialsDTO> authenticateTeacher(Teacher user, String username, String password) {
+        if (passwordEncoder.matches(password, user.getPassword())) {
+            String token = jwtUtil.generateToken(user.getEmail(),
+                    user.getRoles().toArray(new String[0]));
+            return userService.getFullName(username)
+                    .flatMap(name -> {
+                        UserCredentialsDTO credentialsDTO = new UserCredentialsDTO();
+                        credentialsDTO.setToken(token);
+                        credentialsDTO.setName(name);
+                        credentialsDTO.setUsername(username);
+                        credentialsDTO.setRole(user.getRoles());
+                        return Mono.just(credentialsDTO);
+                    });
+        } else {
+            return Mono.error(new RuntimeException("Credenciales incorrectas"));
+        }
+    }
+    
 }
