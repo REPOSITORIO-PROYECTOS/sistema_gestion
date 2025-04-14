@@ -52,11 +52,7 @@ export const useAuthStore = create<AuthState>()(
                 try {
                     // Llamada al endpoint de autenticación
                     const response = await fetch(
-<<<<<<< HEAD
                         "http://localhost:3030/api/auth/login",
-=======
-                        "http://localhost:3030/api/auth/login?role=" + role,
->>>>>>> cd1fc76bd8e9bec996219aeda142f6e8fcac4f83
                         {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
