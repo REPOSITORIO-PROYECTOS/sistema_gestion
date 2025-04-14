@@ -251,7 +251,7 @@ const columns: ColumnDef<CashItem>[] = [
 
 export default function TableCashItems() {
     const { user } = useAuthStore();
-    const fetcher = (url: string) => fetch({endpoint:url, headers: {
+    const fetcher = (url: string) => fetch({endpoint:url, method:"GET", headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${user?.token}`,
     }}).then((res) => res.json());

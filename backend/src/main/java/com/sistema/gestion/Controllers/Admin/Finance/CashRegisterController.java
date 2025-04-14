@@ -58,42 +58,6 @@ public class CashRegisterController {
 		}
 	}
 
-	// @Operation(summary = "Abrir una caja", description = "Crea una nueva caja si no hay ninguna abierta actualmente.")
-	// @ApiResponses(value = {
-	// 		@ApiResponse(responseCode = "200", description = "Caja abierta correctamente"),
-	// 		@ApiResponse(responseCode = "400", description = "Ya existe una caja abierta o error al abrirla")
-	// })
-	// @PostMapping("/abrir")
-	// public Mono<ResponseEntity<CashRegister>> openCashRegister(Authentication auth) {
-	// 	String username = auth.getName();
-	// 	return cashRegisterService.openCashRegister(username)
-	// 			.map(ResponseEntity::ok);
-	// }
-
-	// @Operation(summary = "Cerrar una caja", description = "Cierra la caja abierta actualmente y calcula el total acumulado.")
-	// @ApiResponses(value = {
-	// 		@ApiResponse(responseCode = "200", description = "Caja cerrada correctamente"),
-	// 		@ApiResponse(responseCode = "400", description = "No hay una caja abierta o error al cerrarla")
-	// })
-	// @PostMapping("/cerrar")
-	// public Mono<ResponseEntity<CashRegister>> closeCashRegister(Authentication auth) {
-	// 	String username = auth.getName();
-	// 	return cashRegisterService.closeCashRegister(username)
-	// 			.map(ResponseEntity::ok);
-	// }
-
-	// @Operation(summary = "Consultar caja abierta", description = "Obtiene los detalles de la caja abierta actualmente, incluyendo un cálculo provisional de los pagos realizados.")
-	// @ApiResponses(value = {
-	// 		@ApiResponse(responseCode = "200", description = "Caja abierta obtenida correctamente"),
-	// 		@ApiResponse(responseCode = "404", description = "No hay caja abierta")
-	// })
-	// @GetMapping("/estado")
-	// public Mono<ResponseEntity<CashRegister>> getOpenCashRegister() {
-	// 	return cashRegisterService.getOpenCashRegister()
-	// 			.map(ResponseEntity::ok)
-	// 			.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay caja abierta.")));
-	// }
-
 	@GetMapping("/balance-mensual")
 	@Operation(summary = "Obtener balance mensual de la caja", description = "Devuelve el balance mensual con todos los cierres de caja realizados durante el mes especificado, incluyendo ingresos y egresos diarios, y un balance total.")
 	@ApiResponses(value = {

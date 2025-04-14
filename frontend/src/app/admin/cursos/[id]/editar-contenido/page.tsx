@@ -12,6 +12,7 @@ import {
     GripVertical,
     ExternalLink,
     Save,
+    Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -63,6 +64,7 @@ type Subsection = {
 type Section = {
     id: string;
     title: string;
+    description: string;
     subsections: Subsection[];
 };
 
@@ -76,7 +78,7 @@ type Course = {
 };
 
 export default function EditCourseContentPage({
-    params
+    params,
 }: {
     params: Promise<{ id: string }>;
 }) {
@@ -84,66 +86,17 @@ export default function EditCourseContentPage({
     //   const { user, isLoading } = useAuth()
     const router = useRouter();
     const [isClient, setIsClient] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     // Estado para el curso
     const [course, setCourse] = useState<Course>({
         id: id,
-        title: "Curso 2025",
-        description: "Guardado como usuario",
+        title: "",
+        description: "",
         status: "ACTIVE",
-        price: 7000.99,
-        sections: [
-            {
-                id: "section-1",
-                title: "Introducción al curso",
-                subsections: [
-                    {
-                        id: "subsection-1-1",
-                        title: "Bienvenida",
-                        content: {
-                            body: "<h2>Bienvenido al curso</h2><p>Este curso te guiará a través de los conceptos fundamentales.</p>",
-                            links: [
-                                {
-                                    id: "link-1-1-1",
-                                    title: "Guía del estudiante",
-                                    url: "https://example.com/guia-estudiante.pdf",
-                                },
-                                {
-                                    id: "link-1-1-2",
-                                    title: "Normas del curso",
-                                    url: "https://example.com/normas.pdf",
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-            {
-                id: "section-2",
-                title: "Módulo 1: Conceptos básicos",
-                subsections: [
-                    {
-                        id: "subsection-2-1",
-                        title: "Introducción a los fundamentos",
-                        content: {
-                            body: "<p>En este módulo aprenderás los conceptos esenciales.</p><ul><li>Concepto 1</li><li>Concepto 2</li></ul>",
-                            links: [
-                                {
-                                    id: "link-2-1-1",
-                                    title: "Material de apoyo",
-                                    url: "https://example.com/material-apoyo.docx",
-                                },
-                                {
-                                    id: "link-2-1-2",
-                                    title: "Lectura recomendada",
-                                    url: "https://example.com/lectura.pdf",
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        ],
+        price: 0,
+        sections: [],
     });
 
     // Estados para diálogos y formularios
@@ -164,6 +117,7 @@ export default function EditCourseContentPage({
     const [sectionForm, setSectionForm] = useState({
         id: "",
         title: "",
+        description: "",
     });
 
     const [subsectionForm, setSubsectionForm] = useState({
@@ -181,19 +135,85 @@ export default function EditCourseContentPage({
         url: "",
     });
 
-    //   useEffect(() => {
-    //     setIsClient(true)
-    //     // Verificar si el usuario está autenticado y es administrador
-    //     if (!isLoading && (!user || user.role !== "admin")) {
-    //       router.push("/login")
-    //     }
-    //   }, [user, isLoading, router])
+    useEffect(() => {
+        setIsClient(true);
+        fetchCourseData();
+    }, [id]);
+
+    const fetchCourseData = async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            // Obtener las secciones del curso
+            const sectionsResponse = await fetch(
+                `https://sistema-gestion-1.onrender.com/api/course-sections/getSectionById/${id}`
+            );
+
+            if (!sectionsResponse.ok) {
+                throw new Error("Error al obtener las secciones del curso");
+            }
+
+            // Verificar si la respuesta tiene contenido
+            const responseText = await sectionsResponse.text();
+            let sectionsData = [];
+
+            if (responseText) {
+                try {
+                    sectionsData = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error("Error al parsear la respuesta:", parseError);
+                    sectionsData = [];
+                }
+            }
+
+            // Si no hay secciones o la respuesta está vacía, mantenemos el estado inicial
+            if (!sectionsData || sectionsData.length === 0) {
+                setCourse((prevCourse) => ({
+                    ...prevCourse,
+                    id: id,
+                    sections: [],
+                }));
+            } else {
+                // Actualizar el estado del curso con las secciones
+                setCourse((prevCourse) => ({
+                    ...prevCourse,
+                    sections: sectionsData.map((section: any) => ({
+                        id: section._id,
+                        title: section.title,
+                        description: section.description,
+                        subsections: section.subsections.map(
+                            (subsection: any) => ({
+                                id: subsection._id,
+                                title: subsection.title,
+                                content: {
+                                    body: subsection.content || "",
+                                    links: subsection.links || [],
+                                },
+                            })
+                        ),
+                    })),
+                }));
+            }
+        } catch (err) {
+            console.error("Error fetching course data:", err);
+            // Si hay un error, mostramos la interfaz para crear secciones
+            setCourse((prevCourse) => ({
+                ...prevCourse,
+                id: id,
+                sections: [],
+            }));
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     // Resetear formulario de sección
     const resetSectionForm = () => {
         setSectionForm({
             id: "",
             title: "",
+            description: "",
         });
     };
 
@@ -223,6 +243,7 @@ export default function EditCourseContentPage({
         setSectionForm({
             id: section.id,
             title: section.title,
+            description: section.description,
         });
         setIsSectionDialogOpen(true);
     };
@@ -251,35 +272,68 @@ export default function EditCourseContentPage({
     };
 
     // Guardar sección (nueva o editada)
-    const handleSaveSection = () => {
-        if (sectionForm.id) {
-            // Editar existente
-            setCourse({
-                ...course,
-                sections: course.sections.map((section) =>
-                    section.id === sectionForm.id
-                        ? { ...section, title: sectionForm.title }
-                        : section
-                ),
-            });
-        } else {
-            // Crear nueva
-            const newId = `section-${Date.now()}`;
-            setCourse({
-                ...course,
-                sections: [
-                    ...course.sections,
+    const handleSaveSection = async () => {
+        try {
+            if (sectionForm.id) {
+                // TODO: Implementar edición de sección existente
+                setCourse({
+                    ...course,
+                    sections: course.sections.map((section) =>
+                        section.id === sectionForm.id
+                            ? {
+                                  ...section,
+                                  title: sectionForm.title,
+                                  description: sectionForm.description,
+                              }
+                            : section
+                    ),
+                });
+            } else {
+                // Crear nueva sección
+                const response = await fetch(
+                    "https://sistema-gestion-1.onrender.com/api/course-sections/createSection",
                     {
-                        id: newId,
-                        title: sectionForm.title,
-                        subsections: [],
-                    },
-                ],
-            });
-        }
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            id: `section-${Date.now()}`,
+                            name: sectionForm.title,
+                            description: sectionForm.description,
+                            courseId: id,
+                            subSectionsIds: [],
+                        }),
+                    }
+                );
 
-        setIsSectionDialogOpen(false);
-        resetSectionForm();
+                if (!response.ok) {
+                    throw new Error("Error al crear la sección");
+                }
+
+                const newSection = await response.json();
+
+                // Actualizar el estado local
+                setCourse({
+                    ...course,
+                    sections: [
+                        ...course.sections,
+                        {
+                            id: newSection._id,
+                            title: newSection.name,
+                            description: newSection.description,
+                            subsections: [],
+                        },
+                    ],
+                });
+            }
+
+            setIsSectionDialogOpen(false);
+            resetSectionForm();
+        } catch (error) {
+            console.error("Error al guardar la sección:", error);
+            // TODO: Mostrar mensaje de error al usuario
+        }
     };
 
     // Guardar subsección (nueva o editada)
@@ -427,9 +481,137 @@ export default function EditCourseContentPage({
         alert("Curso guardado correctamente");
     };
 
-    //   if (!isClient || isLoading) {
-    //     return <div className="flex h-screen items-center justify-center">Cargando...</div>
-    //   }
+    if (!isClient || isLoading) {
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="text-muted-foreground">Cargando curso...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <div className="flex flex-col items-center gap-2">
+                    <p className="text-destructive">{error}</p>
+                    <Button onClick={fetchCourseData}>Reintentar</Button>
+                </div>
+            </div>
+        );
+    }
+
+    // Si no hay secciones, mostramos un mensaje y el botón para agregar la primera sección
+    if (course.sections.length === 0) {
+        return (
+            <div className="container mx-auto py-6 px-4">
+                <div className="mb-6 flex items-center justify-between">
+                    <div className="flex items-center">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            asChild
+                            className="mr-4"
+                        >
+                            <Link href="/admin/cursos">
+                                <ArrowLeft className="h-4 w-4" />
+                            </Link>
+                        </Button>
+                        <div>
+                            <h1 className="text-2xl font-bold tracking-tight">
+                                {course.title || "Nuevo Curso"}
+                            </h1>
+                            <p className="text-muted-foreground">
+                                Editar contenido del curso
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex flex-col items-center justify-center h-[60vh] bg-muted/20 rounded-lg border border-dashed">
+                    <div className="text-center p-6">
+                        <h3 className="text-lg font-medium mb-2">
+                            No hay secciones en este curso
+                        </h3>
+                        <p className="text-muted-foreground mb-4">
+                            Comience agregando la primera sección del curso.
+                        </p>
+                        <Button
+                            onClick={() => {
+                                resetSectionForm();
+                                setIsSectionDialogOpen(true);
+                            }}
+                        >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Agregar Primera Sección
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Diálogo para crear/editar sección */}
+                <Dialog
+                    open={isSectionDialogOpen}
+                    onOpenChange={setIsSectionDialogOpen}
+                >
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Nueva Sección</DialogTitle>
+                            <DialogDescription>
+                                Complete los detalles de la sección. Haga clic
+                                en guardar cuando termine.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="section-title">
+                                    Título de la sección
+                                </Label>
+                                <Input
+                                    id="section-title"
+                                    value={sectionForm.title}
+                                    onChange={(e) =>
+                                        setSectionForm({
+                                            ...sectionForm,
+                                            title: e.target.value,
+                                        })
+                                    }
+                                    placeholder="Ej: Introducción al curso"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="section-description">
+                                    Descripción de la sección
+                                </Label>
+                                <Textarea
+                                    id="section-description"
+                                    value={sectionForm.description}
+                                    onChange={(e) =>
+                                        setSectionForm({
+                                            ...sectionForm,
+                                            description: e.target.value,
+                                        })
+                                    }
+                                    placeholder="Describa el contenido de esta sección"
+                                    rows={3}
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsSectionDialogOpen(false)}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button onClick={handleSaveSection}>Guardar</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </div>
+        );
+    }
 
     return (
         <div className="container mx-auto py-6 px-4">
@@ -890,6 +1072,23 @@ export default function EditCourseContentPage({
                                     })
                                 }
                                 placeholder="Ej: Introducción al curso"
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="section-description">
+                                Descripción de la sección
+                            </Label>
+                            <Textarea
+                                id="section-description"
+                                value={sectionForm.description}
+                                onChange={(e) =>
+                                    setSectionForm({
+                                        ...sectionForm,
+                                        description: e.target.value,
+                                    })
+                                }
+                                placeholder="Describa el contenido de esta sección"
+                                rows={3}
                             />
                         </div>
                     </div>

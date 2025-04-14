@@ -195,8 +195,6 @@ const columns: ColumnDef<Item>[] = [
     },
 ];
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
 export default function TablePerson() {
     const { user } = useAuthStore();
     const fetcher = (url: string) => fetch({endpoint:url, method:"GET", headers: {
@@ -254,6 +252,8 @@ export default function TablePerson() {
 
     useEffect(() => {
         if (swrData) {
+            console.log(swrData);
+            
             setData(swrData.content);
             setTotalElements(swrData.totalElements);
         }
