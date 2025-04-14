@@ -230,7 +230,7 @@ export default function TableCuotas() {
             startLoading();
             try {
                 const response = await fetch({
-                    endpoint: `pagos/con-deuda/mes?year=${selectedYear}&month=${selectedMonth}&page=${pagination.pageIndex}&size=${pagination.pageSize}`,
+                    endpoint: `/api/pagos/con-deuda/mes?year=${selectedYear}&month=${selectedMonth}&page=${pagination.pageIndex}&size=${pagination.pageSize}`,
                     method: "GET",
                 });
                 if (response && response.content) {
