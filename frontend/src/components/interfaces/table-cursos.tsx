@@ -98,6 +98,7 @@ import { useFetch } from "@/hooks/useFetch";
 import { toast } from "sonner";
 import FormCurso from "../form-curso";
 import Link from "next/link";
+import { useAuthStore } from "@/context/store";
 
 type Item = {
     id: string;
@@ -194,9 +195,12 @@ const columns: ColumnDef<Item>[] = [
     },
 ];
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
 export default function TablePerson() {
+    const { user } = useAuthStore();
+        const fetcher = (url: string) => fetch({endpoint:url, method:"GET", headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
+        }}).then((res) => res.json());
     const id = useId();
     const { finishLoading, loading, startLoading } = useLoading();
     const fetch = useFetch();
@@ -234,7 +238,7 @@ export default function TablePerson() {
     }, [searchTerm]);
 
     const swrUrl = useMemo(() => {
-        return `https://sistema-gestion-1.onrender.com/api/cursos/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
+        return `/api/cursos/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
     }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm]);
 
     const {
@@ -248,6 +252,8 @@ export default function TablePerson() {
 
     useEffect(() => {
         if (swrData) {
+            console.log(swrData);
+            
             setData(swrData.content);
             setTotalElements(swrData.totalElements);
         }

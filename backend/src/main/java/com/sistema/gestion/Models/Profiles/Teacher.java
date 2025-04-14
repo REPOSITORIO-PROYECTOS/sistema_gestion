@@ -15,8 +15,6 @@ public class Teacher extends ProfileClass{
     @Id
     private String id;
 
-    private String phone;
-
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate dateOfBirth;
 

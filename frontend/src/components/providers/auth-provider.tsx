@@ -8,7 +8,7 @@ import { useRouter, usePathname } from "next/navigation";
 type User = {
     email: string;
     name: string;
-    role: "admin" | "estudiante";
+    role: "ROLE_ADMIN" | "ROLE_STUDENT";
 } | null;
 
 type AuthContextType = {
@@ -16,7 +16,7 @@ type AuthContextType = {
     login: (
         email: string,
         password: string,
-        role: "admin" | "estudiante"
+        role: "ROLE_ADMIN" | "ROLE_STUDENT"
     ) => Promise<boolean>;
     logout: () => void;
     isLoading: boolean;
@@ -43,18 +43,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // // Proteger rutas
         // if (!isLoading) {
         //     // Si no hay usuario y no estamos en login, redirigir a login
+        //     console.log(user);
+            
         //     if (!user && pathname !== "/login") {
         //         router.push("/login");
         //     }
         //     // Si hay usuario admin y está intentando acceder a rutas de estudiante
         //     if (
-        //         user?.role === "admin" &&
+        //         user?.role === "ROLE_ADMIN" &&
         //         pathname.startsWith("/aula-virtual")
         //     ) {
         //         router.push("/admin");
         //     }
         //     // Si hay usuario estudiante y está intentando acceder a rutas de admin
-        //     if (user?.role === "estudiante" && pathname.startsWith("/admin")) {
+        //     if (user?.role === "ROLE_STUDENT" && pathname.startsWith("/admin")) {
         //         router.push("/");
         //     }
         // }
@@ -63,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const login = async (
         email: string,
         password: string,
-        role: "admin" | "estudiante"
+        role: "ROLE_ADMIN" | "ROLE_STUDENT"
     ): Promise<boolean> => {
         setIsLoading(true);
 
@@ -71,13 +73,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return new Promise((resolve) => {
             setTimeout(() => {
                 if (
-                    role === "admin" &&
+                    role === "ROLE_ADMIN" &&
                     email === "admin@example.com" &&
                     password === "admin123"
                 ) {
                     const userData: User = {
                         email,
-                        role: "admin",
+                        role: "ROLE_ADMIN",
                         name: "Administrador",
                     };
                     sessionStorage.setItem("user", JSON.stringify(userData));
@@ -85,13 +87,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     setIsLoading(false);
                     resolve(true);
                 } else if (
-                    role === "estudiante" &&
+                    role === "ROLE_STUDENT" &&
                     email === "estudiante@example.com" &&
                     password === "estudiante123"
                 ) {
                     const userData: User = {
                         email,
-                        role: "estudiante",
+                        role: "ROLE_STUDENT",
                         name: "Estudiante Demo",
                     };
                     sessionStorage.setItem("user", JSON.stringify(userData));

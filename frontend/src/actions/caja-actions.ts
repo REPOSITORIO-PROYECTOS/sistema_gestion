@@ -3,13 +3,13 @@
 export async function toggleCajaEstado(activa: boolean) {
     try {
         const response = await fetch(
-            `https://sistema-gestion-1.onrender.com/api/caja/estado`,
+            `http://localhost:3030/api/caja/estado`,
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ activa }),
+                body: JSON.stringify({ operacion:"abrir" }),
                 // Importante: agregar esta opción si la API está en otro dominio
                 cache: "no-store",
             }

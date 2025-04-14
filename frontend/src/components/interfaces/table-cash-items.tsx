@@ -102,6 +102,7 @@ import { toast } from "sonner";
 import type { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { useAuthStore } from "@/context/store";
 
 type CashItem = {
     id: string;
@@ -251,6 +252,11 @@ const columns: ColumnDef<CashItem>[] = [
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function TableCashItems() {
+    const { user } = useAuthStore();
+    const fetcher = (url: string) => fetch({endpoint:url, method:"GET", headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user?.token}`,
+    }}).then((res) => res.json());
     const id = useId();
     const { finishLoading, loading, startLoading } = useLoading();
     const fetch = useFetch();
@@ -291,7 +297,7 @@ export default function TableCashItems() {
     }, [searchTerm]);
 
     const swrUrl = useMemo(() => {
-        let url = `https://sistema-gestion-1.onrender.com/api/caja/items?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
+        let url = `/api/caja/items?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
 
         if (dateRange?.from) {
             url += `&from=${format(dateRange.from, "yyyy-MM-dd")}`;

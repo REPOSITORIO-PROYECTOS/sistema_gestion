@@ -96,6 +96,7 @@ import { useFetch } from "@/hooks/useFetch";
 import { useLoading } from "@/hooks/useLoading";
 import { toast } from "sonner";
 import UserForm from "../form-user";
+import { useAuthStore } from "@/context/store";
 
 type Item = {
     id: string;
@@ -210,6 +211,11 @@ const columns: ColumnDef<Item>[] = [
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function TableUsers() {
+    const { user } = useAuthStore();
+    const fetcher = (url: string) => fetch({endpoint:url, method:"GET", headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user?.token}`,
+    }}).then((res) => res.json());
     const id = useId();
     const { finishLoading, loading, startLoading } = useLoading();
     const fetch = useFetch();
@@ -247,7 +253,7 @@ export default function TableUsers() {
     }, [searchTerm]);
 
     const swrUrl = useMemo(() => {
-        return `https://sistema-gestion-1.onrender.com/api/usuarios/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
+        return `/api/usuarios/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
     }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm]);
 
     const {

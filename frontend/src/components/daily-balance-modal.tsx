@@ -193,7 +193,7 @@ export function DailyBalanceModal() {
                 )}
 
                 {data && (
-                    <div className="space-y-6">
+                    <div className="space-y-6 max-h-96 overflow-y-scroll">
                         <div className="grid grid-cols-2 gap-4">
                             <Card>
                                 <CardHeader className="pb-2">

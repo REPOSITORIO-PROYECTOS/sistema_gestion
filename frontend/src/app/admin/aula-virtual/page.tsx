@@ -79,25 +79,7 @@ export default function Page() {
             date: "2025-03-22",
             category: "Plataforma",
             important: true,
-        },
-        {
-            id: "2",
-            title: "Mantenimiento programado",
-            content:
-                "La plataforma estará en mantenimiento el próximo domingo de 2:00 a 5:00 AM. Durante este período, algunos servicios podrían no estar disponibles.",
-            date: "2025-03-20",
-            category: "Técnico",
-            important: false,
-        },
-        {
-            id: "3",
-            title: "Webinar: Tendencias Educativas 2025",
-            content:
-                "No te pierdas nuestro próximo webinar sobre las tendencias educativas para este año. Inscríbete ahora para reservar tu lugar.",
-            date: "2025-03-18",
-            category: "Eventos",
-            important: false,
-        },
+        }
     ]);
 
     // Estado para cursos
@@ -109,39 +91,7 @@ export default function Page() {
             status: "ACTIVE",
             recommended: true,
             price: 8500,
-        },
-        {
-            id: "2",
-            title: "Marketing Digital",
-            description: "Estrategias para el crecimiento online",
-            status: "ACTIVE",
-            recommended: true,
-            price: 7200,
-        },
-        {
-            id: "3",
-            title: "Desarrollo Web Full Stack",
-            description: "Domina el desarrollo frontend y backend",
-            status: "ACTIVE",
-            recommended: false,
-            price: 9800,
-        },
-        {
-            id: "4",
-            title: "Diseño UX/UI Avanzado",
-            description: "Técnicas avanzadas de diseño de interfaces",
-            status: "ACTIVE",
-            recommended: false,
-            price: 8900,
-        },
-        {
-            id: "5",
-            title: "Ciencia de Datos",
-            description: "Análisis y visualización de datos",
-            status: "PENDING",
-            recommended: false,
-            price: 10500,
-        },
+        }
     ]);
 
     // Estado para formularios
