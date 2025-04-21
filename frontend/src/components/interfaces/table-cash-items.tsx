@@ -103,6 +103,10 @@ import type { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useAuthStore } from "@/context/store";
+import { useDebt } from "@/context/coutasAdeudadasContext";
+import { is } from "date-fns/locale";
+import { ModalPago } from "../pay-cuote-modal";
+import { Card } from "../ui/card";
 
 type CashItem = {
     id: string;
@@ -250,6 +254,7 @@ const columns: ColumnDef<CashItem>[] = [
 ];
 
 export default function TableCashItems() {
+    const {cuotas} = useDebt();
     const { user } = useAuthStore();
     const fetcher = (url: string) => fetch({endpoint:url, method:"GET", headers: {
         "Content-Type": "application/json",
@@ -258,6 +263,11 @@ export default function TableCashItems() {
     const id = useId();
     const { finishLoading, loading, startLoading } = useLoading();
     const fetch = useFetch();
+    const [registrandoPago, setRegistrandoPago] = useState(false);
+    const [cuota, setCuota] = useState<any>(null);
+    const [pago, setPago] = useState<any>();
+    const [tipoPago, setTipoPago] = useState<string>("");
+    const [searchName, setSearchName] = useState<string>("");
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
         {}
@@ -282,6 +292,7 @@ export default function TableCashItems() {
 
     const [data, setData] = useState<CashItem[]>([]);
     const [totalElements, setTotalElements] = useState<number>(0);
+    const cuotasFiltradas = cuotas.filter((cuota: any) => cuota.studentName.toLowerCase().includes(searchName.toLowerCase()));
 
     // Debounce function
     useEffect(() => {
@@ -453,6 +464,70 @@ export default function TableCashItems() {
 
         return { ingresos, egresos, balance };
     }, [data]);
+
+    const handlePagoParcial = async () => {
+        try {
+            const isPaid = pago.paidAmount >= cuota.paymentAmount;
+    
+            const response = await fetch({
+                endpoint: `/api/pagos/realizar/${cuota.id}`,
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user?.token}`,
+                },
+                formData: JSON.stringify({
+                    id: cuota.id,
+                    courseId: cuota.curseId,
+                    studentId: cuota.studentId,
+                    paymentAmount: cuota.paymentAmount,
+                    paidAmount: pago.paidAmount,
+                    isPaid: isPaid,
+                    hasDebt: !isPaid,
+                    paymentType: pago.paymentType,
+                    paymentDueDate: cuota.paymentDueDate,
+                    lastPaymentDate: new Date().toISOString(),
+                }),
+            });
+    
+            const data = await response.json();
+            console.log("Pago parcial registrado:", data);
+        } catch (error) {
+            console.error("Error al registrar pago parcial:", error);
+        }
+    };
+    
+
+    const handlePagoTotal = async (cuota: any) => {
+        try {
+            const response = await fetch({
+                endpoint: `/api/pagos/realizar/${cuota.id}`,
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user?.token}`,
+                },
+                formData: JSON.stringify({
+                    id: cuota.id,
+                    courseId: cuota.curseId,
+                    studentId: cuota.studentId,
+                    paymentAmount: cuota.paymentAmount,
+                    paidAmount: cuota.paymentAmount,
+                    isPaid: true,
+                    hasDebt: false,
+                    paymentType: "EFECTIVO", // o lo que corresponda
+                    paymentDueDate: cuota.paymentDueDate,
+                    lastPaymentDate: new Date().toISOString(),
+                }),
+            });
+    
+            const data = await response.json();
+            console.log("Pago total registrado:", data);
+        } catch (error) {
+            console.error("Error al registrar pago total:", error);
+        }
+    };
+    
 
     return (
         <div className="container mx-auto my-10 space-y-4">
@@ -727,7 +802,7 @@ export default function TableCashItems() {
                         </AlertDialog>
                     )}
                     {/* Add item button */}
-                    <Button>Agregar Item</Button>
+                    <Button onClick={()=>setRegistrandoPago(true)}>Registrar pago</Button>
                 </div>
             </div>
 
@@ -1055,6 +1130,58 @@ export default function TableCashItems() {
                     </Pagination>
                 </div>
             </div>
+            {registrandoPago && (
+    <div className="absolute top-0 left-0 right-0 w-full py-10 px-20 bg-card rounded-md shadow-lg overflow-y-auto max-h-[90vh] z-50">
+        <h2 className="text-xl font-semibold mb-6">Seleccionar una cuota adeudada</h2>
+        <div className="flex justify-between">
+            <div className="flex mb-6 gap-2 font-semibold">
+                <p>Buscar:</p>
+                <input 
+                    type="text" 
+                    value={searchName} 
+                    onChange={(e) => setSearchName(e.target.value)} 
+                    className="w-full max-w-[200px] border-1 bg-gray-700 rounded-lg" />
+            </div>
+            <button className="bg-red-700 rounded-lg px-5 h-8 font-semibold" onClick={() => setRegistrandoPago(false)}>Cerrar</button>
+        </div>
+        <div className="grid gap-4">
+            {cuotasFiltradas.map((cuota: any, index: number) => {
+                const saldoPendiente = cuota.paymentAmount - cuota.paidAmount;
+
+                return (
+                    <Card key={index} className="border p-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <div>
+                                <p className="text-sm text-muted-foreground">Alumno</p>
+                                <p className="font-medium">{cuota.studentName}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Curso</p>
+                                <p className="font-medium">{cuota.curseName}</p>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <p className="text-sm text-muted-foreground">Vencimiento</p>
+                                <p className="font-medium">{format(cuota.paymentDueDate, "dd/MM/yyyy")}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Saldo Pendiente</p>
+                                <p className="font-medium text-red-500">${saldoPendiente.toFixed(2)}</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-4 flex justify-end gap-2">
+                            <ModalPago cuota={cuota} onSubmit={handlePagoTotal} />
+                        </div>
+                    </Card>
+                );
+            })}
+        </div>
+    </div>
+)}
+
+            {
+                tipoPago !== "" && <ModalPago cuota={cuota} onSubmit={handlePagoTotal} />
+            }
         </div>
     );
 }

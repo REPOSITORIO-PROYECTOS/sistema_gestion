@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import "@/styles/globals.css";
+import { CuotasAdeudadasProvider } from "@/context/coutasAdeudadasContext";
 
 export const metadata: Metadata = {
     title: "Sistema gestion - Admin",
@@ -12,5 +13,9 @@ export default function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    return <>{children}</>;
+    return <>
+        <CuotasAdeudadasProvider>
+            {children}
+        </CuotasAdeudadasProvider>
+    </>;
 }

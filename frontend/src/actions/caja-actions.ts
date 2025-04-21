@@ -1,17 +1,18 @@
 "use server"
 
-export async function toggleCajaEstado(activa: boolean) {
+export async function toggleCajaEstado(activa: boolean, token: string) {
     try {
         const response = await fetch(
-            `https://sistema-gestion-1.onrender.com/api/caja/estado`,
+            `http://localhost:3030/api/caja/estado?operacion=${activa ? "abrir" : "cerrar"}`,
             {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ operacion:"abrir" }),
+                body: JSON.stringify({ operacion: `${activa ? "abrir" : "cerrar"}` }),
                 // Importante: agregar esta opción si la API está en otro dominio
-                cache: "no-store",
+                //cache: "no-store",
             }
         );
 

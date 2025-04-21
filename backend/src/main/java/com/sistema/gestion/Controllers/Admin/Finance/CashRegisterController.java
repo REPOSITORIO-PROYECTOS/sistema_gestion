@@ -6,6 +6,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.sistema.gestion.DTO.CashMovementRequestDTO;
+import com.sistema.gestion.Models.Admin.Finance.CashMovement;
 import com.sistema.gestion.Models.Admin.Finance.CashRegister;
 import com.sistema.gestion.Services.Admin.Finance.CashRegisterService;
 import com.sistema.gestion.Utils.MonthlyBalance;
@@ -36,7 +38,8 @@ public class CashRegisterController {
 			@ApiResponse(responseCode = "404", description = "No hay caja abierta")
 	})
 	@PostMapping("/estado")
-	public Mono<ResponseEntity<CashRegister>> status(Authentication auth, @RequestPart String operacion) {
+	public Mono<ResponseEntity<CashRegister>> status(Authentication auth, @RequestParam String operacion) {
+		System.out.println("------------------------ABRIENDO CAJA------------------------");
 		if(operacion.equals("abrir")){
 			return cashRegisterService.openCashRegister(auth.getName())
 					.map(ResponseEntity::ok);
@@ -75,6 +78,19 @@ public class CashRegisterController {
 				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
 						"No se encontraron cierres de caja para el mes especificado")));
 	}
+
+	@PostMapping("/registrar-movimiento")
+	@Operation(summary = "Registrar movimiento en caja", description = "Registra un ingreso o egreso manual en la caja abierta.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Movimiento registrado correctamente"),
+		@ApiResponse(responseCode = "400", description = "Caja no abierta o datos inválidos")
+	})
+	public Mono<ResponseEntity<CashMovement>> registrarMovimiento(
+			Authentication auth,
+			@RequestBody CashMovementRequestDTO request) {
+		return cashRegisterService.registerCashMovement(auth.getName(), request)
+				.thenReturn(ResponseEntity.ok().build());
+}
 
 	// @PostMapping("/pago-curso")
 	// @Operation(summary = "Registrar pago de curso", description = "Registra un ingreso en la caja correspondiente a un pago de curso")

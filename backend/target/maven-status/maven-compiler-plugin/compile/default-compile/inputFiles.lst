@@ -30,6 +30,7 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\C
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Profiles\TeacherController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Controllers\Profiles\UserController.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\DAO\CourseDAO.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\DTO\CashMovementRequestDTO.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\DTO\CourseDTO.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\DTO\IdAndNameDTO.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\DTO\InvoiceWithProviderDTO.java
@@ -41,6 +42,7 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\D
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Exceptions\GlobalExceptionHandler.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Exceptions\UserNotFoundException.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\GestionApplication.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Finance\CashMovement.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Finance\CashRegister.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Finance\Invoice.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Finance\Payment.java
@@ -59,6 +61,7 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\M
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Profiles\Student.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Profiles\Teacher.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Profiles\User.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Admin\Finance\CashMovementRepository.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Admin\Finance\CashRegisterRepository.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Admin\Finance\InvoiceRepository.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Admin\Finance\PaymentRepository.java

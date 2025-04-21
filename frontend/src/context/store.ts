@@ -52,7 +52,7 @@ export const useAuthStore = create<AuthState>()(
                 try {
                     // Llamada al endpoint de autenticación
                     const response = await fetch(
-                        "https://sistema-gestion-1.onrender.com/auth/login",
+                        "http://localhost:3030/api/auth/login",
                         {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
@@ -103,7 +103,7 @@ export const useAuthStore = create<AuthState>()(
                     error: null,
                 });
                 // Limpiar sessionStorage para mantener compatibilidad
-                //sessionStorage.removeItem("user");
+                sessionStorage.removeItem("user");
             },
 
             // Limpiar errores

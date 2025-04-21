@@ -7,6 +7,7 @@ import { useId } from "react";
 import { useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { toggleCajaEstado } from "@/actions/caja-actions";
+import { useAuthStore } from "@/context/store";
 
 interface CardSwitchProps {
     initialState?: boolean;
@@ -21,6 +22,7 @@ export default function CardSwitch({
     description = "A short description goes here.",
     onToggleSuccess,
 }: CardSwitchProps) {
+    const { user } = useAuthStore();
     const id = useId();
     const [cajaActiva, setCajaActiva] = useState(initialState);
     const [isLoading, setIsLoading] = useState(false);
@@ -46,7 +48,7 @@ export default function CardSwitch({
 
         try {
             // Llamar al Server Action
-            const result = await toggleCajaEstado(checked);
+            const result = await toggleCajaEstado(checked, user ? user.token : "");
 
             if (!result.success) {
                 throw new Error(

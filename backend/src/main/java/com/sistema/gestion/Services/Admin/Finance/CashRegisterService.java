@@ -9,7 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.sistema.gestion.DTO.CashMovementRequestDTO;
+import com.sistema.gestion.Models.Admin.Finance.CashMovement;
 import com.sistema.gestion.Models.Admin.Finance.CashRegister;
+import com.sistema.gestion.Repositories.Admin.Finance.CashMovementRepository;
 import com.sistema.gestion.Repositories.Admin.Finance.CashRegisterRepository;
 import com.sistema.gestion.Repositories.Admin.Finance.InvoiceRepository;
 import com.sistema.gestion.Repositories.Admin.Finance.PaymentRepository;
@@ -22,6 +25,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class CashRegisterService {
 	private final CashRegisterRepository cashRegisterRepo;
+	private final CashMovementRepository cashMovementRepo;
 	private final PaymentRepository paymentRepo;
 	private final InvoiceRepository invoiceRepo;
 	private final UserService userService;
@@ -33,8 +37,9 @@ public class CashRegisterService {
 							.hasElement() // Verifica si hay elementos
 							.flatMap(hasOpenRegister -> {
 								if (hasOpenRegister) {
-									return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-											"Ya existe una caja abierta. Cierre la caja actual antes de abrir una nueva."));
+									return getOpenCashRegister();
+									// return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+									// 		"Ya existe una caja abierta. Cierre la caja actual antes de abrir una nueva."));
 								}
 								// Crear una nueva caja si no hay una abierta
 								CashRegister newCashRegister = new CashRegister();
@@ -193,20 +198,39 @@ public class CashRegisterService {
 				});
 	}
 
-	// public Mono<Void> registerCoursePayment(String paymentId, double amount) {
-	// 	return cashRegisterRepo.findFirstByIsClosedFalse()
-	// 			.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "No hay una caja abierta actualmente.")))
-	// 			.flatMap(openCashRegister -> 
-	// 				paymentRepo.findById(paymentId)
-	// 					.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el pago con el ID especificado.")))
-	// 					.flatMap(payment -> {
-	// 						payment.setPaidAmount(payment.getPaidAmount() + amount);
-	// 						payment.setLastPaymentDate(LocalDateTime.now());
-	// 						//payment.setCashRegisterId(openCashRegister.getId());
-	// 						return paymentRepo.save(payment).then();
-	// 					})
-	// 			);
-	// }
+	public Mono<CashMovement> registerCashMovement(String username, CashMovementRequestDTO request) {
+	return userService.getFullName(username)
+			.flatMap(fullName -> 
+				cashRegisterRepo.findFirstByIsClosedFalse()
+					.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "No hay una caja abierta actualmente.")))
+					.flatMap(cashRegister -> 
+						registerCoursePayment(request.getPaymentId(), request.getAmount())
+							.then(Mono.defer(() -> {
+								CashMovement movement = new CashMovement();
+								movement.setCashRegisterId(cashRegister.getId());
+								movement.setConcept(request.getConcept());
+								movement.setAmount(request.getAmount());
+								movement.setDate(LocalDateTime.now());
+								movement.setRegisteredBy(fullName);
+								return cashMovementRepo.save(movement);
+							}))
+					)
+			);
+	}
+
+	public Mono<Void> registerCoursePayment(String paymentId, double amount) {
+		return cashRegisterRepo.findFirstByIsClosedFalse()
+				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "No hay una caja abierta actualmente.")))
+				.flatMap(openCashRegister -> 
+					paymentRepo.findById(paymentId)
+						.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el pago con el ID especificado.")))
+						.flatMap(payment -> {
+							payment.setPaidAmount(payment.getPaidAmount() + amount);
+							payment.setLastPaymentDate(LocalDateTime.now());
+							return paymentRepo.save(payment).then();
+						})
+				);
+	}
 
 	public Mono<Void> deleteAllCashRegisters() {
 		return cashRegisterRepo.deleteAll().then(Mono.empty());
