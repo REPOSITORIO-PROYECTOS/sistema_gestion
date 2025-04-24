@@ -30,6 +30,10 @@ public class Grade extends ModelClass {
     @Indexed
     private String courseId; // Referencia al curso
 
+    @NotNull(message = "La sección es obligatoria.")
+    @Indexed
+    private String sectionId;
+
     @NotNull(message = "La calificación es obligatoria.")
     @Min(value = 0, message = "La calificación mínima es 0.")
     @Max(value = 10, message = "La calificación máxima es 10.")

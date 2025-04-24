@@ -3,7 +3,9 @@ package com.sistema.gestion.Services.Admin.Management;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.sistema.gestion.Services.Profiles.UserService;
 import org.springframework.data.domain.PageRequest;
@@ -13,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.sistema.gestion.DTO.PagedResponse;
 import com.sistema.gestion.Models.Admin.Management.Course;
+import com.sistema.gestion.Models.Profiles.Teacher;
 import com.sistema.gestion.Repositories.Admin.Management.CourseRepository;
 import com.sistema.gestion.Repositories.Profiles.StudentRepository;
 import com.sistema.gestion.Repositories.Profiles.TeacherRepository;
@@ -155,23 +158,36 @@ public class CourseService {
 	}
 
 	private Mono<Course> updateTeacherCourses(Course course) {
-		if (course.getTeacherId() == null || course.getTeacherId().isEmpty()) {
-			return Mono.just(course); // Si no hay profesor, devolver el curso sin cambios
-		}
+    if (course.getTeacherIds() == null || course.getTeacherIds().isEmpty()) {
+        return Mono.just(course); // Si no hay profesor, devolver el curso sin cambios
+    }
 
-		return teacherRepo.findById(course.getTeacherId())
-				.switchIfEmpty(monoError(HttpStatus.NOT_FOUND, "Profesor no encontrado: " + course.getTeacherId()))
-				.flatMap(teacher -> {
-					Set<String> courses = teacher.getCoursesIds();
-					if (courses == null) {
-						courses = new HashSet<>();
-						teacher.setCoursesIds(courses);
-					}
-					courses.add(course.getId());
-					return teacherRepo.save(teacher);
-				})
-				.thenReturn(course); // Retornar el curso guardado
-	}
+    return teacherRepo.findAllById(course.getTeacherIds())
+            .collectList() // Convierte el Flux en una lista
+            .flatMap(teachers -> {
+                if (teachers.isEmpty()) {
+                    return monoError(HttpStatus.NOT_FOUND, "Profesor no encontrado: " + course.getTeacherIds());
+                }
+
+                // Actualizar los cursos de los profesores
+                List<Mono<Teacher>> saveMonos = teachers.stream()
+                        .map(teacher -> {
+                            Set<String> courses = teacher.getCoursesIds();
+                            if (courses == null) {
+                                courses = new HashSet<>();
+                                teacher.setCoursesIds(courses);
+                            }
+                            courses.add(course.getId());
+                            return teacherRepo.save(teacher);
+                        })
+                        .collect(Collectors.toList());
+
+                // Espera a que todos los profesores se guarden y luego retorna el curso
+                return Mono.when(saveMonos)
+                        .thenReturn(course); // Retornar el curso guardado
+            });
+}
+
 
 	private Course mappingCourseToUpdate(Course existingCourse, Course course, String fullName) {
 		existingCourse.setUpdatedAt(LocalDateTime.now());
@@ -180,7 +196,7 @@ public class CourseService {
 		existingCourse.setDescription(course.getDescription());
 		existingCourse.setStatus(course.getStatus());
 		existingCourse.setMonthlyPrice(course.getMonthlyPrice());
-		existingCourse.setTeacherId(course.getTeacherId());
+		existingCourse.setTeacherIds(course.getTeacherIds());
 		return existingCourse;
 	}
 

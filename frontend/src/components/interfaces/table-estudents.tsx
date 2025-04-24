@@ -213,7 +213,6 @@ const columns: ColumnDef<Item>[] = [
     },
 ];
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function TableEstudents() {
     const { user } = useAuthStore();
@@ -258,6 +257,7 @@ export default function TableEstudents() {
     }, [searchTerm]);
 
     const swrUrl = useMemo(() => {
+        if (!user?.token) return null; // Evita llamada antes de que esté el user
         return `/api/estudiantes/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
     }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm]);
 

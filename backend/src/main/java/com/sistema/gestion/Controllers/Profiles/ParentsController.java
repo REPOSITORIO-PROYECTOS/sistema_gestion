@@ -26,7 +26,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @RestController
 @RequestMapping("/api/padres")
-@Tag(name = "Student Controller", description = "Controlador para la gestión de padres")
+@Tag(name = "Parents Controller", description = "Controlador para la gestión de padres")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class ParentsController {

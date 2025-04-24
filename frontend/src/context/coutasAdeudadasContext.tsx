@@ -46,10 +46,14 @@ export const CuotasAdeudadasProvider: React.FC<{ children: React.ReactNode }> = 
   const fetchCuotas = async () => {
     setLoading(true);
     setError(null);
+    const userString = localStorage.getItem("auth-storage");
+    const user = userString ? JSON.parse(userString) : null;
     try {
-      const response = await axios.get("http://localhost:3030/api/pagos/con-deuda?hasDebt=true&page=0&size=1000");
-      console.log(response.data.content);
-      
+      const response = await axios.get("https://sistema-gestion-1.onrender.com/api/pagos/con-deuda?hasDebt=true&page=0&size=1000", {
+        headers: {
+          Authorization: `Bearer ${user.state.user.token}`,
+        },
+      });
       setCuotas(response.data.content);
     } catch (err) {
       setError("Error al obtener las cuotas adeudadas");

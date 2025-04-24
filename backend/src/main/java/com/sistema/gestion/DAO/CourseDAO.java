@@ -45,10 +45,12 @@ public class CourseDAO {
                             .collectList()
                             .map(HashSet::new);
 
-                    Mono<IdAndNameDTO> teacherMono = teacherRepository.findById(course.getTeacherId())
+                    Mono<Set<IdAndNameDTO>> teacherMono = teacherRepository.findAllById(course.getTeacherIds())
                             .map(teacher -> new IdAndNameDTO(teacher.getId(),
                                     teacher.getSurname() + " " + teacher.getName()))
-                            .defaultIfEmpty(new IdAndNameDTO("", ""));
+                            .collectList()
+                            .map(HashSet::new);
+                            //.defaultIfEmpty(new IdAndNameDTO("", ""));
 
                     return Mono.zip(studentsMono, teacherMono)
                             .map(tuple -> new CourseDTO(

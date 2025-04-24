@@ -56,7 +56,7 @@ const formSchema = z.object({
             message: "El precio mensual debe ser mayor o igual a 0.",
         }),
     studentsIds: z.array(z.string()).optional(),
-    teacherId: z.string().optional(),
+    teacherIds: z.array(z.string()).optional(),
 });
 
 interface AgregarCursoProps {
@@ -68,7 +68,7 @@ interface AgregarCursoProps {
         status: "ACTIVE" | "INACTIVE";
         monthlyPrice: number;
         studentsIds: string[];
-        teacherId: string;
+        teacherIds: string[];
     };
     mutate: ScopedMutator | (() => void); // Acepta tanto ScopedMutator como una función sin argumentos
     onClose?: () => void;
@@ -98,7 +98,7 @@ export default function FormCurso({
             status: datos?.status || undefined,
             monthlyPrice: datos?.monthlyPrice || 0,
             studentsIds: datos?.studentsIds ?? [],
-            teacherId: datos?.teacherId || "",
+            teacherIds: datos?.teacherIds ?? [],
         },
     });
 
@@ -155,7 +155,7 @@ export default function FormCurso({
             status: data.status,
             monthlyPrice: Number.parseFloat(data.monthlyPrice.toString()),
             studentsIds: data.studentsIds,
-            teacherId: data.teacherId,
+            teacherIds: data.teacherIds,
         };
         startLoading();
         try {
@@ -381,10 +381,10 @@ export default function FormCurso({
                             ) : (
                                 <FormField
                                     control={form.control}
-                                    name="teacherId"
-                                    render={({ field }) => (
+                                    name="teacherIds"
+                                    render={({ field }:any) => (
                                         <FormItem>
-                                            <FormLabel>Profesor</FormLabel>
+                                            <FormLabel>Profesores</FormLabel>
                                             <Select
                                                 onValueChange={field.onChange}
                                                 defaultValue={field.value}

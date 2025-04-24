@@ -104,7 +104,7 @@ import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useAuthStore } from "@/context/store";
 import { useDebt } from "@/context/coutasAdeudadasContext";
-import { is } from "date-fns/locale";
+import { da, is } from "date-fns/locale";
 import { ModalPago } from "../pay-cuote-modal";
 import { Card } from "../ui/card";
 

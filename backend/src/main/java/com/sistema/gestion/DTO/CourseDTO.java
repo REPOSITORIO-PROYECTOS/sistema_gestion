@@ -18,5 +18,5 @@ public class CourseDTO {
 	private CourseStatus status;
 	private Double monthlyPrice;
 	private Set<IdAndNameDTO> studentsIds;
-	private IdAndNameDTO teacherId;
+	private Set<IdAndNameDTO> teacherIds;
 }

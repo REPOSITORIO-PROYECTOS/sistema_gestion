@@ -38,7 +38,11 @@ public class Course extends ModelClass {
     private Set<String> studentsIds;
 
     @NotNull(message = "El ID del profesor no puede ser nulo.")
-    private String teacherId;
+    private ArrayList<String> teacherIds;
 
     private ArrayList<String> sectionsIds;
+
+    public void setTeacherId(String teacherId) {
+        this.teacherIds.add(teacherId);
+    }
 }

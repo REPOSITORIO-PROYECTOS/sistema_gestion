@@ -55,6 +55,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useAuthStore } from "@/context/store";
 
 type Cuota = {
     id: string;
@@ -154,6 +155,7 @@ const columns: ColumnDef<Cuota>[] = [
 export default function TableCuotas() {
     const id = useId();
     const { finishLoading, loading, startLoading } = useLoading();
+    const { user } = useAuthStore();
     const fetch = useFetch();
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -226,16 +228,23 @@ export default function TableCuotas() {
     });
 
     useEffect(() => {
+        if (!user?.token) return;  // Evita hacer la petición si el token no está disponible
+    
         const fetchData = async () => {
             startLoading();
             try {
                 const response = await fetch({
                     endpoint: `/api/pagos/con-deuda/mes?year=${selectedYear}&month=${selectedMonth}&page=${pagination.pageIndex}&size=${pagination.pageSize}`,
                     method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${user.token}`,
+                    },
                 });
-                if (response && response.content) {
-                    setData(response.content);
-                    setTotalElements(response.totalElements);
+                const data = await response.json();
+                if (data && data.content) {
+                    setData(data.content);
+                    setTotalElements(data.totalElements);
                 }
             } catch (error) {
                 console.error("Error fetching cuotas:", error);
@@ -243,14 +252,16 @@ export default function TableCuotas() {
                 finishLoading();
             }
         };
-
+    
         fetchData();
     }, [
+        user?.token,  // Se vuelve a ejecutar solo cuando el token cambia
         pagination.pageIndex,
         pagination.pageSize,
         selectedYear,
         selectedMonth,
     ]);
+    
 
     return (
         <div className="space-y-4">

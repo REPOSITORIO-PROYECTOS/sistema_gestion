@@ -1,6 +1,7 @@
 com\sistema\gestion\DTO\IdAndNameDTO.class
 com\sistema\gestion\Services\Admin\Finance\InvoiceService.class
 com\sistema\gestion\Repositories\Profiles\TeacherRepository.class
+com\sistema\gestion\DTO\CashMovementRequestDTO.class
 com\sistema\gestion\Repositories\Admin\Finance\ProviderRepository.class
 com\sistema\gestion\Controllers\Admin\Finance\Billing\WSAAController.class
 com\sistema\gestion\Auth\CustomReactiveAuthenticationManager.class
@@ -52,6 +53,7 @@ com\sistema\gestion\Controllers\Profiles\UserController.class
 com\sistema\gestion\DTO\InvoiceWithProviderDTO.class
 com\sistema\gestion\Utils\MonthlyBalance.class
 com\sistema\gestion\DTO\PagedResponse.class
+com\sistema\gestion\Repositories\Admin\Finance\CashMovementRepository.class
 com\sistema\gestion\Models\Admin\Management\StudentAttendance.class
 com\sistema\gestion\Controllers\Admin\Management\Academics\GradeController.class
 com\sistema\gestion\Services\Admin\Finance\ProviderService.class
@@ -68,6 +70,7 @@ com\sistema\gestion\Models\Admin\Management\VirtualCampus\CourseSection.class
 com\sistema\gestion\Controllers\Admin\Management\StudentAttendanceController.class
 com\sistema\gestion\Controllers\Admin\Management\CourseController.class
 com\sistema\gestion\Services\Profiles\ParentService.class
+com\sistema\gestion\Models\Admin\Finance\CashMovement.class
 com\sistema\gestion\Auth\Filters\JwtAuthenticationWebFilter.class
 com\sistema\gestion\Exceptions\GlobalExceptionHandler.class
 com\sistema\gestion\Models\Admin\Management\Grade.class

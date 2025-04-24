@@ -1,6 +1,7 @@
 package com.sistema.gestion.Models.Profiles;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Set;
 
 import org.springframework.data.annotation.Id;
@@ -29,4 +30,6 @@ public class Teacher extends ProfileClass{
     private LocalDate ingressDate;
 
     private Set<String> coursesIds;
+
+    private ArrayList<String> sectionsIds;
 }

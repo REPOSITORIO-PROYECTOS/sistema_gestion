@@ -91,7 +91,7 @@ import {
     Plus,
     Trash,
 } from "lucide-react";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import React from "react";
 import { useLoading } from "@/hooks/useLoading";
 import { useFetch } from "@/hooks/useFetch";
@@ -107,7 +107,7 @@ type Item = {
     status: "ACTIVE" | "INACTIVE";
     monthlyPrice: number;
     studentsIds: string[];
-    teacherId: string;
+    teacherIds: string[];
 };
 
 // Custom filter function for multi-column searching
@@ -166,7 +166,15 @@ const columns: ColumnDef<Item>[] = [
     },
     {
         header: "Profesor",
-        accessorKey: "teacherId.name",
+        accessorKey: "teacherIds",
+        cell: ({ row }) => {
+            const teacherIds = row.getValue('teacherIds') as string[];
+            if (!teacherIds || teacherIds.length === 0) {
+                return 'No asignado';
+            }
+            const teacherId = teacherIds[0];
+            return teacherId ? `Profesor ${teacherId}` : 'No asignado';
+        },
         size: 160,
     },
     {
@@ -197,10 +205,16 @@ const columns: ColumnDef<Item>[] = [
 
 export default function TablePerson() {
     const { user } = useAuthStore();
-    const fetcher = (url: string) => fetch({endpoint:url, method:"GET", headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${user?.token}`,
-    }}).then((res) => res.json());
+    const fetcher = useCallback((url: string) => {
+        if (!user?.token) return Promise.reject("Token no disponible");
+        return fetch({endpoint:url, 
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${user.token}`,
+            }
+        }).then((res) => res.json());
+    }, [user?.token]);
     const id = useId();
     const { finishLoading, loading, startLoading } = useLoading();
     const fetch = useFetch();
@@ -238,17 +252,17 @@ export default function TablePerson() {
     }, [searchTerm]);
 
     const swrUrl = useMemo(() => {
+        if (!user?.token) return null; // Evita llamada antes de que esté el user
         return `/api/cursos/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
-    }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm]);
+    }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm, user?.token]);
 
-    const {
-        data: swrData,
-        error,
-        isLoading,
-        mutate,
-    } = useSWR(swrUrl, fetcher, {
-        keepPreviousData: true,
-    });
+    const { data: swrData, error, isLoading, mutate } = useSWR(
+        swrUrl,
+        swrUrl ? fetcher : null, // Si la URL es null, SWR no hace la petición
+        {
+            keepPreviousData: true,
+        }
+    );
 
     useEffect(() => {
         if (swrData) {

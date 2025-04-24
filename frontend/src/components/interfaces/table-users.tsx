@@ -89,7 +89,7 @@ import {
     Loader2Icon,
     Trash,
 } from "lucide-react";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import useSWR, { mutate } from "swr";
 import React from "react";
 import { useFetch } from "@/hooks/useFetch";
@@ -208,14 +208,18 @@ const columns: ColumnDef<Item>[] = [
     },
 ];
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
 export default function TableUsers() {
     const { user } = useAuthStore();
-    const fetcher = (url: string) => fetch({endpoint:url, method:"GET", headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${user?.token}`,
-    }}).then((res) => res.json());
+    const fetcher = useCallback((url: string) => {
+            if (!user?.token) return Promise.reject("Token no disponible");
+            return fetch({endpoint:url, 
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user.token}`,
+                }
+            }).then((res) => {console.log("JSON RESPONSE: ",res.json()); return res.json();});
+        }, [user?.token]);
     const id = useId();
     const { finishLoading, loading, startLoading } = useLoading();
     const fetch = useFetch();
@@ -253,24 +257,33 @@ export default function TableUsers() {
     }, [searchTerm]);
 
     const swrUrl = useMemo(() => {
+        if (!user?.token) return null; // Evita llamada antes de que esté el user
         return `/api/usuarios/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
-    }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm]);
+    }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm, user?.token]);
 
-    const {
-        data: swrData,
-        error,
-        isLoading,
-        mutate,
-    } = useSWR(swrUrl, fetcher, {
-        keepPreviousData: true,
-    });
+    const { data: swrData, error, isLoading, mutate } = useSWR(
+        swrUrl,
+        swrUrl ? fetcher : null, // Si la URL es null, SWR no hace la petición
+        {
+            keepPreviousData: true,
+        }
+    );
 
+    useEffect(() => {
+            if (swrData) {
+                setData(swrData);
+                setTotalElements(swrData.length);
+            }
+        }, [swrData]);
+
+    console.log(swrUrl)
     console.log("Estructura swrData completa:", swrData);
     console.log("Contenido de usuarios:", swrData?.content);
     console.log("Total elementos:", swrData?.totalElements);
 
     useEffect(() => {
-        if (swrData) {
+        console.log("useEffect triggered. Raw swrData:" , swrData);
+        if (swrData && Array.isArray(swrData.content)) {
             // Mapea los datos para ajustar los campos al formato esperado
             const mappedData = swrData.content.map(
                 (user: { roles: string | any[] }) => ({

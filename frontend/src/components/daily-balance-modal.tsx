@@ -27,6 +27,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useAuthStore } from "@/context/store";
 
 interface DailyBalance {
     id: string;
@@ -47,6 +48,7 @@ interface BalanceData {
 
 export function DailyBalanceModal() {
     const [data, setData] = useState<BalanceData | null>(null);
+    const { user } = useAuthStore();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [open, setOpen] = useState(false);
@@ -66,6 +68,13 @@ export function DailyBalanceModal() {
             // Using the provided endpoint with query parameters
             const response = await fetch(
                 `https://sistema-gestion-1.onrender.com/api/caja/balance-mensual?year=${year}&month=${month}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${user?.token}`,
+                    },
+                }
             );
 
             if (!response.ok) {
