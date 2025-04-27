@@ -234,14 +234,14 @@ export default function TableCuotas() {
             startLoading();
             try {
                 const response = await fetch({
-                    endpoint: `/api/pagos/con-deuda/mes?year=${selectedYear}&month=${selectedMonth}&page=${pagination.pageIndex}&size=${pagination.pageSize}`,
+                    endpoint: `/pagos/con-deuda/mes?year=${selectedYear}&month=${selectedMonth}&page=${pagination.pageIndex}&size=${pagination.pageSize}`,
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${user.token}`,
                     },
                 });
-                const data = await response.json();
+                const data = await response;
                 if (data && data.content) {
                     setData(data.content);
                     setTotalElements(data.totalElements);

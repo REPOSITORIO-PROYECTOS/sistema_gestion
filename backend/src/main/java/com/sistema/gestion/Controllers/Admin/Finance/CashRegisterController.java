@@ -1,5 +1,7 @@
 package com.sistema.gestion.Controllers.Admin.Finance;
 
+import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -18,9 +20,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 
 @RestController
 @RequestMapping("/api/caja")
@@ -39,7 +46,6 @@ public class CashRegisterController {
 	})
 	@PostMapping("/estado")
 	public Mono<ResponseEntity<CashRegister>> status(Authentication auth, @RequestParam String operacion) {
-		System.out.println("------------------------ABRIENDO CAJA------------------------");
 		if(operacion.equals("abrir")){
 			return cashRegisterService.openCashRegister(auth.getName())
 					.map(ResponseEntity::ok);
@@ -90,7 +96,21 @@ public class CashRegisterController {
 			@RequestBody CashMovementRequestDTO request) {
 		return cashRegisterService.registerCashMovement(auth.getName(), request)
 				.thenReturn(ResponseEntity.ok().build());
-}
+	}
+
+	@GetMapping("/items")
+	public Flux<CashMovement> getItems(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "") String keyword,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+
+		LocalDateTime fromDateTime = from.atStartOfDay();
+		LocalDateTime toDateTime = to.atTime(LocalTime.MAX);
+
+		return cashRegisterService.getItems(page, size, keyword, fromDateTime, toDateTime);
+	}
 
 	// @PostMapping("/pago-curso")
 	// @Operation(summary = "Registrar pago de curso", description = "Registra un ingreso en la caja correspondiente a un pago de curso")

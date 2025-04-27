@@ -111,7 +111,7 @@ public class PaymentController {
 			@ApiResponse(responseCode = "201", description = "Pago registrado exitosamente."),
 			@ApiResponse(responseCode = "400", description = "Error en los datos proporcionados.")
 	})
-	@PostMapping
+	@PostMapping("/pagar-total")
 	public Mono<ResponseEntity<Payment>> registerPayment(
 			Authentication auth,
 			@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos del pago a registrar", required = true) @RequestBody @Valid Payment payment) {

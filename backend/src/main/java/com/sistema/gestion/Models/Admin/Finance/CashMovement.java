@@ -18,6 +18,7 @@ public class CashMovement {
 	private String id;
 
 	private String cashRegisterId;     // Caja a la que pertenece el movimiento
+	private String title;
 	private String concept;            // Ej: "Donación", "Gasto en limpieza", etc.
 	private double amount;
 	private boolean isIncome;          // true = ingreso, false = egreso

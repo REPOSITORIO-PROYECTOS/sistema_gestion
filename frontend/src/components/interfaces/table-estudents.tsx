@@ -219,7 +219,7 @@ export default function TableEstudents() {
     const fetcher = (url: string) => fetch({endpoint:url, method:"GET", headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${user?.token}`,
-    }}).then((res) => res.json());
+    }}).then((res) => res);
     const id = useId();
     const { finishLoading, loading, startLoading } = useLoading();
     const fetch = useFetch();
@@ -258,7 +258,7 @@ export default function TableEstudents() {
 
     const swrUrl = useMemo(() => {
         if (!user?.token) return null; // Evita llamada antes de que esté el user
-        return `/api/estudiantes/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
+        return `/estudiantes/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
     }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm]);
 
     const {

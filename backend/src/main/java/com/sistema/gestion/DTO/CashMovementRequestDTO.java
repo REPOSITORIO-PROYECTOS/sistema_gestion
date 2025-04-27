@@ -9,7 +9,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CashMovementRequestDTO {
 	private String PaymentId;
-	private String concept;
+	private String title;
+	private String description;
 	private double amount;
 	private boolean isIncome;
 }

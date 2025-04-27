@@ -16,7 +16,7 @@ import { useState } from "react";
 
 type TipoPago = "PARCIAL" | "TOTAL" | "ACTUALIZAR";
 
-export function ModalPago({ cuota, onSubmit }: { cuota: any; onSubmit: (data: any) => void }) {
+export function ModalPago({ cuota, onSubmit, setPago }: { cuota: any; onSubmit: (data: any, tipoPago:string) => void, setPago: (data: any) => void }) {
     const [open, setOpen] = useState(false);
     const [tipoPago, setTipoPago] = useState<TipoPago>("PARCIAL");
     const [monto, setMonto] = useState("");
@@ -28,30 +28,34 @@ export function ModalPago({ cuota, onSubmit }: { cuota: any; onSubmit: (data: an
             courseId: cuota.curseId,
             studentId: cuota.studentId,
             paymentAmount: cuota.paymentAmount,
-            paymentType: "EFECTIVO",
+            paymentType: "CUOTE",
             paymentDueDate: cuota.paymentDueDate,
             lastPaymentDate: new Date().toISOString(),
         };
 
         if (tipoPago === "PARCIAL") {
-            const paidAmount = parseFloat(monto);
-            const isPaid = paidAmount >= cuota.paymentAmount;
-
+            const paidAmount = cuota.paidAmount + parseFloat(monto);
+            const isPaid = paidAmount == cuota.paymentAmount;
+            setPago(monto);
             onSubmit({
                 ...pago,
+                title: cuota.studentName,
+                description: "Pago parcial cuota",
                 paidAmount,
                 isPaid,
                 hasDebt: !isPaid,
-            });
+            }, "PARCIAL");
         }
 
         if (tipoPago === "TOTAL") {
             onSubmit({
                 ...pago,
+                title: cuota.studentName,
+                description: "Pago cuota",
                 paidAmount: cuota.paymentAmount,
                 isPaid: true,
                 hasDebt: false,
-            });
+            }, "TOTAL");
         }
 
         if (tipoPago === "ACTUALIZAR") {
@@ -59,11 +63,8 @@ export function ModalPago({ cuota, onSubmit }: { cuota: any; onSubmit: (data: an
             const nuevoMonto = (cuota.paymentAmount * porcentajeAplicado) / 100;
             onSubmit({
                 ...pago,
-                paymentAmount: nuevoMonto,
-                paidAmount: 0,
-                isPaid: false,
-                hasDebt: true,
-            });
+                paymentAmount: nuevoMonto
+            }, "ACTUALIZAR");
         }
 
         setOpen(false);

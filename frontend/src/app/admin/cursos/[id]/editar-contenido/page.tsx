@@ -41,6 +41,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useAuthStore } from "@/context/store";
 // import { useAuth } from "@/components/auth-provider"
 
 // Tipos
@@ -82,6 +83,7 @@ export default function EditCourseContentPage({
 }: {
     params: Promise<{ id: string }>;
 }) {
+    const { user } = useAuthStore();
     const { id } = use(params);
     //   const { user, isLoading } = useAuth()
     const router = useRouter();
@@ -141,13 +143,20 @@ export default function EditCourseContentPage({
     }, [id]);
 
     const fetchCourseData = async () => {
+        if (!user?.token) return;
         try {
             setIsLoading(true);
             setError(null);
-
+            
             // Obtener las secciones del curso
             const sectionsResponse = await fetch(
-                `https://sistema-gestion-1.onrender.com/api/course-sections/getSectionById/${id}`
+                `https://instituto.sistemataup.online/api/course-sections/getSectionById/${id}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${user?.token}`,
+                    },
+                }
             );
 
             if (!sectionsResponse.ok) {
@@ -273,6 +282,7 @@ export default function EditCourseContentPage({
 
     // Guardar sección (nueva o editada)
     const handleSaveSection = async () => {
+        if (!user?.token) return;
         try {
             if (sectionForm.id) {
                 // TODO: Implementar edición de sección existente
@@ -291,11 +301,12 @@ export default function EditCourseContentPage({
             } else {
                 // Crear nueva sección
                 const response = await fetch(
-                    "https://sistema-gestion-1.onrender.com/api/course-sections/createSection",
+                    "https://instituto.sistemataup.online/api/course-sections/createSection",
                     {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
+                            Authorization: `Bearer ${user?.token}`,
                         },
                         body: JSON.stringify({
                             id: `section-${Date.now()}`,

@@ -213,7 +213,7 @@ export default function TablePerson() {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${user.token}`,
             }
-        }).then((res) => res.json());
+        }).then((res) => res);
     }, [user?.token]);
     const id = useId();
     const { finishLoading, loading, startLoading } = useLoading();
@@ -253,7 +253,7 @@ export default function TablePerson() {
 
     const swrUrl = useMemo(() => {
         if (!user?.token) return null; // Evita llamada antes de que esté el user
-        return `/api/cursos/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
+        return `/cursos/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
     }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm, user?.token]);
 
     const { data: swrData, error, isLoading, mutate } = useSWR(
@@ -264,14 +264,12 @@ export default function TablePerson() {
         }
     );
 
-    useEffect(() => {
-        if (swrData) {
-            console.log(swrData);
-            
+    useEffect(()=>{
+        if(swrData){
             setData(swrData.content);
             setTotalElements(swrData.totalElements);
         }
-    }, [swrData]);
+    },[swrData])
 
     // const handleDeleteRow = async (row: Row<Item>) => {
     //   startLoading()

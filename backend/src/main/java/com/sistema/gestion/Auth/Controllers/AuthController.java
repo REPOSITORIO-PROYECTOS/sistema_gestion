@@ -167,9 +167,8 @@ public class AuthController {
             @RequestParam String userType,
             @RequestBody UserInfo userDetails,
             Authentication auth) {
-                System.out.println("------------------------------------USUARIO RECIBIDO------------------------------");
         String username = auth.getName();
-        
+        System.out.println("UserType: " + userType);
         switch (userType.toLowerCase()) {
             case "student":
                 return authService.registerStudent(userDetails, username).map(user -> {
@@ -252,7 +251,7 @@ public class AuthController {
         @ApiResponse(responseCode = "404", description = "Usuario no encontrado"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/eliminar/{userId}")
     public Mono<ResponseEntity<Void>> deleteUser(
             @RequestParam String userType,
             @PathVariable String userId) {

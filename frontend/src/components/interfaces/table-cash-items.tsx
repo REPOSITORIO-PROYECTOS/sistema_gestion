@@ -112,8 +112,9 @@ type CashItem = {
     id: string;
     titulo: string;
     descripcion: string;
-    tipo: "ingreso" | "egreso";
+    tipo: boolean;
     monto: number;
+    amount: number;
     fecha: string;
 };
 
@@ -167,11 +168,11 @@ const columns: ColumnDef<CashItem>[] = [
     },
     {
         header: "Título",
-        accessorKey: "titulo",
+        accessorKey: "title",
         cell: ({ row }) => (
             <div className="flex items-center gap-2">
                 <div>
-                    <div className="">{row.getValue("titulo")}</div>
+                    <div className="">{row.getValue("title")}</div>
                     <div className="text-sm text-muted-foreground">
                         {row.original.descripcion}
                     </div>
@@ -183,27 +184,27 @@ const columns: ColumnDef<CashItem>[] = [
     },
     {
         header: "Descripción",
-        accessorKey: "descripcion",
+        accessorKey: "description",
         size: 220,
     },
     {
         header: "Tipo",
-        accessorKey: "tipo",
+        accessorKey: "income",
         cell: ({ row }) => (
             <Badge
                 className={cn(
-                    row.getValue("tipo") === "ingreso"
+                    row.getValue("income") === true
                         ? "bg-green-600 text-primary-foreground"
                         : "bg-red-600 text-primary-foreground"
                 )}
             >
                 <span className="flex items-center gap-1">
-                    {row.getValue("tipo") === "ingreso" ? (
+                    {row.getValue("income") === true ? (
                         <ArrowUpCircle className="h-3 w-3" />
                     ) : (
                         <ArrowDownCircle className="h-3 w-3" />
                     )}
-                    {row.getValue("tipo")}
+                    {row.getValue("income")}
                 </span>
             </Badge>
         ),
@@ -212,9 +213,9 @@ const columns: ColumnDef<CashItem>[] = [
     },
     {
         header: "Monto",
-        accessorKey: "monto",
+        accessorKey: "amount",
         cell: ({ row }) => {
-            const amount = Number.parseFloat(row.getValue("monto"));
+            const amount = Number.parseFloat(row.getValue("amount"));
             const formatted = new Intl.NumberFormat("es-AR", {
                 style: "currency",
                 currency: "ARS",
@@ -224,7 +225,7 @@ const columns: ColumnDef<CashItem>[] = [
                 <div
                     className={cn(
                         "font-medium",
-                        row.original.tipo === "ingreso"
+                        row.original.tipo !== true
                             ? "text-green-600"
                             : "text-red-600"
                     )}
@@ -237,9 +238,9 @@ const columns: ColumnDef<CashItem>[] = [
     },
     {
         header: "Fecha",
-        accessorKey: "fecha",
+        accessorKey: "date",
         cell: ({ row }) => {
-            const date = new Date(row.getValue("fecha"));
+            const date = new Date(row.getValue("date"));
             return format(date, "dd/MM/yyyy");
         },
         size: 120,
@@ -259,7 +260,7 @@ export default function TableCashItems() {
     const fetcher = (url: string) => fetch({endpoint:url, method:"GET", headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${user?.token}`,
-    }}).then((res) => res.json());
+    }}).then((res) => res);
     const id = useId();
     const { finishLoading, loading, startLoading } = useLoading();
     const fetch = useFetch();
@@ -285,7 +286,7 @@ export default function TableCashItems() {
 
     const [sorting, setSorting] = useState<SortingState>([
         {
-            id: "fecha",
+            id: "date",
             desc: true,
         },
     ]);
@@ -306,7 +307,7 @@ export default function TableCashItems() {
     }, [searchTerm]);
 
     const swrUrl = useMemo(() => {
-        let url = `/api/caja/items?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
+        let url = `/caja/items?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
 
         if (dateRange?.from) {
             url += `&from=${format(dateRange.from, "yyyy-MM-dd")}`;
@@ -334,12 +335,29 @@ export default function TableCashItems() {
     });
 
     useEffect(() => {
+        console.log(swrData);
+        
         if (swrData) {
+            // setData(actual=>{
+            //     for (let item of swrData){
+            //         const dateArray = item.date.split("T")[0].split("-");
+            //         const date = `${dateArray[2]}/${dateArray[1]}/${dateArray[0]}`
+            //         actual.push({
+            //             id: item.id,
+            //             titulo: item.title ? item.title : "",
+            //             descripcion: item.description ? item.description : "",
+            //             tipo: item.income ? "ingreso" : "egreso",
+            //             monto: item.amount,
+            //             fecha: date
+            //         })
+            //     }
+            //     return actual;
+            // });
             setData(swrData);
             setTotalElements(swrData.length);
         }
     }, [swrData]);
-
+    
     const handleDeleteRows = async () => {
         try {
             startLoading();
@@ -402,29 +420,29 @@ export default function TableCashItems() {
 
     // Get unique tipo values
     const uniqueTipoValues = useMemo(() => {
-        const tipoColumn = table.getColumn("tipo");
+        const tipoColumn = table.getColumn("income");
         if (!tipoColumn) return [];
         const values = Array.from(tipoColumn.getFacetedUniqueValues().keys());
         return values.sort();
-    }, [table.getColumn("tipo")?.getFacetedUniqueValues()]);
+    }, [table.getColumn("income")?.getFacetedUniqueValues()]);
 
     // Get counts for each tipo
     const tipoCounts = useMemo(() => {
-        const tipoColumn = table.getColumn("tipo");
+        const tipoColumn = table.getColumn("income");
         if (!tipoColumn) return new Map();
         return tipoColumn.getFacetedUniqueValues();
-    }, [table.getColumn("tipo")?.getFacetedUniqueValues()]);
+    }, [table.getColumn("income")?.getFacetedUniqueValues()]);
 
     const selectedTipos = useMemo(() => {
         const filterValue = table
-            .getColumn("tipo")
+            .getColumn("income")
             ?.getFilterValue() as string[];
         return filterValue ?? [];
-    }, [table.getColumn("tipo")?.getFilterValue()]);
+    }, [table.getColumn("income")?.getFilterValue()]);
 
     const handleTipoChange = (checked: boolean, value: string) => {
         const filterValue = table
-            .getColumn("tipo")
+            .getColumn("income")
             ?.getFilterValue() as string[];
         const newFilterValue = filterValue ? [...filterValue] : [];
 
@@ -438,7 +456,7 @@ export default function TableCashItems() {
         }
 
         table
-            .getColumn("tipo")
+            .getColumn("income")
             ?.setFilterValue(
                 newFilterValue.length ? newFilterValue : undefined
             );
@@ -447,16 +465,16 @@ export default function TableCashItems() {
     // Calculate totals for footer
     const totals = useMemo(() => {
         const ingresos = data
-            .filter((item) => item.tipo === "ingreso")
+            .filter((item) => !item.tipo)
             .reduce(
-                (sum, item) => sum + Number.parseFloat(item.monto.toString()),
+                (sum, item) => sum + Number.parseFloat(item.amount.toString()),
                 0
             );
 
         const egresos = data
-            .filter((item) => item.tipo === "egreso")
+            .filter((item) => item.tipo)
             .reduce(
-                (sum, item) => sum + Number.parseFloat(item.monto.toString()),
+                (sum, item) => sum + Number.parseFloat(item.amount.toString()),
                 0
             );
 
@@ -465,12 +483,10 @@ export default function TableCashItems() {
         return { ingresos, egresos, balance };
     }, [data]);
 
-    const handlePagoParcial = async () => {
+    const handlePagoParcial = async (cuota:any) => {
         try {
-            const isPaid = pago.paidAmount >= cuota.paymentAmount;
-    
             const response = await fetch({
-                endpoint: `/api/pagos/realizar/${cuota.id}`,
+                endpoint: `/pagos/realizar/${cuota.id}`,
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -481,10 +497,7 @@ export default function TableCashItems() {
                     courseId: cuota.curseId,
                     studentId: cuota.studentId,
                     paymentAmount: cuota.paymentAmount,
-                    paidAmount: pago.paidAmount,
-                    isPaid: isPaid,
-                    hasDebt: !isPaid,
-                    paymentType: pago.paymentType,
+                    paymentType: "CUOTE",
                     paymentDueDate: cuota.paymentDueDate,
                     lastPaymentDate: new Date().toISOString(),
                 }),
@@ -499,26 +512,31 @@ export default function TableCashItems() {
     
 
     const handlePagoTotal = async (cuota: any) => {
+        const date = new Date(Date.now());
+
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
         try {
             const response = await fetch({
-                endpoint: `/api/pagos/realizar/${cuota.id}`,
-                method: "PUT",
+                endpoint: `/caja/registrar-movimiento`,
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${user?.token}`,
                 },
-                formData: JSON.stringify({
-                    id: cuota.id,
-                    courseId: cuota.curseId,
-                    studentId: cuota.studentId,
-                    paymentAmount: cuota.paymentAmount,
-                    paidAmount: cuota.paymentAmount,
-                    isPaid: true,
+                formData:JSON.stringify({
+                    PaymentId: cuota.id,
+                    title: cuota.title,
+                    description: cuota.description,
+                    concept: cuota.concept,
                     hasDebt: false,
-                    paymentType: "EFECTIVO", // o lo que corresponda
-                    paymentDueDate: cuota.paymentDueDate,
-                    lastPaymentDate: new Date().toISOString(),
-                }),
+                    isIncome: true,
+                    amount: cuota.paidAmount
+                })
             });
     
             const data = await response.json();
@@ -527,6 +545,35 @@ export default function TableCashItems() {
             console.error("Error al registrar pago total:", error);
         }
     };
+
+    const handleActualizarCosto = async (cuota: any) => {
+        try {
+            const response = await fetch({
+                endpoint: `/pagos/editar/${cuota.id}`,
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user?.token}`,
+                },
+                formData:JSON.stringify(cuota)
+            });
+    
+            const data = await response.json();
+            console.log("Pago total registrado:", data);
+        } catch (error) {
+            console.error("Error al registrar pago total:", error);
+        }
+    }
+
+    const handlePago = async(cuota:any, tipoPago:string) => {
+        if (tipoPago === "PARCIAL") {
+            await handlePagoParcial(cuota);
+        } else if (tipoPago === "TOTAL") {
+            await handlePagoTotal(cuota);
+        } else if (tipoPago === "ACTUALIZAR") {
+            await handleActualizarCosto(cuota);
+        }
+    }
     
 
     return (
@@ -542,7 +589,7 @@ export default function TableCashItems() {
                             className={cn(
                                 "peer min-w-60 ps-9",
                                 Boolean(
-                                    table.getColumn("titulo")?.getFilterValue()
+                                    table.getColumn("title")?.getFilterValue()
                                 ) && "pe-9"
                             )}
                             value={searchTerm}
@@ -559,7 +606,7 @@ export default function TableCashItems() {
                             />
                         </div>
                         {Boolean(
-                            table.getColumn("titulo")?.getFilterValue()
+                            table.getColumn("title")?.getFilterValue()
                         ) && (
                             <button
                                 className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
@@ -1170,7 +1217,7 @@ export default function TableCashItems() {
                         </div>
 
                         <div className="mt-4 flex justify-end gap-2">
-                            <ModalPago cuota={cuota} onSubmit={handlePagoTotal} />
+                            <ModalPago cuota={cuota} onSubmit={handlePago} setPago={setPago} />
                         </div>
                     </Card>
                 );
@@ -1180,7 +1227,7 @@ export default function TableCashItems() {
 )}
 
             {
-                tipoPago !== "" && <ModalPago cuota={cuota} onSubmit={handlePagoTotal} />
+                tipoPago !== "" && <ModalPago cuota={cuota} onSubmit={handlePago} setPago={setPago} />
             }
         </div>
     );

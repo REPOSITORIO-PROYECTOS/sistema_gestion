@@ -26,84 +26,6 @@ import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
-// public class AuthService {
-
-// 	private final UserRepository userRepository;
-// 	private final PasswordEncoder passwordEncoder;
-// 	private final JwtUtil jwtUtil;
-// 	private final UserService userService;
-
-// 	public Mono<User> registerUser(User user, String username) {
-// 		return userService.getFullName(username)
-// 				.flatMap(name -> {
-// 					return userRepository.findByEmail(user.getEmail())
-// 							.flatMap(existingUser -> Mono.<User>error(new RuntimeException("El usuario ya existe")))
-// 							.switchIfEmpty(Mono.defer(() -> {
-// 								user.setCreatedBy(name);
-// 								user.setCreatedAt(LocalDateTime.now());
-// 								user.setPassword(passwordEncoder.encode(user.getPassword()));
-// 								user.getRoles().add("ROLE_USER");
-// 								return userRepository.save(user);
-// 							}))
-// 							.onErrorMap(e -> new RuntimeException("Error al registrar el usuario: " + e.getMessage()));
-// 				});
-// 	}
-
-// 	public Mono<User> updateUser(User user, String username, String userId) {
-// 		return userService.getFullName(username)
-// 				.flatMap(name -> {
-// 					return userRepository.findByEmail(user.getEmail())
-// 							.switchIfEmpty(Mono.error(new RuntimeException("El email no ha sido registrado aun.")))
-// 							.flatMap(existingUser -> {
-// 								existingUser.setModifiedBy(name);
-// 								existingUser.setUpdatedAt(LocalDateTime.now());
-// 								existingUser.setName(user.getName() != null ? user.getName() : existingUser.getName());
-// 								existingUser.setSurname(user.getSurname() != null ? user.getSurname() : existingUser.getSurname());
-// 								existingUser.setPhone(user.getPhone() != null ? user.getPhone() : existingUser.getPhone());
-// 								existingUser.setEmail(user.getEmail() != null ? user.getEmail() : existingUser.getEmail());
-// 								existingUser.setDni(user.getDni() != null ? user.getDni() : existingUser.getDni());
-// 								existingUser.setRoles(user.getRoles() != null ? user.getRoles() : existingUser.getRoles());
-// 								if (user.getPassword() != null && !user.getPassword().isEmpty()
-// 										&& !user.getPassword().isBlank()) {
-// 									existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
-// 								}
-// 								return userRepository.save(existingUser);
-// 							});
-// 				})
-// 				.onErrorMap(e -> new RuntimeException("Error al registrar el usuario: " + e.getMessage()));
-// 	}
-
-// 	public Mono<UserCredentialsDTO> login(String username, String password) {
-// 		return userRepository.findByEmail(username)
-// 				.switchIfEmpty(Mono.error(new UserNotFoundException("Usuario no encontrado")))
-// 				.flatMap(user -> {
-// 					if (passwordEncoder.matches(password, user.getPassword())) {
-// 						String token = jwtUtil.generateToken(user.getEmail(),
-// 								user.getRoles().toArray(new String[0]));
-// 						return userService.getFullName(username)
-// 								.flatMap(name -> {
-// 									UserCredentialsDTO credentialsDTO = new UserCredentialsDTO();
-// 									credentialsDTO.setToken(token);
-// 									credentialsDTO.setName(name);
-// 									credentialsDTO.setUsername(username);
-// 									credentialsDTO.setRole(user.getRoles());
-// 									return Mono.just(credentialsDTO);
-// 								});
-// 					} else {
-// 						return Mono.error(new RuntimeException("Credenciales incorrectas"));
-// 					}
-// 				});
-// 	}
-
-// 	public Mono<Void> deleteUser(String userId) {
-// 		return userRepository.findById(userId)
-// 				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-// 						"No se encontró el usuario para eliminar con ID: " + userId)))
-// 				.flatMap(userRepository::delete);
-// 	}
-// }
-
-
 
  public class AuthService {
 
@@ -122,12 +44,15 @@ import reactor.core.publisher.Mono;
                     User user = new User();
                     user.setEmail(userDetails.getUser().getEmail());
                     user.setPassword(passwordEncoder.encode(userDetails.getUser().getPassword()));
-                    user.setName(name);
+                    user.setName(userDetails.getUser().getName());
                     user.setSurname(userDetails.getUser().getSurname());
                     user.setPhone(userDetails.getUser().getPhone());
-                    user.setCreatedBy(name);
+                    user.setInstitution(name.split("-")[1]);
+                    user.setRoles(userDetails.getUser().getRoles());
+                    user.setDni(userDetails.getUser().getDni());
+                    user.setCreatedBy(name.split("-")[0]);
                     user.setCreatedAt(LocalDateTime.now());
-                    user.setModifiedBy(name);
+                    user.setModifiedBy(name.split("-")[0]);
                     user.setUpdatedAt(LocalDateTime.now());
                     return userRepository.save(user);
                 })
@@ -140,12 +65,15 @@ import reactor.core.publisher.Mono;
                     Parent parent = new Parent();
                     parent.setEmail(userDetails.getParent().getEmail());
                     parent.setPassword(passwordEncoder.encode(userDetails.getParent().getPassword()));
-                    parent.setName(name);
+                    parent.setName(userDetails.getParent().getName());
                     parent.setSurname(userDetails.getParent().getSurname());
+                    parent.setDni(userDetails.getParent().getDni());
+                    parent.setInstitution(name.split("-")[1]);
+                    parent.setRoles(userDetails.getParent().getRoles());
                     parent.setPhone(userDetails.getParent().getPhone());
-                    parent.setCreatedBy(name);
+                    parent.setCreatedBy(name.split("-")[0]);
                     parent.setCreatedAt(LocalDateTime.now());
-                    parent.setModifiedBy(name);
+                    parent.setModifiedBy(name.split("-")[0]);
                     parent.setUpdatedAt(LocalDateTime.now());
                     return parentRepository.save(parent);
                 })
@@ -158,12 +86,15 @@ import reactor.core.publisher.Mono;
                     Student student = new Student();
                     student.setEmail(userDetails.getStudent().getEmail());
                     student.setPassword(passwordEncoder.encode(userDetails.getStudent().getPassword()));
-                    student.setName(name);
+                    student.setName(userDetails.getStudent().getName());
                     student.setSurname(userDetails.getStudent().getSurname());
                     student.setPhone(userDetails.getStudent().getPhone());
-                    student.setCreatedBy(name);
+                    student.setDni(userDetails.getStudent().getDni());
+                    student.setInstitution(name.split("-")[1]);
+                    student.setRoles(userDetails.getStudent().getRoles());
+                    student.setCreatedBy(name.split("-")[0]);
                     student.setCreatedAt(LocalDateTime.now());
-                    student.setModifiedBy(name);
+                    student.setModifiedBy(name.split("-")[0]);
                     student.setUpdatedAt(LocalDateTime.now());
                     return studentRepository.save(student);
                 })
@@ -176,12 +107,15 @@ import reactor.core.publisher.Mono;
                     Teacher teacher = new Teacher();
                     teacher.setEmail(userDetails.getTeacher().getEmail());
                     teacher.setPassword(passwordEncoder.encode(userDetails.getTeacher().getPassword()));
-                    teacher.setName(name);
+                    teacher.setName(userDetails.getTeacher().getName());
                     teacher.setSurname(userDetails.getTeacher().getSurname());
                     teacher.setPhone(userDetails.getTeacher().getPhone());
-                    teacher.setCreatedBy(name);
+                    teacher.setDni(userDetails.getTeacher().getDni());
+                    teacher.setInstitution(name.split("-")[1]);
+                    teacher.setRoles(userDetails.getTeacher().getRoles());
+                    teacher.setCreatedBy(name.split("-")[0]);
                     teacher.setCreatedAt(LocalDateTime.now());
-                    teacher.setModifiedBy(name);
+                    teacher.setModifiedBy(name.split("-")[0]);
                     teacher.setUpdatedAt(LocalDateTime.now());
                     return teacherRepository.save(teacher);
                 })
@@ -191,21 +125,24 @@ import reactor.core.publisher.Mono;
     // Métodos para actualizar diferentes tipos de usuarios
     public Mono<User> updateUser(UserInfo userDetails, String username, String userId) {
         return userService.getFullName(username)
-                .flatMap(name -> {
-                    User user = new User();
-                    user.setEmail(userDetails.getUser().getEmail());
-                    user.setPassword(passwordEncoder.encode(userDetails.getUser().getPassword()));
-                    user.setName(name);
-                    user.setSurname(userDetails.getUser().getSurname());
-                    user.setPhone(userDetails.getUser().getPhone());
-                    user.setCreatedBy(name);
-                    user.setCreatedAt(LocalDateTime.now());
-                    user.setModifiedBy(name);
-                    user.setUpdatedAt(LocalDateTime.now());
-                    return userRepository.save(user);
+            .flatMap(name -> userRepository.findById(userId)
+                .switchIfEmpty(Mono.error(new RuntimeException("Usuario no encontrado")))
+                .flatMap(existingUser -> {
+                    existingUser.setEmail(userDetails.getUser().getEmail());
+                    existingUser.setPassword(passwordEncoder.encode(userDetails.getUser().getPassword()));
+                    existingUser.setName(userDetails.getUser().getName());
+                    existingUser.setSurname(userDetails.getUser().getSurname());
+                    existingUser.setDni(userDetails.getUser().getDni());
+                    existingUser.setRoles(userDetails.getUser().getRoles());
+                    existingUser.setPhone(userDetails.getUser().getPhone());
+                    existingUser.setModifiedBy(name);
+                    existingUser.setUpdatedAt(LocalDateTime.now());
+                    return userRepository.save(existingUser);
                 })
-                .onErrorMap(e -> new RuntimeException("Error al registrar el usuario"));
+            )
+            .onErrorMap(e -> new RuntimeException("Error al actualizar el usuario", e));
     }
+    
 
 	// Métodos para actualizar diferentes tipos de usuarios
     public Mono<Parent> updateParent(UserInfo userDetails, String username, String parentId) {
@@ -214,8 +151,10 @@ import reactor.core.publisher.Mono;
                     Parent parent = new Parent();
                     parent.setEmail(userDetails.getParent().getEmail());
                     parent.setPassword(passwordEncoder.encode(userDetails.getParent().getPassword()));
-                    parent.setName(name);
+                    parent.setName(userDetails.getParent().getName());
                     parent.setSurname(userDetails.getParent().getSurname());
+                    parent.setDni(userDetails.getParent().getDni());
+                    parent.setRoles(userDetails.getParent().getRoles());
                     parent.setPhone(userDetails.getParent().getPhone());
                     parent.setCreatedBy(name);
                     parent.setCreatedAt(LocalDateTime.now());
@@ -232,8 +171,10 @@ import reactor.core.publisher.Mono;
                     Student student = new Student();
                     student.setEmail(userDetails.getStudent().getEmail());
                     student.setPassword(passwordEncoder.encode(userDetails.getStudent().getPassword()));
-                    student.setName(name);
+                    student.setName(userDetails.getStudent().getName());
                     student.setSurname(userDetails.getStudent().getSurname());
+                    student.setDni(userDetails.getStudent().getDni());
+                    student.setRoles(userDetails.getStudent().getRoles());
                     student.setPhone(userDetails.getStudent().getPhone());
                     student.setCreatedBy(name);
                     student.setCreatedAt(LocalDateTime.now());
@@ -250,8 +191,11 @@ import reactor.core.publisher.Mono;
                     Teacher teacher = new Teacher();
                     teacher.setEmail(userDetails.getTeacher().getEmail());
                     teacher.setPassword(passwordEncoder.encode(userDetails.getTeacher().getPassword()));
-                    teacher.setName(name);
+                    teacher.setName(userDetails.getTeacher().getName());
                     teacher.setSurname(userDetails.getTeacher().getSurname());
+                    teacher.setDni(userDetails.getTeacher().getDni());
+                    teacher.setInstitution(userDetails.getTeacher().getInstitution());
+                    teacher.setRoles(userDetails.getTeacher().getRoles());
                     teacher.setPhone(userDetails.getTeacher().getPhone());
                     teacher.setCreatedBy(name);
                     teacher.setCreatedAt(LocalDateTime.now());

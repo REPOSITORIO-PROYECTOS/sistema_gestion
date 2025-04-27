@@ -112,7 +112,7 @@ export default function FormCurso({
                         method: "GET",
                     }),
                     fetch({
-                        endpoint: "profesores/paged?page=0&size=1000",
+                        endpoint: "/profesores/paged?page=0&size=1000",
                         method: "GET",
                     }),
                 ]);

@@ -30,7 +30,7 @@ export function useFetch() {
     }: AuthFetchProps) => {
         try {
             const { data } = await axios({
-                url: `https://sistema-gestion-1.onrender.com${endpoint}`,
+                url: `https://instituto.sistemataup.online/api${endpoint}`,
                 method,
                 headers,
                 data: formData,

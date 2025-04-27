@@ -105,10 +105,10 @@ export default function Page() {
                         Noticias y anuncios
                     </TabsTrigger>
                     {/* Nueva Pestaña */}
-                    <TabsTrigger value="edit-courses" className="flex items-center">
+                    {/* <TabsTrigger value="edit-courses" className="flex items-center">
                         <Pencil className="mr-2 h-4 w-4" />
                         Editar material de estudio
-                    </TabsTrigger>
+                    </TabsTrigger> */}
                     <TabsTrigger value="evaluaciones" className="flex items-center">
                         <BookOpen className="mr-2 h-4 w-4" />
                         Evaluaciones

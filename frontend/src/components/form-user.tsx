@@ -24,34 +24,9 @@ import type { ScopedMutator } from "swr"
 import { Input } from "./ui/input"
 import { toast } from "sonner"
 import * as z from "zod"
-
-const formSchema = z.object({
-    id: z.string().optional(),
-    name: z.string().min(2, {
-        message: "El nombre debe tener al menos 2 caracteres.",
-    }),
-    surname: z.string().min(2, {
-        message: "El apellido debe tener al menos 2 caracteres.",
-    }),
-    email: z.string().email({
-        message: "Debe ser un email válido.",
-    }),
-    dni: z.string().min(7, {
-        message: "El DNI debe tener al menos 7 caracteres.",
-    }),
-    phone: z.string().min(10, {
-        message: "El teléfono debe tener al menos 10 dígitos.",
-    }),
-    password: z.string().min(6, {
-        message: "La contraseña debe tener al menos 6 caracteres.",
-    }),
-    institution: z.string().min(2, {
-        message: "La institución debe tener al menos 2 caracteres.",
-    }),
-    rol: z.string().min(2, {
-        message: "El rol debe tener al menos 2 caracteres.",
-    }),
-})
+import { useAuthStore } from "@/context/store"
+import MultipleSelector from "./ui/multiselect"
+import { ro } from "date-fns/locale"
 
 interface PersonaFormProps {
     isEditable?: boolean
@@ -64,15 +39,46 @@ interface PersonaFormProps {
         phone: string
         password?: string
         institution: string
-        rol: 'director' | 'alumno' | 'docente' | 'preceptor';
+        roles: ('ROLE_ADMIN' | 'ROLE_CASHER' | 'ROLE_ADMIN_VC' | 'ROLE_ADMIN_USERS' | 
+            'ROLE_ADMIN_COURSES' | "ROLE_PARENT" | "ROLE_TEACHER" | undefined)[];
     }
     mutate: ScopedMutator | (() => void)
     onClose?: () => void
 }
 
 export default function UserForm({ isEditable = false, datos, mutate, onClose }: PersonaFormProps) {
+    const formSchema = z.object({
+        id: z.string().optional(),
+        name: z.string().min(2, {
+            message: "El nombre debe tener al menos 2 caracteres.",
+        }),
+        surname: z.string().min(2, {
+            message: "El apellido debe tener al menos 2 caracteres.",
+        }),
+        email: z.string().email({
+            message: "Debe ser un email válido.",
+        }),
+        dni: z.string().min(7, {
+            message: "El DNI debe tener al menos 7 caracteres.",
+        }),
+        phone: z.string().min(10, {
+            message: "El teléfono debe tener al menos 10 dígitos.",
+        }),
+        password: isEditable
+            ? z
+                .string()
+                .optional()
+            : z.string().min(6, {
+                message: "La contraseña debe tener al menos 6 caracteres.",
+        }),
+        roles: z.array(z.enum(["ROLE_ADMIN", "ROLE_CASHER", "ROLE_ADMIN_VC", 
+            "ROLE_ADMIN_USERS", "ROLE_ADMIN_COURSES", "ROLE_PARENT", "ROLE_TEACHER"])).min(1, {
+            message: "Debes seleccionar al menos un rol.",
+        }),
+    })
     const [courseOptions, setCourseOptions] = useState<{ label: string; value: string }[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    const { user } = useAuthStore();
     const [open, setOpen] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
     const { finishLoading, loading, startLoading } = useLoading()
@@ -86,11 +92,19 @@ export default function UserForm({ isEditable = false, datos, mutate, onClose }:
             email: datos?.email || "",
             dni: datos?.dni || "",
             phone: datos?.phone || "",
-            password: datos?.password || "",
-            institution: datos?.institution || "",
-            rol: datos?.rol || "",
+            password: "",
+            roles: datos?.roles || [],
         },
-    })
+    });
+    const rolesOptions = [
+        { label: "Administrador", value: "ROLE_ADMIN" },
+        { label: "Cajero/a", value: "ROLE_CASHER" },
+        { label: "Gestión Aula", value: "ROLE_ADMIN_VC" },
+        { label: "Gestión Usuarios", value: "ROLE_ADMIN_USERS" },
+        { label: "Gestión Cursos", value: "ROLE_ADMIN_COURSES" },
+        { label: "Padre/Madre", value: "ROLE_PARENT" },
+        { label: "Profesor/a", value: "ROLE_TEACHER" },
+    ]
 
     // useEffect(() => {
     //     const getCourseOptions = async () => {
@@ -124,6 +138,7 @@ export default function UserForm({ isEditable = false, datos, mutate, onClose }:
     // }, [fetch]) // Added fetch to dependencies
 
     async function onSubmit(data: z.infer<typeof formSchema>) {
+        if (!user?.token) return;
         const formData = {
             id: data.id,
             name: data.name,
@@ -132,16 +147,20 @@ export default function UserForm({ isEditable = false, datos, mutate, onClose }:
             dni: data.dni,
             phone: data.phone,
             password: data.password,
-            institution: data.institution,
-            rol: data.rol,
+            roles: data.roles,
         }
         startLoading()
         try {
-            const endpoint = isEditable ? `estudiantes/actualizar/${datos?.id}` : "estudiantes/crear"
+            const endpoint = isEditable ? `/auth/editar/${datos?.id}?userType=user` : "/auth/registrar?userType=user"
             const response = await fetch({
                 endpoint,
                 method: isEditable ? "PUT" : "POST",
-                formData,
+                headers: { "Content-Type": "application/json",
+                    Authorization: `Bearer ${user?.token}`,
+                 },
+                formData: {
+                    user: formData,
+                },
             })
             if (response) {
                 console.log(response)
@@ -265,7 +284,7 @@ export default function UserForm({ isEditable = false, datos, mutate, onClose }:
                                 />
                             </div>
                             <FormField
-                                control={form.control}
+                                control={isEditable ? form.control : undefined}
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
@@ -294,24 +313,38 @@ export default function UserForm({ isEditable = false, datos, mutate, onClose }:
                             />
                             <FormField
                                 control={form.control}
-                                name="institution"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Institución</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="rol"
+                                name="roles"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Rol</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+
+                                        <MultipleSelector
+                                                    options={rolesOptions}
+                                                    //@ts-ignore
+                                                    selected={
+                                                        field.value?.map(
+                                                            (id: string) =>
+                                                                ["administrador", "cajero/a", "gestion aula", "gestion usuarios", "gestion cursos"].find(
+                                                                    (option) =>
+                                                                        option ===
+                                                                        id
+                                                                ) || {
+                                                                    value: id,
+                                                                    label: id,
+                                                                }
+                                                        ) || []
+                                                    }
+                                                    onChange={(selected) =>
+                                                        field.onChange(
+                                                            selected.map(
+                                                                (option) =>
+                                                                    option.value
+                                                            )
+                                                        )
+                                                    }
+                                                    placeholder="Seleccionar rol..."
+                                                />
+                                        {/* <Select onValueChange={field.onChange} defaultValue={field.value[0]}>
                                             <FormControl>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Seleccione un rol" />
@@ -323,7 +356,7 @@ export default function UserForm({ isEditable = false, datos, mutate, onClose }:
                                                 <SelectItem value="alumno">Alumno</SelectItem>
                                                 <SelectItem value="preceptor">Preceptor</SelectItem>
                                             </SelectContent>
-                                        </Select>
+                                        </Select> */}
                                         <FormMessage />
                                     </FormItem>
                                 )}

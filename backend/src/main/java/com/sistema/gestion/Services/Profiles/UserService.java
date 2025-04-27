@@ -70,7 +70,7 @@ public class UserService {
         return userRepository.findByEmail(email)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "No se encontró el usuario: " + email)))
-                .map(user -> user.getName() + " " + user.getSurname());
+                .map(user -> user.getName() + " " + user.getSurname() + "-" + user.getInstitution());
     }
 
     // Método para crear un usuario

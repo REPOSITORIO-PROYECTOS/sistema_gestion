@@ -107,7 +107,8 @@ type Item = {
     phone: string;
     password: string;
     institution: string;
-    rol: "director" | "alumno" | "docente" | "preceptor";
+    roles: ('ROLE_ADMIN' | 'ROLE_CASHER' | 'ROLE_ADMIN_VC' | 'ROLE_ADMIN_USERS' | 
+        'ROLE_ADMIN_COURSES' | "ROLE_PARENT" | "ROLE_TEACHER" | undefined)[];
 };
 
 // Custom filter function for multi-column searching
@@ -184,18 +185,20 @@ const columns: ColumnDef<Item>[] = [
     },
     {
         header: "Rol",
-        accessorKey: "rol",
-        cell: ({ row }) => (
-            <Badge
+        accessorKey: "roles",
+        cell: ({ row }) => {
+            const roles = row.getValue("roles");
+            const role = Array.isArray(roles) ? roles[0] : roles;
+            return <Badge
                 className={cn(
-                    row.getValue("rol") === "director"
-                        ? "bg-yellow-700 text-primary-foreground"
+                    role === "ROLE_ADMIN"
+                        ? "bg-red-700 text-primary-foreground"
                         : "bg-blue-600 text-background"
                 )}
             >
-                {row.getValue("rol")}
+                {row.getValue("roles")}
             </Badge>
-        ),
+        },
         size: 100,
         filterFn: rolFilterFn,
     },
@@ -210,16 +213,30 @@ const columns: ColumnDef<Item>[] = [
 
 export default function TableUsers() {
     const { user } = useAuthStore();
-    const fetcher = useCallback((url: string) => {
+    const fetcher = useCallback(
+        (url: string) => {
             if (!user?.token) return Promise.reject("Token no disponible");
-            return fetch({endpoint:url, 
+
+            return fetch({
+                endpoint: url,
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${user.token}`,
-                }
-            }).then((res) => {console.log("JSON RESPONSE: ",res.json()); return res.json();});
-        }, [user?.token]);
+                },
+            })
+                .then((response) => {
+                    // Suponiendo que tu función fetch ya devuelve los datos JSON procesados
+                    console.log("JSON RESPONSE: ", response);
+                    return response;
+                })
+                .catch((error) => {
+                    console.error("Error en fetcher:", error);
+                    throw error; // Propaga el error para que SWR lo capture
+                });
+        },
+        [user?.token]
+    );
     const id = useId();
     const { finishLoading, loading, startLoading } = useLoading();
     const fetch = useFetch();
@@ -258,7 +275,7 @@ export default function TableUsers() {
 
     const swrUrl = useMemo(() => {
         if (!user?.token) return null; // Evita llamada antes de que esté el user
-        return `/api/usuarios/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
+        return `/usuarios/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
     }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm, user?.token]);
 
     const { data: swrData, error, isLoading, mutate } = useSWR(
@@ -270,34 +287,31 @@ export default function TableUsers() {
     );
 
     useEffect(() => {
-            if (swrData) {
-                setData(swrData);
-                setTotalElements(swrData.length);
-            }
-        }, [swrData]);
-
-    console.log(swrUrl)
-    console.log("Estructura swrData completa:", swrData);
-    console.log("Contenido de usuarios:", swrData?.content);
-    console.log("Total elementos:", swrData?.totalElements);
-
-    useEffect(() => {
-        console.log("useEffect triggered. Raw swrData:" , swrData);
+        console.log("Datos de SWR:", swrData);
+        
         if (swrData && Array.isArray(swrData.content)) {
-            // Mapea los datos para ajustar los campos al formato esperado
-            const mappedData = swrData.content.map(
-                (user: { roles: string | any[] }) => ({
-                    ...user,
-                    // Convierte el array de roles a un valor único para el filtro
-                    rol:
-                        user.roles && user.roles.length > 0
-                            ? user.roles[0]
-                            : "sin rol",
-                })
-            );
+            // Mapea los datos para extraer el objeto user de cada elemento
+            const mappedData = swrData.content
+                .map((item:any) => {
+                    // Cada elemento tiene un objeto user anidado
+                    if (!item.user) {
+                        console.log("Elemento sin user:", item);
+                        return null;
+                    }
 
+                    return {
+                        ...item.user, // Expandir todas las propiedades del usuario
+                        // Convierte el array de roles a un valor único para el filtro
+                        rol:
+                            item.user.roles && item.user.roles.length > 0
+                                ? item.user.roles[0]
+                                : "sin rol",
+                    };
+                })
+                .filter(Boolean); // Filtrar elementos nulos
+
+            console.log("Datos mapeados para la tabla:", mappedData);
             setData(mappedData);
-            // Usa totalElements en lugar de length
             setTotalElements(swrData.totalElements);
         }
     }, [swrData]);
@@ -328,8 +342,12 @@ export default function TableUsers() {
                 try {
                     console.log("Deleting row", row.original.id);
                     await fetch({
-                        endpoint: `cursos/${row.original.id}`,
+                        endpoint: `/auth/eliminar/${row.original.id}?userType=user`,
                         method: "delete",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${user?.token}`,
+                        },
                     });
                 } catch (error: any) {
                     console.error(
@@ -376,7 +394,7 @@ export default function TableUsers() {
 
     // Get unique status values
     const uniqueStatusValues = useMemo(() => {
-        const statusColumn = table.getColumn("rol");
+        const statusColumn = table.getColumn("roles");
         if (!statusColumn) return [];
 
         try {
@@ -388,25 +406,25 @@ export default function TableUsers() {
             console.error("Error al obtener valores únicos:", error);
             return [];
         }
-    }, [table.getColumn("rol")?.getFacetedUniqueValues()]);
+    }, [table.getColumn("roles")?.getFacetedUniqueValues()]);
 
     // Get counts for each status
     const statusCounts = useMemo(() => {
-        const statusColumn = table.getColumn("rol");
+        const statusColumn = table.getColumn("roles");
         if (!statusColumn) return new Map();
         return statusColumn.getFacetedUniqueValues();
-    }, [table.getColumn("rol")?.getFacetedUniqueValues()]);
+    }, [table.getColumn("roles")?.getFacetedUniqueValues()]);
 
     const selectedStatuses = useMemo(() => {
         const filterValue = table
-            .getColumn("rol")
+            .getColumn("roles")
             ?.getFilterValue() as string[];
         return filterValue ?? [];
-    }, [table.getColumn("rol")?.getFilterValue()]);
+    }, [table.getColumn("roles")?.getFilterValue()]);
 
     const handleStatusChange = (checked: boolean, value: string) => {
         const filterValue = table
-            .getColumn("rol")
+            .getColumn("roles")
             ?.getFilterValue() as string[];
         const newFilterValue = filterValue ? [...filterValue] : [];
 
@@ -420,7 +438,7 @@ export default function TableUsers() {
         }
 
         table
-            .getColumn("rol")
+            .getColumn("roles")
             ?.setFilterValue(
                 newFilterValue.length ? newFilterValue : undefined
             );

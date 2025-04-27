@@ -8,6 +8,8 @@ import { useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { toggleCajaEstado } from "@/actions/caja-actions";
 import { useAuthStore } from "@/context/store";
+import { Button } from "./ui/button";
+import { da } from "date-fns/locale";
 
 interface CardSwitchProps {
     initialState?: boolean;
@@ -91,7 +93,40 @@ export default function CardSwitch({
         }
     };
 
+    const handleConsultarEstado = async () => {
+        try {
+            const response = await fetch(
+                `https://instituto.sistemataup.online/api/caja/estado?operacion=consultar`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${user?.token}`,
+                    },
+                    body: JSON.stringify({ operacion: `consultar` }),
+                    // Importante: agregar esta opción si la API está en otro dominio
+                    //cache: "no-store",
+                }
+            );
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error("Error al cambiar el estado de la caja");
+            }
+    
+            return { success: true, data };
+        } catch (error) {
+            console.error("Error en server action:", error);
+            return {
+                success: false,
+                error: "Error al cambiar el estado de la caja",
+            };
+        }
+    }
+
     return (
+        <>
+        {/*<Button onClick={handleConsultarEstado}>Consultar estado</Button> */}
         <div
             className={cn(
                 optimisticCajaActiva
@@ -125,6 +160,6 @@ export default function CardSwitch({
                     {(isLoading || isPending) && " (actualizando...)"}
                 </p>
             </div>
-        </div>
+        </div></>
     );
 }

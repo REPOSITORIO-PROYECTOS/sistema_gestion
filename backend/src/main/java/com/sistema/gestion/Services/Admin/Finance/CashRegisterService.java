@@ -3,8 +3,14 @@ package com.sistema.gestion.Services.Admin.Finance;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import com.sistema.gestion.Services.Profiles.UserService;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -19,6 +25,7 @@ import com.sistema.gestion.Repositories.Admin.Finance.PaymentRepository;
 import com.sistema.gestion.Utils.MonthlyBalance;
 
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -98,6 +105,14 @@ public class CashRegisterService {
 				});
 
 	}
+
+	public Flux<CashMovement> getItems(int page, int size, String keyword, LocalDateTime from, LocalDateTime to) {
+		int skip = page * size;
+	
+		return cashMovementRepo.findByTitleContainingIgnoreCaseAndDateBetween(keyword, from, to)
+				.skip(skip)
+				.take(size);
+	}	
 
 	public Mono<MonthlyBalance> getMonthlyBalance(int year, int month) {
 		LocalDate currentDate = LocalDate.now();
@@ -208,7 +223,8 @@ public class CashRegisterService {
 							.then(Mono.defer(() -> {
 								CashMovement movement = new CashMovement();
 								movement.setCashRegisterId(cashRegister.getId());
-								movement.setConcept(request.getConcept());
+								movement.setTitle(request.getTitle());
+								movement.setIncome(request.isIncome());
 								movement.setAmount(request.getAmount());
 								movement.setDate(LocalDateTime.now());
 								movement.setRegisteredBy(fullName);
