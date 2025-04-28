@@ -1,4 +1,4 @@
-import { TablaAsistencia } from "@/components/interfaces/tabla-asistencia"
+import  {TablaAsistencia}  from "@/components/interfaces/tabla-asistencia"
 
 export default async function Page({
     params,

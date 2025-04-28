@@ -46,12 +46,14 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { GestionarNoticias } from "@/components/interfaces/gestionar-noticias";
 import { EditarCursos } from "@/components/interfaces/gestionar-editar-cursos";
 import { Evaluaciones } from "@/components/interfaces/agregar-resultado-examen";
+import { useAuthStore } from "@/context/store";
 // import { useAuth } from "@/components/auth-provider"
 
 export default function Page() {
     //   const { user, isLoading } = useAuth()
-    //   const router = useRouter()
+    const router = useRouter()
     const [isClient, setIsClient] = useState(false);
+    const {user} = useAuthStore();
     const [courses, setCourses] = useState<any>([]);
     const [sections, setSections] = useState<any>({});
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);

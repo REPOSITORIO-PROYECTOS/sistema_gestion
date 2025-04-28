@@ -29,7 +29,12 @@ public class CourseSubSectionController {
 
     @GetMapping("/{id}")
     public Mono<CourseSubSection> getSubSectionById(ServerWebExchange exchange, @PathVariable String id) {
-        return courseSubSectionService.findById(exchange, id);
+        return courseSubSectionService.findById(id);
+    }
+
+    @GetMapping("/getSubSectionContentById/{id}")
+    public Mono<CourseSubSection> getSubSectionById(@PathVariable String id) {
+        return courseSubSectionService.findContentByIdSubsection(id);
     }
 
     @PostMapping

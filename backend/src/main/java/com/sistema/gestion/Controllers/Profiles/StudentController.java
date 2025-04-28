@@ -19,6 +19,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 
@@ -46,6 +49,20 @@ public class StudentController {
 				.map(ResponseEntity::ok)
 				.defaultIfEmpty(ResponseEntity.noContent().build());
 	}
+
+	@GetMapping("/getStudentsByCourseId")
+	public Mono<ResponseEntity<PagedResponse<Student>>> getStudentsByCourseId(
+			@Parameter(description = "ID del curso", required = true) @RequestParam String courseId,
+			@Parameter(description = "Número de página", example = "0") @RequestParam(defaultValue = "0") int page,
+			@Parameter(description = "Tamaño de la página", example = "10") @RequestParam(defaultValue = "10") int size) {
+		return studentService.getStudentsByCourseId(courseId, page, size)
+				.map(ResponseEntity::ok)
+				.defaultIfEmpty(ResponseEntity.noContent().build());
+	}
+	public String getMethodName(@RequestParam String param) {
+		return new String();
+	}
+	
 
 	@Operation(summary = "Obtener estudiante por ID", description = "Obtiene un estudiante por su ID")
 	@ApiResponses(value = {

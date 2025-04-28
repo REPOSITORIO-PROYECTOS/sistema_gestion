@@ -108,6 +108,7 @@ type Item = {
     status: "activo" | "inactivo" | "pendiente";
     dateOfBirth: Date; // Se agrega esta propiedad
     ingressDate: Date; // Se agrega esta propiedad
+    parentId: string;
     cursesIds: string[];
 };
 
@@ -282,7 +283,7 @@ export default function TableEstudents() {
     //   const updatedData = data.filter((item) => item.id !== row.original.id);
     //   setData(updatedData);
     //   await fetch({
-    //     endpoint: `cursos/${row.original.id}`,
+    //     endpoint: `/cursos/${row.original.id}`,
     //     method: 'delete'
     //   });
     //   await mutate();
@@ -303,7 +304,7 @@ export default function TableEstudents() {
                 try {
                     console.log("Deleting row", row.original.id);
                     await fetch({
-                        endpoint: `cursos/${row.original.id}`,
+                        endpoint: `/cursos/${row.original.id}`,
                         method: "delete",
                     });
                 } catch (error: any) {

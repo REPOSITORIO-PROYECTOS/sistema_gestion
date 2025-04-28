@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.sistema.gestion.DTO.AllContentCourseDTO;
 import com.sistema.gestion.DTO.PagedResponse;
 import com.sistema.gestion.Models.Admin.Management.Course;
 import com.sistema.gestion.Services.Admin.Management.CourseService;
@@ -84,6 +85,18 @@ public class CourseController {
 				.map(savedCourse -> ResponseEntity.status(HttpStatus.CREATED).body(savedCourse))
 				.onErrorMap(e -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
 						"Error al modificar o actualizar el curso."));
+	}
+
+	@GetMapping("/obtenerContenido/{courseId}")
+	@Operation(summary = "Obtener contenido de un curso", description = "Obtiene el contenido de un curso por su ID.")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Contenido del curso obtenido exitosamente", content = @Content(schema = @Schema(implementation = Course.class))),
+			@ApiResponse(responseCode = "404", description = "Curso no encontrado")
+	})
+	public Mono<AllContentCourseDTO> getCourseContent(
+			@Parameter(description = "ID del curso", required = true) @PathVariable String courseId) {
+		return courseService.getCourseContent(courseId)
+				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Curso no encontrado")));
 	}
 
 	@Operation(summary = "Inscribir un estudiante en un curso", description = "Permite inscribir a un estudiante en el curso especificado mediante su ID.")

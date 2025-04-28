@@ -30,7 +30,7 @@ public class CourseSectionService {
         return courseSectionRepository.findAll();
     }
 
-    public Mono<CourseSection> findById(ServerWebExchange exchange, String id) {
+    public Mono<CourseSection> findById(String id) {
         // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
         // if (template == null) {
         //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));

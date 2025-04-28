@@ -9,8 +9,10 @@ com\sistema\gestion\Models\Admin\Finance\CashRegister.class
 com\sistema\gestion\DTO\LoginRequest.class
 com\sistema\gestion\DTO\UserInfo.class
 com\sistema\gestion\Services\Admin\Management\StudentAttendanceService.class
+com\sistema\gestion\DTO\SubSectionDTO.class
 com\sistema\gestion\Repositories\Admin\Management\VirtualCampus\CourseSectionRepository.class
 com\sistema\gestion\Controllers\Admin\Finance\Billing\BillController.class
+com\sistema\gestion\DTO\AllContentCourseDTO.class
 com\sistema\gestion\Services\Profiles\StudentService.class
 com\sistema\gestion\Services\Admin\Finance\CashRegisterService.class
 com\sistema\gestion\Controllers\Admin\Finance\ProviderController.class
@@ -99,6 +101,7 @@ com\sistema\gestion\DTO\PaymentWithStudentDTO.class
 com\sistema\gestion\Services\Admin\Finance\PaymentService.class
 com\sistema\gestion\Controllers\Admin\Finance\Billing\CertificateController.class
 com\sistema\gestion\Models\Admin\Finance\Payment.class
+com\sistema\gestion\DTO\SectionDTO.class
 com\sistema\gestion\Controllers\Admin\Finance\PaymentController.class
 com\sistema\gestion\Controllers\Admin\Management\VirtualCampus\CourseSubSectionController.class
 com\sistema\gestion\Models\Admin\Management\VirtualCampus\News.class

@@ -276,7 +276,7 @@ export default function TablePerson() {
     //   const updatedData = data.filter((item) => item.id !== row.original.id);
     //   setData(updatedData);
     //   await fetch({
-    //     endpoint: `cursos/${row.original.id}`,
+    //     endpoint: `/cursos/${row.original.id}`,
     //     method: 'delete'
     //   });
     //   await mutate();

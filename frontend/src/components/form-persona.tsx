@@ -15,11 +15,12 @@ import { useEffect, useState } from "react"
 import { useFetch } from "@/hooks/useFetch"
 import { useForm } from "react-hook-form"
 import { Button } from "./ui/button"
-import { es } from "date-fns/locale"
+import { da, es } from "date-fns/locale"
 import { ScopedMutator } from "swr"
 import { Input } from "./ui/input"
 import { toast } from "sonner"
 import * as z from "zod"
+import { useAuthStore } from "@/context/store"
 
 const formSchema = z.object({
     name: z.string().min(2, {
@@ -46,6 +47,9 @@ const formSchema = z.object({
     ingressDate: z.date({
         required_error: "La fecha de ingreso es requerida.",
     }),
+    parentId: z.array(z.string()).max(1, {
+        message: "Debe seleccionar al menos un padre.",
+    }),
     cursesIds: z.array(z.string()).min(1, {
         message: "Debe seleccionar al menos un curso.",
     }),
@@ -63,6 +67,7 @@ interface PersonaFormProps {
         phone: string
         dateOfBirth: Date
         ingressDate: Date
+        parentId: string
         cursesIds: string[]
     };
     mutate: ScopedMutator | (() => void); // Acepta tanto ScopedMutator como una función sin argumentos
@@ -71,8 +76,10 @@ interface PersonaFormProps {
 
 export default function PersonaForm({ isEditable = false, datos, mutate, onClose }: PersonaFormProps) {
     const [courseOptions, setCourseOptions] = useState<{ label: string; value: string }[]>([])
+    const [parentsOptions, setParentsOptions] = useState<{ label: string; value: string }[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [open, setOpen] = useState(false)
+    const {user} = useAuthStore();
     const { finishLoading, loading, startLoading } = useLoading()
     const fetch = useFetch()
     const form = useForm<z.infer<typeof formSchema>>({
@@ -84,21 +91,24 @@ export default function PersonaForm({ isEditable = false, datos, mutate, onClose
             dni: datos?.dni || "",
             status: datos?.status || undefined,
             phone: datos?.phone || "",
-            dateOfBirth: datos?.dateOfBirth ? parse(datos.dateOfBirth.toString(), "dd-MM-yyyy", new Date()) : undefined,
-            ingressDate: datos?.ingressDate ? parse(datos.ingressDate.toString(), "dd-MM-yyyy", new Date()) : undefined,
+            dateOfBirth: datos?.dateOfBirth ? parse(datos.dateOfBirth.toString(), "dd-MM-yyyy", new Date()) : new Date(Date.now()),
+            ingressDate: datos?.ingressDate ? parse(datos.ingressDate.toString(), "dd-MM-yyyy", new Date()) : new Date(Date.now()),
+            parentId: [datos?.parentId || ""],
             cursesIds: datos?.cursesIds ?? [],
         },
     })
-
-    console.log(datos)
 
     useEffect(() => {
         const getCourseOptions = async () => {
             setIsLoading(true)
             try {
                 const response = await fetch({
-                    endpoint: 'cursos/paged',
+                    endpoint: '/cursos/paged',
                     method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user?.token}`
+                    },
                 })
                 if (response) {
                     const courses = response.content
@@ -122,10 +132,42 @@ export default function PersonaForm({ isEditable = false, datos, mutate, onClose
             }
         }
 
-        getCourseOptions()
-    }, [])
+        const getParentOptions = async () => {
+            setIsLoading(true)
+            try {
+                const response = await fetch({
+                    endpoint: '/padres/paged',
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user?.token}`
+                    },
+                })
+                if (response) {
+                    const courses = response.content
+                    if (courses) {
+                        const options = courses.map((course: any) => ({ label: course.name + " " + course.surname, value: course.id }))
+                        setParentsOptions(options)
+                    } else {
+                        toast.error("Error al cargar los padres. Inténtalo de nuevo.")
+                    }
+                }
+            } catch (error: any) {
+                const errorMessage =
+                    (typeof error === 'object' && error.response
+                        ? error.response.data?.message
+                        : error?.message) ||
+                    "Error al cargar los padres. Inténtalo de nuevo.";
+                console.error("Error en getParentsOptions: ", errorMessage)
+                toast.error(errorMessage)
+            } finally {
+                setIsLoading(false)
+            }
+        }
 
-    console.log("algo intermedio")
+        getCourseOptions()
+        getParentOptions()
+    }, [])
 
     async function onSubmit(data: z.infer<typeof formSchema>) {
         const formData = {
@@ -138,10 +180,12 @@ export default function PersonaForm({ isEditable = false, datos, mutate, onClose
             dateOfBirth: formatDate(data.dateOfBirth),
             ingressDate: formatDate(data.ingressDate),
             cursesIds: data.cursesIds,
+            parentId: data.parentId[0],
+            roles: ["ROLE_STUDENT"]
         }
         startLoading()
         try {
-            const endpoint = isEditable ? `estudiantes/actualizar/${datos?.id}` : 'estudiantes/crear'
+            const endpoint = isEditable ? `/estudiantes/actualizar/${datos?.id}` : '/estudiantes/crearConPadres'
             const response = await fetch({
                 endpoint,
                 method: isEditable ? 'PUT' : 'POST',
@@ -174,7 +218,7 @@ export default function PersonaForm({ isEditable = false, datos, mutate, onClose
             finishLoading()
         }
     }
-
+    
     return (
         <div className="flex items-center gap-3">
             <AlertDialog open={isEditable ? true : open} onOpenChange={isEditable ? onClose : setOpen}>
@@ -380,7 +424,31 @@ export default function PersonaForm({ isEditable = false, datos, mutate, onClose
                                 />
                             </div>
                             {
-                                isLoading ? <Loader2Icon className="animate-spin" size={16} strokeWidth={2} /> : <FormField
+                                isLoading ? <Loader2Icon className="animate-spin" size={16} strokeWidth={2} /> : 
+                                <>
+                                <FormField
+                                    control={form.control}
+                                    name="parentId"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Padres</FormLabel>
+                                            <FormControl>
+                                                <MultipleSelector
+                                                    options={parentsOptions}
+                                                    // @ts-ignore
+                                                    selected={(field.value || []).map(
+                                                        (id: string) =>
+                                                            parentsOptions.find((option) => option.value === id) || { value: id, label: id }
+                                                    )}
+                                                    onChange={(selected) => field.onChange(selected.map((option) => option.value))}
+                                                    placeholder="Seleccionar padre..."
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
                                     control={form.control}
                                     name="cursesIds"
                                     render={({ field }) => (
@@ -402,6 +470,7 @@ export default function PersonaForm({ isEditable = false, datos, mutate, onClose
                                         </FormItem>
                                     )}
                                 />
+                                </>
                             }
 
                         </form>

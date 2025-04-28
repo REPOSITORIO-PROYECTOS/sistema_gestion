@@ -34,7 +34,16 @@ public class CourseSubSectionService {
         return courseSubSectionRepository.findAll();
     }
 
-    public Mono<CourseSubSection> findById(ServerWebExchange exchange, String id) {
+    public Mono<CourseSubSection> findById(String id) {
+        // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
+        // if (template == null) {
+        //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
+        // }
+        // return template.findById(id, CourseSubSection.class);
+        return courseSubSectionRepository.findById(id);
+    }
+
+    public Mono<CourseSubSection> findContentByIdSubsection(String id) {
         // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
         // if (template == null) {
         //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));

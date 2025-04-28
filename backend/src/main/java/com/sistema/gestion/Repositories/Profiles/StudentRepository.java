@@ -1,6 +1,7 @@
 package com.sistema.gestion.Repositories.Profiles;
 
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.mongodb.core.aggregation.ArrayOperators.In;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
@@ -30,6 +31,10 @@ public interface StudentRepository extends ReactiveMongoRepository<Student, Stri
     // Conteo de registros por DNI o Apellido
     @Query(value = "{ '$or': [ { 'dni': ?0 }, { 'surname': ?0 } ] }", count = true)
     Mono<Long> countByDniOrSurname(String query);
+
+    Mono<Long> countByCoursesIds(String courseId);
+
+    Flux<Student> findByCoursesIds(String courseId, PageRequest pageRequest);
 
     // Busqueda de estudiantes por apellido con paginación
     @Query("{ 'surname' : ?0 }")

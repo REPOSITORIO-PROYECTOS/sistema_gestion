@@ -41,7 +41,6 @@ public class ProfileClass {
 
     private String phone;
 
-    // TODO: Idear Relacion unica con la institucion
     @NotBlank(message = "La institución no puede estar en blanco.")
     private String institution;
 

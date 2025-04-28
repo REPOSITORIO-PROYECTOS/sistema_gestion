@@ -1,8 +1,11 @@
+"use client";
 import CardSwitch from "@/components/card-switch";
 import { DailyBalanceModal } from "@/components/daily-balance-modal";
 import TableCashItems from "@/components/interfaces/table-cash-items";
+import { useState } from "react";
 
 export default function Page() {
+    const [cajaActivaGeneral, setCajaActivaGeneral] = useState(false);
     return (
         <section className="container flex flex-col gap-12 mx-auto p-16">
             <div className="flex justify-between items-center">
@@ -13,10 +16,10 @@ export default function Page() {
                     <DailyBalanceModal />
                 </div>
                 <div className="w-full max-w-[300px] flex justify-end">
-                    <CardSwitch />
+                    <CardSwitch setCajaActivaGeneral={setCajaActivaGeneral}/>
                 </div>
             </div>
-            <TableCashItems />
+            <TableCashItems cajaActivaGeneral={cajaActivaGeneral}/>
         </section>
     );
 }

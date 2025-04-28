@@ -51,22 +51,18 @@ type CourseLink = {
     url: string;
 };
 
-type Content = {
-    body: string;
-    links: CourseLink[];
-};
-
 type Subsection = {
     id: string;
     title: string;
-    content: Content;
+    body: string;
+    links: CourseLink[];
 };
 
 type Section = {
     id: string;
     title: string;
     description: string;
-    subsections: Subsection[];
+    subSections: Subsection[];
 };
 
 type Course = {
@@ -85,7 +81,7 @@ export default function EditCourseContentPage({
 }) {
     const { user } = useAuthStore();
     const { id } = use(params);
-    //   const { user, isLoading } = useAuth()
+    //const { user, isLoading } = useAuth()
     const router = useRouter();
     const [isClient, setIsClient] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -125,10 +121,8 @@ export default function EditCourseContentPage({
     const [subsectionForm, setSubsectionForm] = useState({
         id: "",
         title: "",
-        content: {
-            body: "",
-            links: [] as CourseLink[],
-        },
+        body: "",
+        links: [] as CourseLink[],
     });
 
     const [linkForm, setLinkForm] = useState({
@@ -150,7 +144,7 @@ export default function EditCourseContentPage({
             
             // Obtener las secciones del curso
             const sectionsResponse = await fetch(
-                `https://instituto.sistemataup.online/api/course-sections/getSectionById/${id}`,
+                `https://instituto.sistemataup.online/api/cursos/obtenerContenido/${id}`,
                 {
                     headers: {
                         "Content-Type": "application/json",
@@ -169,7 +163,8 @@ export default function EditCourseContentPage({
 
             if (responseText) {
                 try {
-                    sectionsData = JSON.parse(responseText);
+                    sectionsData = JSON.parse(responseText).sections;
+                    console.log("Secciones del curso:", sectionsData);
                 } catch (parseError) {
                     console.error("Error al parsear la respuesta:", parseError);
                     sectionsData = [];
@@ -188,10 +183,10 @@ export default function EditCourseContentPage({
                 setCourse((prevCourse) => ({
                     ...prevCourse,
                     sections: sectionsData.map((section: any) => ({
-                        id: section._id,
+                        id: section.id,
                         title: section.title,
                         description: section.description,
-                        subsections: section.subsections.map(
+                        subsections: section.subSections?.map(
                             (subsection: any) => ({
                                 id: subsection._id,
                                 title: subsection.title,
@@ -231,10 +226,8 @@ export default function EditCourseContentPage({
         setSubsectionForm({
             id: "",
             title: "",
-            content: {
-                body: "",
-                links: [],
-            },
+            body: "",
+            links: [],
         });
     };
 
@@ -262,10 +255,8 @@ export default function EditCourseContentPage({
         setSubsectionForm({
             id: subsection.id,
             title: subsection.title,
-            content: {
-                body: subsection.content.body,
-                links: [...subsection.content.links],
-            },
+            body: subsection.body,
+            links: [...subsection.links],
         });
         setIsSubsectionDialogOpen(true);
     };
@@ -333,7 +324,7 @@ export default function EditCourseContentPage({
                             id: newSection._id,
                             title: newSection.name,
                             description: newSection.description,
-                            subsections: [],
+                            subSections: [],
                         },
                     ],
                 });
@@ -359,17 +350,15 @@ export default function EditCourseContentPage({
                     section.id === activeSection
                         ? {
                               ...section,
-                              subsections: section.subsections.map(
+                              subsections: section.subSections?.map(
                                   (subsection) =>
                                       subsection.id === subsectionForm.id
                                           ? {
                                                 ...subsection,
                                                 title: subsectionForm.title,
                                                 content: {
-                                                    body: subsectionForm.content
-                                                        .body,
-                                                    links: subsectionForm
-                                                        .content.links,
+                                                    body: subsectionForm.body,
+                                                    links: subsectionForm.links,
                                                 },
                                             }
                                           : subsection
@@ -388,13 +377,13 @@ export default function EditCourseContentPage({
                         ? {
                               ...section,
                               subsections: [
-                                  ...section.subsections,
+                                  ...section.subSections,
                                   {
                                       id: newId,
                                       title: subsectionForm.title,
                                       content: {
-                                          body: subsectionForm.content.body,
-                                          links: subsectionForm.content.links,
+                                          body: subsectionForm.body,
+                                          links: subsectionForm.links,
                                       },
                                   },
                               ],
@@ -412,7 +401,7 @@ export default function EditCourseContentPage({
     const handleSaveLink = () => {
         if (!activeSection || !activeSubsection) return;
 
-        const updatedLinks = subsectionForm.content.links.slice();
+        const updatedLinks = subsectionForm.links.slice();
 
         if (linkForm.id) {
             // Editar existente
@@ -438,10 +427,7 @@ export default function EditCourseContentPage({
 
         setSubsectionForm({
             ...subsectionForm,
-            content: {
-                ...subsectionForm.content,
-                links: updatedLinks,
-            },
+            links: updatedLinks,
         });
 
         setIsLinkDialogOpen(false);
@@ -464,7 +450,7 @@ export default function EditCourseContentPage({
                 ...course,
                 sections: course.sections.map((section) => ({
                     ...section,
-                    subsections: section.subsections.filter(
+                    subsections: section.subSections?.filter(
                         (subsection) => subsection.id !== itemToDelete.id
                     ),
                 })),
@@ -473,12 +459,9 @@ export default function EditCourseContentPage({
             // Eliminar enlace del formulario de subsección
             setSubsectionForm({
                 ...subsectionForm,
-                content: {
-                    ...subsectionForm.content,
-                    links: subsectionForm.content.links.filter(
-                        (link) => link.id !== itemToDelete.id
-                    ),
-                },
+                links: subsectionForm.links.filter(
+                    (link) => link.id !== itemToDelete.id
+                ),
             });
         }
 
@@ -682,9 +665,11 @@ export default function EditCourseContentPage({
                                 collapsible
                                 className="w-full"
                             >
-                                {course.sections.map((section) => (
-                                    <AccordionItem
-                                        key={section.id}
+                                {course.sections.map((section, index) => {
+                                    console.log(section);
+                                    
+                                    return <AccordionItem
+                                        key={index}
                                         value={section.id}
                                     >
                                         <AccordionTrigger className="px-4 hover:bg-muted">
@@ -746,7 +731,7 @@ export default function EditCourseContentPage({
                                                 </Button>
 
                                                 <div className="pl-4 space-y-1 mt-2">
-                                                    {section.subsections.map(
+                                                    {section.subSections?.map(
                                                         (subsection) => (
                                                             <div
                                                                 key={
@@ -817,7 +802,7 @@ export default function EditCourseContentPage({
                                                         )
                                                     )}
 
-                                                    {section.subsections
+                                                    {section.subSections && section.subSections
                                                         .length === 0 && (
                                                         <div className="text-xs text-muted-foreground py-1 px-2">
                                                             No hay subsecciones
@@ -827,7 +812,7 @@ export default function EditCourseContentPage({
                                             </div>
                                         </AccordionContent>
                                     </AccordionItem>
-                                ))}
+})}
                             </Accordion>
 
                             {course.sections.length === 0 && (
@@ -854,7 +839,7 @@ export default function EditCourseContentPage({
                                     {
                                         course.sections
                                             .find((s) => s.id === activeSection)
-                                            ?.subsections.find(
+                                            ?.subSections.find(
                                                 (ss) =>
                                                     ss.id === activeSubsection
                                             )?.title
@@ -903,16 +888,13 @@ export default function EditCourseContentPage({
                                             <Textarea
                                                 id="subsection-content"
                                                 value={
-                                                    subsectionForm.content.body
+                                                    subsectionForm.body
                                                 }
                                                 onChange={(e) =>
                                                     setSubsectionForm({
                                                         ...subsectionForm,
-                                                        content: {
-                                                            ...subsectionForm.content,
                                                             body: e.target
                                                                 .value,
-                                                        },
                                                     })
                                                 }
                                                 placeholder="Contenido HTML de la subsección"
@@ -958,10 +940,10 @@ export default function EditCourseContentPage({
 
                                         <Separator />
 
-                                        {subsectionForm.content.links.length >
+                                        {subsectionForm.links.length >
                                         0 ? (
                                             <div className="space-y-2">
-                                                {subsectionForm.content.links.map(
+                                                {subsectionForm.links.map(
                                                     (link) => (
                                                         <div
                                                             key={link.id}
@@ -1155,14 +1137,11 @@ export default function EditCourseContentPage({
                             </Label>
                             <Textarea
                                 id="subsection-content-dialog"
-                                value={subsectionForm.content.body}
+                                value={subsectionForm.body}
                                 onChange={(e) =>
                                     setSubsectionForm({
                                         ...subsectionForm,
-                                        content: {
-                                            ...subsectionForm.content,
-                                            body: e.target.value,
-                                        },
+                                        body: e.target.value,
                                     })
                                 }
                                 placeholder="Contenido HTML de la subsección"

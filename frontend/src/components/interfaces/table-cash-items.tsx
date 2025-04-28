@@ -254,7 +254,7 @@ const columns: ColumnDef<CashItem>[] = [
     },
 ];
 
-export default function TableCashItems() {
+export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:boolean}) {
     const {cuotas} = useDebt();
     const { user } = useAuthStore();
     const fetcher = (url: string) => fetch({endpoint:url, method:"GET", headers: {
@@ -372,7 +372,7 @@ export default function TableCashItems() {
                 try {
                     console.log("Deleting row", row.original.id);
                     await fetch({
-                        endpoint: `caja/${row.original.id}`,
+                        endpoint: `/caja/${row.original.id}`,
                         method: "delete",
                     });
                 } catch (error: any) {
@@ -849,7 +849,9 @@ export default function TableCashItems() {
                         </AlertDialog>
                     )}
                     {/* Add item button */}
-                    <Button onClick={()=>setRegistrandoPago(true)}>Registrar pago</Button>
+                    {
+                        cajaActivaGeneral && <Button onClick={()=>setRegistrandoPago(true)}>Registrar pago</Button>
+                    }
                 </div>
             </div>
 

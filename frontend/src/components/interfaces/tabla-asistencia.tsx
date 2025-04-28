@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Calendar, Columns3 } from 'lucide-react'
 import Link from "next/link"
+import { useAuthStore } from "@/context/store"
 
 type Alumno = {
     id: string
@@ -52,6 +53,7 @@ export function TablaAsistencia(props: TablaAsistenciaProps) {
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [rowSelection, setRowSelection] = useState({});
+    const {user} = useAuthStore();
     const [alumnos, setAlumnos] = useState<Alumno[]>([]);
     const [asistencia, setAsistencia] = useState<AsistenciaItem[]>([]);
     const [fechaSeleccionada, setFechaSeleccionada] = useState<Date>(new Date());
@@ -130,6 +132,76 @@ export function TablaAsistencia(props: TablaAsistenciaProps) {
             }
         });
     };
+
+    async function obtenerEstudiantesPorCursoId(courseId: string) {
+        try {
+            const response = await fetch(`https://instituto.sistemataup.online/api/estudiantes/getStudentsByCourseId?courseId=${courseId}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${user?.token}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error("Error al obtener los estudiantes.");
+            }
+            const data = await response.json();
+            setAlumnos(data);    
+        } catch (error) {
+            console.error("Error al obtener los estudiantes:", error);
+            throw error;
+        }}
+
+    async function enviarAsistencia(
+        courseId: string,
+        asistencia: AsistenciaItem[],
+        modifiedBy: string,
+        createdBy: string
+      ) {
+        const attendanceStatus: { [key: string]: string } = {};
+      
+        // Generar el objeto "attendanceStatus" con los estudiantes presentes
+        asistencia.forEach((item) => {
+          if (item.presente) {
+            attendanceStatus[item.alumnoId] = "PRESENT";
+          }
+        });
+      
+        const attendanceData = {
+          createdAt: new Date().toISOString(),
+          modifiedBy: modifiedBy,
+          createdBy: createdBy,
+          courseId: courseId,
+          studentsIds: asistencia
+            .filter((item) => item.presente)
+            .map((item) => item.alumnoId),
+          attendanceStatus: attendanceStatus,
+          attendanceDate: new Date().toISOString(),
+        };
+      
+        try {
+          const response = await fetch("https://instituto.sistemataup.online/api/asistencias", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${user?.token}`,
+            },
+            body: JSON.stringify(attendanceData),
+          });
+      
+          if (!response.ok) {
+            throw new Error("Error al enviar la asistencia.");
+          }
+      
+          const data = await response.json();
+          console.log("Asistencia enviada con éxito", data);
+          return data;
+        } catch (error) {
+          console.error("Error al enviar la asistencia:", error);
+          throw error;
+        }
+      }
+      
 
     useEffect(() => {
         // Sample data for alumnos

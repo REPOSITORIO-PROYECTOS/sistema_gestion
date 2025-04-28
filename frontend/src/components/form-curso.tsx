@@ -108,7 +108,7 @@ export default function FormCurso({
             try {
                 const [studentsResponse, teachersResponse] = await Promise.all([
                     fetch({
-                        endpoint: "estudiantes/paged?page=0&size=1000",
+                        endpoint: "/estudiantes/paged?page=0&size=10",
                         method: "GET",
                     }),
                     fetch({

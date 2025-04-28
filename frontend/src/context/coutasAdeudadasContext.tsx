@@ -54,7 +54,7 @@ export const CuotasAdeudadasProvider: React.FC<{ children: React.ReactNode }> = 
           Authorization: `Bearer ${user.state.user.token}`,
         },
       });
-      setCuotas(response.data.content);
+      setCuotas(response.data.content.filter(((cuota:any) => cuota.paymentAmount != cuota.paidAmount)));
     } catch (err) {
       setError("Error al obtener las cuotas adeudadas");
     } finally {

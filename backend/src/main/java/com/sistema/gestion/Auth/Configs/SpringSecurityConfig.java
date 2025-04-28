@@ -18,6 +18,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import com.sistema.gestion.Auth.CustomReactiveAuthenticationManager;
 import com.sistema.gestion.Auth.Filters.JwtAuthenticationWebFilter;
@@ -32,17 +35,33 @@ public class SpringSecurityConfig {
 	}
 
 	@Bean
+	public CorsWebFilter corsWebFilter() {
+		CorsConfiguration config = new CorsConfiguration();
+		config.setAllowedOrigins(List.of("https://institutotest.netlify.app", "http://localhost:3000"));
+		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+		config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+		config.setAllowCredentials(true);
+
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", config);
+
+		return new CorsWebFilter(source);
+	}
+
+	@Bean
 	SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, JwtAuthenticationWebFilter jwtAuthenticationFilter) {
 
 		return http
-				.cors(cors -> cors.configurationSource(exchange -> {
-					CorsConfiguration config = new CorsConfiguration();
-					config.setAllowedOriginPatterns(List.of("*"));
-					config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-					config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-					config.setAllowCredentials(true);
-					return config;
-				}))
+				// .cors(cors -> cors.configurationSource(exchange -> {
+				// 	CorsConfiguration config = new CorsConfiguration();
+				// 	config.setAllowedOriginPatterns(List.of("*"));
+				// 	//config.setAllowedOrigins(List.of("https://institutotest.netlify.app", "http://localhost:3000"));
+				// 	config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+				// 	config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+				// 	config.setAllowCredentials(true);
+				// 	return config;
+				// }))
+				.addFilterAt(corsWebFilter(), SecurityWebFiltersOrder.CORS)
 				.csrf(ServerHttpSecurity.CsrfSpec::disable)
 				.authorizeExchange(exchanges -> {
 

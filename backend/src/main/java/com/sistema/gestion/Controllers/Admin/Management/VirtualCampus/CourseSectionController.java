@@ -31,7 +31,7 @@ public class CourseSectionController {
 
     @GetMapping("/getSectionById/{id}")
     public Mono<CourseSection> getSectionById(ServerWebExchange exchange, @PathVariable String id) {
-        return courseSectionService.findById(exchange, id);
+        return courseSectionService.findById(id);
     }
 
     @PostMapping("/createSection")

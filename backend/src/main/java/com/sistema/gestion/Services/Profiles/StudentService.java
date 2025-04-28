@@ -68,6 +68,19 @@ public class StudentService {
                         "Error al obtener las notas del estudiante", e));
     }
 
+	public Mono<PagedResponse<Student>> getStudentsByCourseId(String courseId, int page, int size) {
+		PageRequest pageRequest = PageRequest.of(page, size);
+		Mono<Long> totalElementsMono = studentRepository.countByCoursesIds(courseId);
+		Flux<Student> studentsFlux = studentRepository.findByCoursesIds(courseId, pageRequest);
+
+		return Mono.zip(totalElementsMono, studentsFlux.collectList())
+				.map(tuple -> new PagedResponse<>(
+						tuple.getT2(), // Lista de estudiantes encontrados
+						tuple.getT1(), // Total de registros encontrados
+						pageRequest.getPageNumber(),
+						pageRequest.getPageSize()));
+	}
+
 	public Mono<Student> createStudentWithCoursesAndParents(Student student, String username) {
 		return userService.getFullName(username)
 				.flatMap(fullName -> {

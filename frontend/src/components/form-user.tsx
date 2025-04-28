@@ -27,6 +27,7 @@ import * as z from "zod"
 import { useAuthStore } from "@/context/store"
 import MultipleSelector from "./ui/multiselect"
 import { ro } from "date-fns/locale"
+import { profile } from "console"
 
 interface PersonaFormProps {
     isEditable?: boolean
@@ -151,7 +152,9 @@ export default function UserForm({ isEditable = false, datos, mutate, onClose }:
         }
         startLoading()
         try {
-            const endpoint = isEditable ? `/auth/editar/${datos?.id}?userType=user` : "/auth/registrar?userType=user"
+            const profileType = formData.roles.includes("ROLE_PARENT") ? "parent" : "user"
+            profileType === "parent" && formData.roles
+            const endpoint = isEditable ? `/auth/editar/${datos?.id}?userType=${profileType}` : `/auth/registrar?userType=${profileType}`
             const response = await fetch({
                 endpoint,
                 method: isEditable ? "PUT" : "POST",
@@ -159,7 +162,7 @@ export default function UserForm({ isEditable = false, datos, mutate, onClose }:
                     Authorization: `Bearer ${user?.token}`,
                  },
                 formData: {
-                    user: formData,
+                    [profileType]: formData,
                 },
             })
             if (response) {

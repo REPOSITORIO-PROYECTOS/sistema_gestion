@@ -2,6 +2,7 @@ package com.sistema.gestion.Services.Admin.Management;
 
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,10 +14,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.google.api.client.util.PemReader.Section;
+import com.sistema.gestion.DTO.AllContentCourseDTO;
 import com.sistema.gestion.DTO.PagedResponse;
+import com.sistema.gestion.DTO.SectionDTO;
+import com.sistema.gestion.DTO.SubSectionDTO;
 import com.sistema.gestion.Models.Admin.Management.Course;
+import com.sistema.gestion.Models.Admin.Management.VirtualCampus.CourseSection;
+import com.sistema.gestion.Models.Admin.Management.VirtualCampus.CourseSubSection;
+import com.sistema.gestion.Models.Admin.Management.VirtualCampus.File;
 import com.sistema.gestion.Models.Profiles.Teacher;
 import com.sistema.gestion.Repositories.Admin.Management.CourseRepository;
+import com.sistema.gestion.Repositories.Admin.Management.VirtualCampus.CourseSectionRepository;
+import com.sistema.gestion.Repositories.Admin.Management.VirtualCampus.CourseSubSectionRepository;
+import com.sistema.gestion.Repositories.Admin.Management.VirtualCampus.FileRepository;
 import com.sistema.gestion.Repositories.Profiles.StudentRepository;
 import com.sistema.gestion.Repositories.Profiles.TeacherRepository;
 
@@ -32,6 +43,9 @@ public class CourseService {
 	private final StudentRepository studentRepo;
 	private final TeacherRepository teacherRepo;
 	private final UserService userService;
+	private final CourseSectionRepository sectionRepo;
+	private final CourseSubSectionRepository subSectionRepo;
+	private final FileRepository fileRepo;
 
 	// ? ==================== MÉTODOS PÚBLICOS ====================
 
@@ -123,6 +137,62 @@ public class CourseService {
 							.then(courseRepo.save(existingCourse));
 				});
 	}
+
+	public Mono<AllContentCourseDTO> getCourseContent(String courseId) {
+    // Paso 1: Obtener el curso
+    return courseRepo.findById(courseId)
+            .switchIfEmpty(monoError(HttpStatus.NOT_FOUND, "No se encontró el curso con ID: " + courseId))
+            .flatMap(course -> {
+                // Paso 2: Obtener las secciones del curso
+                return sectionRepo.findByCourseId(courseId)
+                        .collectList() // Trae todas las secciones del curso
+                        .flatMap(sections -> {
+                            // Paso 3: Para cada sección, obtener las subsecciones
+                            List<SectionDTO> sectionDTOs = new ArrayList<>();
+                            for (CourseSection section : sections) {
+                                SectionDTO sectionDTO = new SectionDTO();
+                                sectionDTO.setId(section.getId());
+                                sectionDTO.setTitle(section.getName());
+                                sectionDTO.setDescription(section.getDescription());
+
+                                // Paso 4: Obtener las subsecciones de cada sección
+                                subSectionRepo.findBySectionId(section.getId())
+                                        .collectList()
+                                        .doOnNext(subSections -> {
+                                            List<SubSectionDTO> subSectionDTOs = new ArrayList<>();
+                                            for (CourseSubSection subSection : subSections) {
+                                                SubSectionDTO subSectionDTO = new SubSectionDTO();
+                                                subSectionDTO.setId(subSection.getId());
+                                                subSectionDTO.setBody(subSection.getBody());
+
+                                                // Paso 5: Obtener los archivos de cada subsección
+                                                fileRepo.findBySubSectionId(subSection.getId())
+                                                        .collectList()
+                                                        .doOnNext(files -> {
+                                                            List<File> fileDTOs = new ArrayList<>();
+                                                            for (File file : files) {
+                                                                fileDTOs.add(file);
+                                                            }
+                                                            subSectionDTO.setFiles(fileDTOs);
+                                                        })
+                                                        .subscribe();
+                                                
+                                                subSectionDTOs.add(subSectionDTO);
+                                            }
+                                            sectionDTO.setSubSections(subSectionDTOs);
+                                        })
+                                        .subscribe();
+                                sectionDTOs.add(sectionDTO);
+                            }
+
+                            // Paso 6: Construir la respuesta final
+                            AllContentCourseDTO allContentCourseDTO = new AllContentCourseDTO();
+                            allContentCourseDTO.setSections(sectionDTOs);
+                            return Mono.just(allContentCourseDTO);
+                        });
+            });
+}
+
 
 	public Mono<Void> deleteCourse(String courseId) {
 		return courseRepo.findById(courseId)
