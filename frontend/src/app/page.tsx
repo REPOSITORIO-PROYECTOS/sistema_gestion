@@ -139,7 +139,7 @@ export default function Home() {
     const capitalizedDate =
         formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
         
-    const returnAV = () => {
+    // const returnAV = () => {
         return (
             <section className="">
                 <div className="container mx-auto py-6 px-4">
@@ -393,7 +393,6 @@ export default function Home() {
                 </footer>
             </section>
         );
-    }
 
     // switch (user?.role) {
     //     case "ROLE_STUDENT":
@@ -423,5 +422,4 @@ export default function Home() {
     //       router.push("/login");
     //       break;
     //   }
-    returnAV();
 }
