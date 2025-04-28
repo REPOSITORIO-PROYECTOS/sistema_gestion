@@ -189,6 +189,10 @@ export default function PersonaForm({ isEditable = false, datos, mutate, onClose
             const response = await fetch({
                 endpoint,
                 method: isEditable ? 'PUT' : 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user?.token}`
+                },
                 formData
             })
             if (response) {
