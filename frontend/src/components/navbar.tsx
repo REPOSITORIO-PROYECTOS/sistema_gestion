@@ -16,25 +16,33 @@ export function Navbar() {
     const [activeIndex, setActiveIndex] = useState(0);
     const [indicatorStyle, setIndicatorStyle] = useState({});
     const navRef = useRef<HTMLDivElement>(null);
-    
-    let navItems = [];
+    const navItems = [
+        { href: "/admin", label: "Home" },
+        { href: "/admin/caja", label: "Caja" },
+        { href: "/admin/cursos", label: "Cursos" },
+        { href: "/admin/usuarios", label: "Usuarios" },
+        { href: "/admin/cuotas", label: "Cuotas" },
+        { href: "/admin/aula-virtual", label: "Aula Virtual" },
+    ];
 
-    (user?.role === "ROLE_ADMIN") && navItems.push({ href: "/admin", label: "Home" });
+    // let navItems = [];
 
-    (user?.role === "ROLE_CASHER" || user?.role === "ROLE_ADMIN") &&
-    navItems.push({ href: "/admin/caja", label: "Caja" });
+    // (user?.role === "ROLE_ADMIN") && navItems.push({ href: "/admin", label: "Home" });
 
-    (user?.role === "ROLE_ADMIN_COURSES" || user?.role === "ROLE_ADMIN") &&
-    navItems.push({ href: "/admin/cursos", label: "Cursos" });
+    // (user?.role === "ROLE_CASHER" || user?.role === "ROLE_ADMIN") &&
+    // navItems.push({ href: "/admin/caja", label: "Caja" });
 
-    (user?.role === "ROLE_ADMIN_USERS" || user?.role === "ROLE_ADMIN") &&
-    navItems.push({ href: "/admin/usuarios", label: "Usuarios" });
+    // (user?.role === "ROLE_ADMIN_COURSES" || user?.role === "ROLE_ADMIN") &&
+    // navItems.push({ href: "/admin/cursos", label: "Cursos" });
 
-    (user?.role === "ROLE_CASHER" || user?.role === "ROLE_ADMIN") &&
-    navItems.push({ href: "/admin/cuotas", label: "Cuotas" });
+    // (user?.role === "ROLE_ADMIN_USERS" || user?.role === "ROLE_ADMIN") &&
+    // navItems.push({ href: "/admin/usuarios", label: "Usuarios" });
 
-    (user?.role === "ROLE_ADMIN_VC" || user?.role === "ROLE_ADMIN") &&
-    navItems.push({ href: "/admin/aula-virtual", label: "Aula Virtual" });
+    // (user?.role === "ROLE_CASHER" || user?.role === "ROLE_ADMIN") &&
+    // navItems.push({ href: "/admin/cuotas", label: "Cuotas" });
+
+    // (user?.role === "ROLE_ADMIN_VC" || user?.role === "ROLE_ADMIN") &&
+    // navItems.push({ href: "/admin/aula-virtual", label: "Aula Virtual" });
 
 
     useEffect(() => {
