@@ -39,8 +39,7 @@ import reactor.core.publisher.Mono;
     
     // Métodos para registrar diferentes tipos de usuarios
     public Mono<User> registerUser(UserInfo userDetails, String username) {
-        return //userService.getFullName(username)
-                Mono.just(username)
+        return userService.getFullName(username)
                 .flatMap(name -> {
                     User user = new User();
                     user.setEmail(userDetails.getUser().getEmail());
