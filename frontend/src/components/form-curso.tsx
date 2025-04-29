@@ -159,7 +159,7 @@ export default function FormCurso({
         };
         startLoading();
         try {
-            const endpoint = isEditable ? `/cursos/${datos?.id}` : "cursos";
+            const endpoint = isEditable ? `/cursos/${datos?.id}` : "/cursos";
             const response = await fetch({
                 endpoint,
                 method: isEditable ? "PUT" : "POST",
