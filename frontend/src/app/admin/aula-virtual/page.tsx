@@ -101,7 +101,7 @@ export default function Page() {
 
             {/* Pestañas */}
             <Tabs defaultValue="news" className="w-full">
-                <TabsList className="mb-4 grid w-full grid-cols-3"> {/* Ajustado para 3 pestañas */}
+                <TabsList className="mb-4 grid w-full grid-cols-1"> {/* Ajustado para 3 pestañas */}
                     <TabsTrigger value="news" className="flex items-center">
                         <Bell className="mr-2 h-4 w-4" />
                         Noticias y anuncios
@@ -110,11 +110,11 @@ export default function Page() {
                     {/* <TabsTrigger value="edit-courses" className="flex items-center">
                         <Pencil className="mr-2 h-4 w-4" />
                         Editar material de estudio
-                    </TabsTrigger> */}
+                    </TabsTrigger>
                     <TabsTrigger value="evaluaciones" className="flex items-center">
                         <BookOpen className="mr-2 h-4 w-4" />
                         Evaluaciones
-                    </TabsTrigger>
+                    </TabsTrigger> */}
                 </TabsList>
 
                 {/* Pestaña de Noticias (sin cambios) */}

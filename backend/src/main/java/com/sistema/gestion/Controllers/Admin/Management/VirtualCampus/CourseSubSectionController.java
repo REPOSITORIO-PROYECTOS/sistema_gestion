@@ -37,18 +37,18 @@ public class CourseSubSectionController {
         return courseSubSectionService.findContentByIdSubsection(id);
     }
 
-    @PostMapping
+    @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<CourseSubSection> createSubSection(ServerWebExchange exchange, @RequestBody CourseSubSection courseSubSection) {
         return courseSubSectionService.create(exchange, courseSubSection);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public Mono<CourseSubSection> updateSubSection(ServerWebExchange exchange, @PathVariable String id, @RequestBody CourseSubSection courseSubSection) {
         return courseSubSectionService.update(exchange,id, courseSubSection);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> deleteSubSection(ServerWebExchange exchange, @PathVariable String id) {
         return courseSubSectionService.delete(exchange, id);

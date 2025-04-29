@@ -20,8 +20,9 @@ public class DynamicMongoConfig {
     }
 
     public ReactiveMongoTemplate getTemplateForInstitution(String institutionId) {
-        institutionId = "test";
-        String uri = "mongodb+srv://juanexequielmorales:Juan%40xd%401810@test.of8ut.mongodb.net/" + institutionId + "?retryWrites=true&w=majority";
+        institutionId = "institutosanpablo";
+        String uri = "mongodb://root:*****@localhost:27017/" + institutionId + "?authSource=admin";
+        //String uri = "mongodb+srv://juanexequielmorales:Juan%40xd%401810@test.of8ut.mongodb.net/" + institutionId + "?retryWrites=true&w=majority";
         MongoClient mongoClient = MongoClients.create(uri);
         ReactiveMongoDatabaseFactory factory = new SimpleReactiveMongoDatabaseFactory(mongoClient, institutionId);
         return new ReactiveMongoTemplate(factory);

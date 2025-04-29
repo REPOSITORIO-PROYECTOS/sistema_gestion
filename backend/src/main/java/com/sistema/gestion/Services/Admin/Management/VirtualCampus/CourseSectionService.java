@@ -56,7 +56,7 @@ public class CourseSectionService {
         // //TODO revisar LA actualizaicon de datos
         // courseSection.setId(id);
         // return template.save(courseSection);
-        return courseSectionRepository.save(courseSection);
+        return courseSectionRepository.updateNameAndDescription(courseSection.getId(), courseSection.getName(), courseSection.getDescription());
     }
 
     public Mono<Void> delete(ServerWebExchange exchange, String id) {

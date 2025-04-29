@@ -393,6 +393,7 @@ export default function Home() {
                 </footer>
             </section>
         );
+    //}
 
     // switch (user?.role) {
     //     case "ROLE_STUDENT":

@@ -40,12 +40,12 @@ public class CourseSectionController {
         return courseSectionService.create(exchange, courseSection);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public Mono<CourseSection> updateSection(ServerWebExchange exchange, @PathVariable String id, @RequestBody CourseSection courseSection) {
         return courseSectionService.update(exchange, id, courseSection);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> deleteSection(ServerWebExchange exchange, @PathVariable String id) {
         return courseSectionService.delete(exchange, id);

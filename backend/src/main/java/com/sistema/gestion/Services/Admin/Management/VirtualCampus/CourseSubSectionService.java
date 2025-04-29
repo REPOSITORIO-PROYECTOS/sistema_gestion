@@ -68,7 +68,7 @@ public class CourseSubSectionService {
         // }
         // courseSubSection.setId(id);
         // return template.save(courseSubSection);
-        return courseSubSectionRepository.save(courseSubSection);
+        return courseSubSectionRepository.updateBody(courseSubSection.getId(), courseSubSection.getBody());
     }
 
     public Mono<Void> delete(ServerWebExchange exchange, String id) {

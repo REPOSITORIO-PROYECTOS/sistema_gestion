@@ -37,7 +37,7 @@ public class SpringSecurityConfig {
 	@Bean
 	public CorsWebFilter corsWebFilter() {
 		CorsConfiguration config = new CorsConfiguration();
-		config.setAllowedOrigins(List.of("https://institutotest.netlify.app", "http://localhost:3000"));
+		config.setAllowedOrigins(List.of("https://institutotest.netlify.app"));
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 		config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 		config.setAllowCredentials(true);
@@ -52,15 +52,6 @@ public class SpringSecurityConfig {
 	SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, JwtAuthenticationWebFilter jwtAuthenticationFilter) {
 
 		return http
-				// .cors(cors -> cors.configurationSource(exchange -> {
-				// 	CorsConfiguration config = new CorsConfiguration();
-				// 	config.setAllowedOriginPatterns(List.of("*"));
-				// 	//config.setAllowedOrigins(List.of("https://institutotest.netlify.app", "http://localhost:3000"));
-				// 	config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-				// 	config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-				// 	config.setAllowCredentials(true);
-				// 	return config;
-				// }))
 				.addFilterAt(corsWebFilter(), SecurityWebFiltersOrder.CORS)
 				.csrf(ServerHttpSecurity.CsrfSpec::disable)
 				.authorizeExchange(exchanges -> {
@@ -74,7 +65,8 @@ public class SpringSecurityConfig {
 					
 					// ? ENDPOINTS RESTRINGIDOS POR ROL
 					exchanges.pathMatchers(HttpMethod.POST, "/api/auth/registrar")
-							.hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
+							.permitAll();
+							//.hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
 					exchanges.pathMatchers(HttpMethod.PUT, "/api/auth/editar/**")
 							.hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
 

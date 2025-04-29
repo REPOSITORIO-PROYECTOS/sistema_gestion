@@ -42,6 +42,7 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useAuthStore } from "@/context/store";
+import { sub } from "date-fns";
 // import { useAuth } from "@/components/auth-provider"
 
 // Tipos
@@ -289,6 +290,24 @@ export default function EditCourseContentPage({
                             : section
                     ),
                 });
+                const response = await fetch(
+                    `https://instituto.sistemataup.online/api/course-sections/update/${sectionForm.id}`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${user?.token}`,
+                        },
+                        body: JSON.stringify({
+                            name: sectionForm.title,
+                            description: sectionForm.description
+                        }),
+                    }
+                );
+                if (!response.ok) {
+                    alert("Error al actualizar la sección");
+                    throw new Error("Error al actualizar la sección");
+                }
             } else {
                 // Crear nueva sección
                 const response = await fetch(
@@ -339,7 +358,7 @@ export default function EditCourseContentPage({
     };
 
     // Guardar subsección (nueva o editada)
-    const handleSaveSubsection = () => {
+    const handleSaveSubsection = async() => {
         if (!activeSection) return;
 
         if (subsectionForm.id) {
@@ -356,10 +375,8 @@ export default function EditCourseContentPage({
                                           ? {
                                                 ...subsection,
                                                 title: subsectionForm.title,
-                                                content: {
-                                                    body: subsectionForm.body,
-                                                    links: subsectionForm.links,
-                                                },
+                                                body: subsectionForm.body,
+                                                links: subsectionForm.links,
                                             }
                                           : subsection
                               ),
@@ -367,6 +384,24 @@ export default function EditCourseContentPage({
                         : section
                 ),
             });
+            const response = await fetch(
+                `https://instituto.sistemataup.online/api/course-subsections/update/${subsectionForm.id}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${user?.token}`,
+                    },
+                    body: JSON.stringify({
+                        body: subsectionForm.body,
+                        links: subsectionForm.links,
+                    }),
+                }
+            );
+            if (!response.ok) {
+                alert("Error al actualizar la sección");
+                throw new Error("Error al actualizar la sección");
+            }
         } else {
             // Crear nueva
             const newId = `subsection-${Date.now()}`;
@@ -391,8 +426,28 @@ export default function EditCourseContentPage({
                         : section
                 ),
             });
+            const response = await fetch(
+                "https://instituto.sistemataup.online/api/course-subsections/create",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${user?.token}`,
+                    },
+                    body: JSON.stringify({
+                        id: newId,
+                        title: subsectionForm.title,
+                        body: subsectionForm.body,
+                        links: subsectionForm.links,
+                        sectionId: activeSection,
+                    }),
+                }
+            );
+            if (!response.ok) {
+                alert("Error al crear la subsección");
+                throw new Error("Error al crear la subsección");
+            }
         }
-
         setIsSubsectionDialogOpen(false);
         resetSubsectionForm();
     };
