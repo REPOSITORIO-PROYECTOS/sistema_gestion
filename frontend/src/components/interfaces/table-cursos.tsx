@@ -296,7 +296,7 @@ export default function TablePerson() {
             for (const row of selectedRows) {
                 try {
                     await fetch({
-                        endpoint: `cursos/${row.original.id}`,
+                        endpoint: `/cursos/${row.original.id}`,
                         method: "delete",
                     });
                 } catch (error: any) {
