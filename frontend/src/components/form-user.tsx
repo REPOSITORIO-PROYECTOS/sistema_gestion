@@ -139,7 +139,7 @@ export default function UserForm({ isEditable = false, datos, mutate, onClose }:
     // }, [fetch]) // Added fetch to dependencies
 
     async function onSubmit(data: z.infer<typeof formSchema>) {
-        if (!user?.token) return;
+        //if (!user?.token) return;
         const formData = {
             id: data.id,
             name: data.name,

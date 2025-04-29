@@ -41,7 +41,7 @@ public class AuthController {
             @RequestParam String userType,
             @RequestBody UserInfo userDetails,
             Authentication auth) {
-        String username = auth.getName();
+        String username = "Soporte TAUP";//auth.getName();
         switch (userType.toLowerCase()) {
             case "student":
                 return authService.registerStudent(userDetails, username).map(user -> {
