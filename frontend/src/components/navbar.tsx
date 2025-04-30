@@ -69,10 +69,10 @@ export function Navbar() {
 
     return (
         <nav className="relative flex flex-col z-50 shadow-md border-b dark:border-gray-700">
-            <div className="bg-red-800">
+            <div className="bg-blue-800 mb-2">
                 <Image
-                src={"/resources/ips.jpg"}
-                className="mt-2 ml-4"
+                src={"/resources/isp.png"}
+                className="mt-2 ml-4 pb-2"
                 width={50}
                 height={100}
                 alt="Logo"

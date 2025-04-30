@@ -21,10 +21,10 @@ export default function NavbarAula() {
     return (
         <header className="relative z-50 border-b shadow-md bg-zinc-50 dark:bg-zinc-800 dark:border-gray-700">
             <div>
-                <div className="bg-red-800">
+                <div className="bg-blue-800">
                                 <Image
-                                src={"/resources/ips.jpg"}
-                                className="mt-3 ml-3"
+                                src={"/resources/isp.png"}
+                                className="mt-3 ml-3 py-2"
                                 width={50}
                                 height={100}
                                 alt="Logo"
