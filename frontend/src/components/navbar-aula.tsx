@@ -7,6 +7,7 @@ import { useAuth } from "./providers/auth-provider";
 import { usePathname } from "next/navigation";
 import { ModeToggle } from "./mode-toggle";
 import { Navbar } from "./navbar";
+import Image from "next/image";
 
 export default function NavbarAula() {
     const pathname = usePathname();
@@ -19,7 +20,18 @@ export default function NavbarAula() {
     }
     return (
         <header className="relative z-50 border-b shadow-md bg-zinc-50 dark:bg-zinc-800 dark:border-gray-700">
-            <div className="container mx-auto flex h-16 items-center px-4">
+            <div>
+                <div className="bg-red-800">
+                                <Image
+                                src={"/resources/ips.jpg"}
+                                className="mt-3 ml-3"
+                                width={50}
+                                height={100}
+                                alt="Logo"
+                                />
+                            </div>
+            </div>
+            <div className="container mx-auto flex h-12 items-center px-4">
                 <div className="font-bold text-xl">Aula Virtual</div>
                 <nav className="ml-auto flex items-center gap-4">
                     <Link

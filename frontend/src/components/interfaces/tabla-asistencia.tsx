@@ -135,7 +135,7 @@ export function TablaAsistencia(props: TablaAsistenciaProps) {
 
     async function obtenerEstudiantesPorCursoId(courseId: string) {
         try {
-            const response = await fetch(`http://localhost:3030/api/estudiantes/getStudentsByCourseId?courseId=${courseId}`, {
+            const response = await fetch(`https://instituto.sistemataup.online/api/estudiantes/getStudentsByCourseId?courseId=${courseId}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -180,7 +180,7 @@ export function TablaAsistencia(props: TablaAsistenciaProps) {
         };
       
         try {
-          const response = await fetch("http://localhost:3030/api/asistencias", {
+          const response = await fetch("https://instituto.sistemataup.online/api/asistencias", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

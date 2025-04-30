@@ -69,7 +69,7 @@ export function Navbar() {
 
     return (
         <nav className="relative flex flex-col z-50 shadow-md border-b dark:border-gray-700">
-            <div>
+            <div className="bg-red-800">
                 <Image
                 src={"/resources/ips.jpg"}
                 className="mt-2 ml-4"

@@ -49,7 +49,7 @@ export const CuotasAdeudadasProvider: React.FC<{ children: React.ReactNode }> = 
     const userString = localStorage.getItem("auth-storage");
     const user = userString ? JSON.parse(userString) : null;
     try {
-      const response = await axios.get("http://localhost:3030/api/pagos/con-deuda?hasDebt=true&page=0&size=1000", {
+      const response = await axios.get("https://instituto.sistemataup.online/api/pagos/con-deuda?hasDebt=true&page=0&size=1000", {
         headers: {
           Authorization: `Bearer ${user.state.user.token}`,
         },

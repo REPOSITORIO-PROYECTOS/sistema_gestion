@@ -159,7 +159,7 @@ export default function EditCourseContentPage({
             
             // Obtener las secciones del curso
             const sectionsResponse = await fetch(
-                `http://localhost:3030/api/cursos/obtenerContenido/${id}`,
+                `https://instituto.sistemataup.online/api/cursos/obtenerContenido/${id}`,
                 {
                     headers: {
                         "Content-Type": "application/json",
@@ -306,7 +306,7 @@ export default function EditCourseContentPage({
                     ),
                 });
                 const response = await fetch(
-                    `http://localhost:3030/api/course-sections/update/${sectionForm.id}`,
+                    `https://instituto.sistemataup.online/api/course-sections/update/${sectionForm.id}`,
                     {
                         method: "PUT",
                         headers: {
@@ -326,7 +326,7 @@ export default function EditCourseContentPage({
             } else {
                 // Crear nueva sección
                 const response = await fetch(
-                    "http://localhost:3030/api/course-sections/createSection",
+                    "https://instituto.sistemataup.online/api/course-sections/createSection",
                     {
                         method: "POST",
                         headers: {
@@ -400,7 +400,7 @@ export default function EditCourseContentPage({
                 ),
             });
             const response = await fetch(
-                `http://localhost:3030/api/course-subsections/update/${subsectionForm.id}`,
+                `https://instituto.sistemataup.online/api/course-subsections/update/${subsectionForm.id}`,
                 {
                     method: "PUT",
                     headers: {
@@ -443,7 +443,7 @@ export default function EditCourseContentPage({
                 ),
             });
             const response = await fetch(
-                "http://localhost:3030/api/course-subsections/create",
+                "https://instituto.sistemataup.online/api/course-subsections/create",
                 {
                     method: "POST",
                     headers: {
@@ -496,7 +496,7 @@ export default function EditCourseContentPage({
             });
 
             const response = fetch(
-                "http://localhost:3030/api/files/subir",
+                "https://instituto.sistemataup.online/api/files/subir",
                 {
                     method: "POST",
                     headers: {
