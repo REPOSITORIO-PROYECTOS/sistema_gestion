@@ -14,10 +14,12 @@ public class CourseSubSection {
     @Id
     private String id;
 
+    private String title;
+
     @NotNull(message = "El campo 'body' no puede estar vacío")
     private String body;
 
-    private String SectionId;
+    private String sectionId;
 
     private ArrayList<String> filesIds;
 

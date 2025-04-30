@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.util.PemReader.Section;
 import com.sistema.gestion.DTO.AllContentCourseDTO;
 import com.sistema.gestion.DTO.PagedResponse;
@@ -46,6 +48,7 @@ public class CourseService {
 	private final CourseSectionRepository sectionRepo;
 	private final CourseSubSectionRepository subSectionRepo;
 	private final FileRepository fileRepo;
+    private final ObjectMapper objectMapper; 
 
 	// ? ==================== MÉTODOS PÚBLICOS ====================
 
@@ -139,59 +142,117 @@ public class CourseService {
 	}
 
 	public Mono<AllContentCourseDTO> getCourseContent(String courseId) {
-    // Paso 1: Obtener el curso
-    return courseRepo.findById(courseId)
-            .switchIfEmpty(monoError(HttpStatus.NOT_FOUND, "No se encontró el curso con ID: " + courseId))
-            .flatMap(course -> {
-                // Paso 2: Obtener las secciones del curso
-                return sectionRepo.findByCourseId(courseId)
-                        .collectList() // Trae todas las secciones del curso
-                        .flatMap(sections -> {
-                            // Paso 3: Para cada sección, obtener las subsecciones
-                            List<SectionDTO> sectionDTOs = new ArrayList<>();
-                            for (CourseSection section : sections) {
-                                SectionDTO sectionDTO = new SectionDTO();
-                                sectionDTO.setId(section.getId());
-                                sectionDTO.setTitle(section.getName());
-                                sectionDTO.setDescription(section.getDescription());
 
-                                // Paso 4: Obtener las subsecciones de cada sección
-                                subSectionRepo.findBySectionId(section.getId())
-                                        .collectList()
-                                        .doOnNext(subSections -> {
-                                            List<SubSectionDTO> subSectionDTOs = new ArrayList<>();
-                                            for (CourseSubSection subSection : subSections) {
+        System.out.println("Iniciando getCourseContent para courseId: " + courseId); // Log inicial
+
+        return courseRepo.findById(courseId)
+                .doOnError(e -> {
+                    System.err.println("Error al buscar curso con ID: " + courseId); // Log después de findById
+                    e.printStackTrace(); // Imprime la traza del error
+                })
+                .switchIfEmpty(monoError(HttpStatus.NOT_FOUND, "No se encontró el curso con ID: " + courseId))
+                .flatMap(course -> {
+                    System.out.println("Curso encontrado: " + course.getId());
+                    return sectionRepo.findByCourseId(courseId) // Flux<CourseSection>
+                            .doOnError(e -> {
+                                System.err.println("Error al buscar secciones para curso ID: " + courseId); // Log después de findByCourseId
+                                e.printStackTrace();
+                            })
+                            .flatMap(section -> {
+                                // System.out.println("Procesando sección ID: " + section.getId()); // Puede ser muy verboso
+                                Mono<List<SubSectionDTO>> subSectionDTOsMono = subSectionRepo.findBySectionId(section.getId()) // Flux<CourseSubSection>
+                                        .doOnError(e -> {
+                                            System.err.println("Error al buscar subsecciones para sección ID: " + section.getId()); // Log después de findBySectionId
+                                            e.printStackTrace();
+                                        })
+                                        .flatMap(subSection -> {
+                                            // System.out.println("Procesando subsección ID: " + subSection.getId()); // Puede ser muy verboso
+                                            Mono<List<File>> filesMono = fileRepo.findBySubSectionId(subSection.getId()) // Flux<File>
+                                                    .doOnError(e -> {
+                                                        System.err.println("Error al buscar archivos para subsección ID: " + subSection.getId()); // Log después de findBySubSectionId
+                                                        e.printStackTrace();
+                                                    })
+                                                    .collectList()
+                                                    .doOnSuccess(files -> {
+                                                        if(files.isEmpty()) {
+                                                            // System.out.println("No se encontraron archivos para subsección ID: " + subSection.getId());
+                                                        }
+                                                    }); // Log si no hay archivos
+
+                                            // Crear el SubSectionDTO cuando los archivos estén listos
+                                            return filesMono.map(files -> {
                                                 SubSectionDTO subSectionDTO = new SubSectionDTO();
                                                 subSectionDTO.setId(subSection.getId());
+                                                subSectionDTO.setTitle(subSection.getTitle());
                                                 subSectionDTO.setBody(subSection.getBody());
+                                                subSectionDTO.setFiles(files);
+                                                // System.out.println("SubSectionDTO creado para ID: " + subSection.getId());
+                                                return subSectionDTO;
+                                            })
+                                            .doOnError(e -> {
+                                                System.err.println("Error mapeando archivos a SubSectionDTO para subsección ID: " + subSection.getId()); // Log en mapeo
+                                                e.printStackTrace();
+                                             });
+                                        }) // Flux<SubSectionDTO>
+                                        .collectList() // Mono<List<SubSectionDTO>>
+                                        .doOnSuccess(subs -> {
+                                            // System.out.println("Subsecciones recolectadas (" + subs.size() + ") para sección ID: " + section.getId());
+                                        }); // Log éxito collectList subsecciones
 
-                                                // Paso 5: Obtener los archivos de cada subsección
-                                                fileRepo.findBySubSectionId(subSection.getId())
-                                                        .collectList()
-                                                        .doOnNext(files -> {
-                                                            List<File> fileDTOs = new ArrayList<>();
-                                                            for (File file : files) {
-                                                                fileDTOs.add(file);
-                                                            }
-                                                            subSectionDTO.setFiles(fileDTOs);
-                                                        })
-                                                        .subscribe();
-                                                
-                                                subSectionDTOs.add(subSectionDTO);
-                                            }
-                                            sectionDTO.setSubSections(subSectionDTOs);
-                                        })
-                                        .subscribe();
-                                sectionDTOs.add(sectionDTO);
-                            }
 
-                            // Paso 6: Construir la respuesta final
-                            AllContentCourseDTO allContentCourseDTO = new AllContentCourseDTO();
-                            allContentCourseDTO.setSections(sectionDTOs);
-                            return Mono.just(allContentCourseDTO);
-                        });
-            });
-}
+                                // Crear el SectionDTO cuando las subsecciones estén listas
+                                return subSectionDTOsMono.map(subSectionDTOs -> {
+                                    SectionDTO sectionDTO = new SectionDTO();
+                                    sectionDTO.setId(section.getId());
+                                    sectionDTO.setTitle(section.getName());
+                                    sectionDTO.setDescription(section.getDescription());
+                                    sectionDTO.setSubSections(subSectionDTOs);
+                                    // System.out.println("SectionDTO creado para ID: " + section.getId());
+                                    return sectionDTO;
+                                })
+                                .doOnError(e -> {
+                                     System.err.println("Error mapeando subsecciones a SectionDTO para sección ID: " + section.getId()); // Log en mapeo
+                                     e.printStackTrace();
+                                 }); // Mono<SectionDTO>
+                            }) // Flux<SectionDTO>
+                            .collectList() // Mono<List<SectionDTO>>
+                            .doOnSuccess(secs -> System.out.println("Secciones recolectadas (" + secs.size() + ") para curso ID: " + courseId)) // Log éxito collectList secciones
+                            .flatMap(sectionDTOs -> { // Usar flatMap para manejar posible error en construcción DTO
+                                try {
+                                    // --- Inicio: Verificación Opcional de Serialización ---
+                                    AllContentCourseDTO tempDtoForCheck = new AllContentCourseDTO();
+                                    tempDtoForCheck.setSections(sectionDTOs);
+                                    try {
+                                        String json = objectMapper.writeValueAsString(tempDtoForCheck);
+                                        // Imprime solo una parte para no llenar la consola si es muy grande
+                                        System.out.println("DTO construido y parece serializable para curso ID " + courseId + ": " + json.substring(0, Math.min(json.length(), 300)) + "...");
+                                    } catch (JsonProcessingException jsonEx) {
+                                        System.err.println("¡Error de SERIALIZACIÓN detectado para curso ID " + courseId + "!");
+                                        jsonEx.printStackTrace();
+                                        // Decide si quieres propagar este error específico
+                                        // return Mono.error(jsonEx);
+                                    }
+                                    // --- Fin: Verificación Opcional de Serialización ---
+
+                                    // Construcción final
+                                    AllContentCourseDTO allContentCourseDTO = new AllContentCourseDTO();
+                                    allContentCourseDTO.setSections(sectionDTOs);
+                                    System.out.println("AllContentCourseDTO creado exitosamente para curso ID: " + courseId);
+                                    return Mono.just(allContentCourseDTO); // Devolver el DTO final
+
+                                } catch (Exception ex) {
+                                    System.err.println("Error CRÍTICO al construir/verificar AllContentCourseDTO para curso ID: " + courseId);
+                                    ex.printStackTrace();
+                                    return Mono.error(ex); // Propagar el error si la construcción o verificación falla
+                                }
+                            })
+                            .doOnError(e -> {
+                                System.err.println("Error finalizando la construcción de AllContentCourseDTO para curso ID: " + courseId); // Log antes del final
+                                e.printStackTrace(); // No necesitas imprimir aquí si ya lo hiciste en los .doOnError anteriores, pero no hace daño
+                            });
+                })
+                .doFinally(signalType -> System.out.println("Finalizado getCourseContent para courseId: " + courseId + " con señal: " + signalType)); // Log al finalizar (éxito o error)
+    }
 
 
 	public Mono<Void> deleteCourse(String courseId) {

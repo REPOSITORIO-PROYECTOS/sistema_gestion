@@ -51,6 +51,7 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\M
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Finance\Payment.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Finance\Provider.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Management\Course.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Management\GoogleDriveCredentials.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Management\Grade.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Management\StudentAttendance.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Models\Admin\Management\VirtualCampus\CourseSection.java
@@ -70,6 +71,7 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\R
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Admin\Finance\PaymentRepository.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Admin\Finance\ProviderRepository.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Admin\Management\CourseRepository.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Admin\Management\GoogleDriveCredentialsRepository.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Admin\Management\GradeRepository.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Admin\Management\StudentAttendanceRepository.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Repositories\Admin\Management\VirtualCampus\CourseSectionRepository.java
@@ -92,6 +94,7 @@ D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\S
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Finance\ProviderService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Management\Academics\GradeService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Management\CourseService.java
+D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Management\GoogleDriveCredentialsService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Management\StudentAttendanceService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Management\VirtualCampus\CourseSectionService.java
 D:\Mathias\Proyectos\sistema_gestion\backend\src\main\java\com\sistema\gestion\Services\Admin\Management\VirtualCampus\CourseSubSectionService.java

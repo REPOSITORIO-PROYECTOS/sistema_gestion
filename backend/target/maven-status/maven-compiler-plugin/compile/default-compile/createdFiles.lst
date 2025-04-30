@@ -14,6 +14,7 @@ com\sistema\gestion\Repositories\Admin\Management\VirtualCampus\CourseSectionRep
 com\sistema\gestion\Controllers\Admin\Finance\Billing\BillController.class
 com\sistema\gestion\DTO\AllContentCourseDTO.class
 com\sistema\gestion\Services\Profiles\StudentService.class
+com\sistema\gestion\Repositories\Admin\Management\GoogleDriveCredentialsRepository.class
 com\sistema\gestion\Services\Admin\Finance\CashRegisterService.class
 com\sistema\gestion\Controllers\Admin\Finance\ProviderController.class
 com\sistema\gestion\Services\Admin\Management\VirtualCampus\NewsService.class
@@ -52,7 +53,9 @@ com\sistema\gestion\Services\Admin\Management\Academics\GradeService.class
 com\sistema\gestion\Services\Admin\Management\VirtualCampus\CourseSectionService.class
 com\sistema\gestion\Controllers\Admin\Finance\InvoiceController.class
 com\sistema\gestion\Controllers\Profiles\UserController.class
+com\sistema\gestion\Models\Admin\Management\GoogleDriveCredentials.class
 com\sistema\gestion\DTO\InvoiceWithProviderDTO.class
+com\sistema\gestion\Services\Admin\Management\GoogleDriveCredentialsService.class
 com\sistema\gestion\Utils\MonthlyBalance.class
 com\sistema\gestion\DTO\PagedResponse.class
 com\sistema\gestion\Repositories\Admin\Finance\CashMovementRepository.class

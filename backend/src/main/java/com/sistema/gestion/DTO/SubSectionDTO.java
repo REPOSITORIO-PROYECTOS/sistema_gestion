@@ -18,6 +18,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class SubSectionDTO {
     private String id;
+    private String title;
     private String body;
     private List<File> files;
 }

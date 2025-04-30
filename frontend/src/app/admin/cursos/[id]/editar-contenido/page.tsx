@@ -49,21 +49,21 @@ import { sub } from "date-fns";
 type CourseLink = {
     id: string;
     title: string;
-    url: string;
+    file: File | null;
 };
 
 type Subsection = {
     id: string;
     title: string;
     body: string;
-    links: CourseLink[];
+    filesIds: CourseLink[];
 };
 
 type Section = {
     id: string;
     title: string;
     description: string;
-    subSections: Subsection[];
+    subsections: Subsection[];
 };
 
 type Course = {
@@ -95,7 +95,21 @@ export default function EditCourseContentPage({
         description: "",
         status: "ACTIVE",
         price: 0,
-        sections: [],
+        sections: [
+            {
+                id: "",
+                title: "",
+                description: "",
+                subsections: [
+                    {
+                        id: "",
+                        title: "",
+                        body: "",
+                        filesIds: [],
+                    },
+                ],
+            },
+        ],
     });
 
     // Estados para diálogos y formularios
@@ -123,13 +137,13 @@ export default function EditCourseContentPage({
         id: "",
         title: "",
         body: "",
-        links: [] as CourseLink[],
+        filesIds: [] as CourseLink[],
     });
 
-    const [linkForm, setLinkForm] = useState({
+    const [fileForm, setLinkForm] = useState({
         id: "",
         title: "",
-        url: "",
+        file: null as File | null,
     });
 
     useEffect(() => {
@@ -145,11 +159,11 @@ export default function EditCourseContentPage({
             
             // Obtener las secciones del curso
             const sectionsResponse = await fetch(
-                `https://instituto.sistemataup.online/api/cursos/obtenerContenido/${id}`,
+                `http://localhost:3030/api/cursos/obtenerContenido/${id}`,
                 {
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${user?.token}`,
+                        "Authorization": `Bearer ${user?.token}`,
                     },
                 }
             );
@@ -161,11 +175,12 @@ export default function EditCourseContentPage({
             // Verificar si la respuesta tiene contenido
             const responseText = await sectionsResponse.text();
             let sectionsData = [];
-
+            
             if (responseText) {
                 try {
                     sectionsData = JSON.parse(responseText).sections;
-                    console.log("Secciones del curso:", sectionsData);
+                    console.log(sectionsData);
+                    
                 } catch (parseError) {
                     console.error("Error al parsear la respuesta:", parseError);
                     sectionsData = [];
@@ -189,12 +204,10 @@ export default function EditCourseContentPage({
                         description: section.description,
                         subsections: section.subSections?.map(
                             (subsection: any) => ({
-                                id: subsection._id,
+                                id: subsection.id,
                                 title: subsection.title,
-                                content: {
-                                    body: subsection.content || "",
-                                    links: subsection.links || [],
-                                },
+                                body: subsection.body || "",
+                                filesIds: subsection.filesIds || []
                             })
                         ),
                     })),
@@ -228,7 +241,7 @@ export default function EditCourseContentPage({
             id: "",
             title: "",
             body: "",
-            links: [],
+            filesIds: [],
         });
     };
 
@@ -237,7 +250,7 @@ export default function EditCourseContentPage({
         setLinkForm({
             id: "",
             title: "",
-            url: "",
+            file: null,
         });
     };
 
@@ -253,11 +266,13 @@ export default function EditCourseContentPage({
 
     // Abrir formulario para editar subsección
     const handleEditSubsection = (subsection: Subsection) => {
+        console.log(subsection);
+        
         setSubsectionForm({
             id: subsection.id,
             title: subsection.title,
             body: subsection.body,
-            links: [...subsection.links],
+            filesIds: [...subsection.filesIds],
         });
         setIsSubsectionDialogOpen(true);
     };
@@ -267,7 +282,7 @@ export default function EditCourseContentPage({
         setLinkForm({
             id: link.id,
             title: link.title,
-            url: link.url,
+            file: null,
         });
         setIsLinkDialogOpen(true);
     };
@@ -291,7 +306,7 @@ export default function EditCourseContentPage({
                     ),
                 });
                 const response = await fetch(
-                    `https://instituto.sistemataup.online/api/course-sections/update/${sectionForm.id}`,
+                    `http://localhost:3030/api/course-sections/update/${sectionForm.id}`,
                     {
                         method: "PUT",
                         headers: {
@@ -311,7 +326,7 @@ export default function EditCourseContentPage({
             } else {
                 // Crear nueva sección
                 const response = await fetch(
-                    "https://instituto.sistemataup.online/api/course-sections/createSection",
+                    "http://localhost:3030/api/course-sections/createSection",
                     {
                         method: "POST",
                         headers: {
@@ -343,7 +358,7 @@ export default function EditCourseContentPage({
                             id: newSection._id,
                             title: newSection.name,
                             description: newSection.description,
-                            subSections: [],
+                            subsections: [],
                         },
                     ],
                 });
@@ -369,14 +384,14 @@ export default function EditCourseContentPage({
                     section.id === activeSection
                         ? {
                               ...section,
-                              subsections: section.subSections?.map(
+                              subsections: section.subsections?.map(
                                   (subsection) =>
                                       subsection.id === subsectionForm.id
                                           ? {
                                                 ...subsection,
                                                 title: subsectionForm.title,
                                                 body: subsectionForm.body,
-                                                links: subsectionForm.links,
+                                                filesIds: subsectionForm.filesIds,
                                             }
                                           : subsection
                               ),
@@ -385,16 +400,17 @@ export default function EditCourseContentPage({
                 ),
             });
             const response = await fetch(
-                `https://instituto.sistemataup.online/api/course-subsections/update/${subsectionForm.id}`,
+                `http://localhost:3030/api/course-subsections/update/${subsectionForm.id}`,
                 {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${user?.token}`,
                     },
-                    body: JSON.stringify({
+                    body: JSON.stringify({  
+                        title: subsectionForm.title,
                         body: subsectionForm.body,
-                        links: subsectionForm.links,
+                        filesIds: subsectionForm.filesIds,
                     }),
                 }
             );
@@ -405,6 +421,8 @@ export default function EditCourseContentPage({
         } else {
             // Crear nueva
             const newId = `subsection-${Date.now()}`;
+            console.log("TITUTLO: " + subsectionForm.title);
+            
             setCourse({
                 ...course,
                 sections: course.sections.map((section) =>
@@ -412,14 +430,12 @@ export default function EditCourseContentPage({
                         ? {
                               ...section,
                               subsections: [
-                                  ...section.subSections,
+                                ...section.subsections,
                                   {
                                       id: newId,
                                       title: subsectionForm.title,
-                                      content: {
-                                          body: subsectionForm.body,
-                                          links: subsectionForm.links,
-                                      },
+                                      body: subsectionForm.body,
+                                      filesIds: subsectionForm.filesIds,
                                   },
                               ],
                           }
@@ -427,7 +443,7 @@ export default function EditCourseContentPage({
                 ),
             });
             const response = await fetch(
-                "https://instituto.sistemataup.online/api/course-subsections/create",
+                "http://localhost:3030/api/course-subsections/create",
                 {
                     method: "POST",
                     headers: {
@@ -438,7 +454,7 @@ export default function EditCourseContentPage({
                         id: newId,
                         title: subsectionForm.title,
                         body: subsectionForm.body,
-                        links: subsectionForm.links,
+                        filesIds: subsectionForm.filesIds,
                         sectionId: activeSection,
                     }),
                 }
@@ -456,18 +472,18 @@ export default function EditCourseContentPage({
     const handleSaveLink = () => {
         if (!activeSection || !activeSubsection) return;
 
-        const updatedLinks = subsectionForm.links.slice();
+        const updatedLinks = subsectionForm.filesIds.slice();
 
-        if (linkForm.id) {
+        if (fileForm.id) {
             // Editar existente
             const linkIndex = updatedLinks.findIndex(
-                (link) => link.id === linkForm.id
+                (link) => link.id === fileForm.id
             );
             if (linkIndex !== -1) {
                 updatedLinks[linkIndex] = {
-                    id: linkForm.id,
-                    title: linkForm.title,
-                    url: linkForm.url,
+                    id: fileForm.id,
+                    title: fileForm.title,
+                    file: fileForm.file,
                 };
             }
         } else {
@@ -475,14 +491,29 @@ export default function EditCourseContentPage({
             const newId = `link-${Date.now()}`;
             updatedLinks.push({
                 id: newId,
-                title: linkForm.title,
-                url: linkForm.url,
+                title: fileForm.title,
+                file: fileForm.file,
             });
+
+            const response = fetch(
+                "http://localhost:3030/api/files/subir",
+                {
+                    method: "POST",
+                    headers: {
+                        //"Content-Type": "application/json",
+                        Authorization: `Bearer ${user?.token}`,
+                    },
+                    body: JSON.stringify({
+                        //title: fileForm.title,
+                        file: fileForm.file,
+                    }),
+                }
+            );
         }
 
         setSubsectionForm({
             ...subsectionForm,
-            links: updatedLinks,
+            filesIds: updatedLinks,
         });
 
         setIsLinkDialogOpen(false);
@@ -505,7 +536,7 @@ export default function EditCourseContentPage({
                 ...course,
                 sections: course.sections.map((section) => ({
                     ...section,
-                    subsections: section.subSections?.filter(
+                    subsections: section.subsections?.filter(
                         (subsection) => subsection.id !== itemToDelete.id
                     ),
                 })),
@@ -514,7 +545,7 @@ export default function EditCourseContentPage({
             // Eliminar enlace del formulario de subsección
             setSubsectionForm({
                 ...subsectionForm,
-                links: subsectionForm.links.filter(
+                filesIds: subsectionForm.filesIds.filter(
                     (link) => link.id !== itemToDelete.id
                 ),
             });
@@ -786,7 +817,7 @@ export default function EditCourseContentPage({
                                                 </Button>
 
                                                 <div className="pl-4 space-y-1 mt-2">
-                                                    {section.subSections?.map(
+                                                    {section.subsections?.map(
                                                         (subsection) => (
                                                             <div
                                                                 key={
@@ -857,7 +888,7 @@ export default function EditCourseContentPage({
                                                         )
                                                     )}
 
-                                                    {section.subSections && section.subSections
+                                                    {section.subsections && section.subsections
                                                         .length === 0 && (
                                                         <div className="text-xs text-muted-foreground py-1 px-2">
                                                             No hay subsecciones
@@ -894,7 +925,7 @@ export default function EditCourseContentPage({
                                     {
                                         course.sections
                                             .find((s) => s.id === activeSection)
-                                            ?.subSections.find(
+                                            ?.subsections.find(
                                                 (ss) =>
                                                     ss.id === activeSubsection
                                             )?.title
@@ -995,10 +1026,10 @@ export default function EditCourseContentPage({
 
                                         <Separator />
 
-                                        {subsectionForm.links.length >
+                                        {subsectionForm.filesIds.length >
                                         0 ? (
                                             <div className="space-y-2">
-                                                {subsectionForm.links.map(
+                                                {subsectionForm.filesIds.map(
                                                     (link) => (
                                                         <div
                                                             key={link.id}
@@ -1014,7 +1045,8 @@ export default function EditCourseContentPage({
                                                                     </div>
                                                                     <div className="text-xs text-muted-foreground truncate max-w-md">
                                                                         {
-                                                                            link.url
+                                                                            //TODO: Cambiar a un enlace real
+                                                                            //link.file
                                                                         }
                                                                     </div>
                                                                 </div>
@@ -1221,7 +1253,7 @@ export default function EditCourseContentPage({
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle>
-                            {linkForm.id ? "Editar Enlace" : "Nuevo Enlace"}
+                            {fileForm.id ? "Editar Enlace" : "Nuevo Enlace"}
                         </DialogTitle>
                         <DialogDescription>
                             Agregue un enlace a recursos externos.
@@ -1234,10 +1266,10 @@ export default function EditCourseContentPage({
                             </Label>
                             <Input
                                 id="link-title"
-                                value={linkForm.title}
+                                value={fileForm.title}
                                 onChange={(e) =>
                                     setLinkForm({
-                                        ...linkForm,
+                                        ...fileForm,
                                         title: e.target.value,
                                     })
                                 }
@@ -1248,11 +1280,12 @@ export default function EditCourseContentPage({
                             <Label htmlFor="link-url">URL</Label>
                             <Input
                                 id="link-url"
-                                value={linkForm.url}
+                                //value={fileForm.file}
+                                type="file"
                                 onChange={(e) =>
                                     setLinkForm({
-                                        ...linkForm,
-                                        url: e.target.value,
+                                        ...fileForm,
+                                        file: e.target.files ? e.target.files[0] : null,
                                     })
                                 }
                                 placeholder="https://example.com/recurso.pdf"

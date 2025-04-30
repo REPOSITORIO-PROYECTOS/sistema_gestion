@@ -61,14 +61,22 @@ public class FileService {
         // if (template == null) {
         //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
         // }
-        try{
-            return subirArchivoADrive(file).flatMap(link -> {
-                File fileToSave = new File(file.flatMap(f -> Mono.just(f.filename())).block(), link);
-                return fileRepository.save(fileToSave).flatMap(savedFile -> Mono.just(savedFile.getId()));
-            });
+        try {
+            return subirArchivoADrive(file)
+                .flatMap(link -> 
+                    file
+                        .flatMap(f -> {
+                            // Crear el archivo de manera reactiva
+                            File fileToSave = new File(f.filename(), link);
+                            // Guardar el archivo en el repositorio de manera reactiva
+                            return fileRepository.save(fileToSave)
+                                .flatMap(savedFile -> Mono.just(savedFile.getId()));
+                        })
+                );
         } catch (Exception e) {
             return Mono.error(e);
         }
+        
     }
 
     public Mono<File> update(ServerWebExchange exchange, String id, Mono<FilePart> file) {

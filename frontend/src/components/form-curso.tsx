@@ -39,6 +39,7 @@ import { ScopedMutator } from "swr";
 import { Input } from "./ui/input";
 import { toast } from "sonner";
 import * as z from "zod";
+import { useAuthStore } from "@/context/store";
 
 const formSchema = z.object({
     title: z.string().min(2, {
@@ -88,6 +89,7 @@ export default function FormCurso({
     >([]);
     const [isLoading, setIsLoading] = useState(true);
     const [open, setOpen] = useState(false);
+    const {user} = useAuthStore();
     const { finishLoading, loading, startLoading } = useLoading();
     const fetch = useFetch();
     const form = useForm<z.infer<typeof formSchema>>({
@@ -163,6 +165,10 @@ export default function FormCurso({
             const response = await fetch({
                 endpoint,
                 method: isEditable ? "PUT" : "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user?.token}`,
+                },
                 formData,
             });
             if (response) {

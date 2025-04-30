@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { ModeToggle } from "./mode-toggle";
 import Link from "next/link";
 import { useAuthStore } from "@/context/store";
+import Image from "next/image";
 
 export function Navbar() {
     const pathname = usePathname();
@@ -67,8 +68,17 @@ export function Navbar() {
     }, [activeIndex]);
 
     return (
-        <nav className="relative z-50 shadow-md border-b dark:border-gray-700">
-            <div className="container mx-auto px-6 py-3 flex justify-between items-center space-x-4">
+        <nav className="relative flex flex-col z-50 shadow-md border-b dark:border-gray-700">
+            <div>
+                <Image
+                src={"/resources/ips.jpg"}
+                className="mt-2 ml-4"
+                width={50}
+                height={100}
+                alt="Logo"
+                />
+            </div>
+            <div className="container mx-auto px-6 pb-3 flex justify-between items-center space-x-4">
                 <div className="space-x-2 relative" ref={navRef}>
                     {navItems.map((item, index) => (
                         <Button
