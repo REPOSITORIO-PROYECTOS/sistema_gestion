@@ -46,7 +46,7 @@ public class ParentService {
     public Mono<Parent> createParent(Parent parent, String username) {
         return userService.getFullName(username)
                 .flatMap(fullName -> {
-                    parent.setCreatedBy(fullName);
+                    parent.setCreatedBy(fullName.getName() + " " + fullName.getSurname());
                     parent.setCreatedAt(LocalDateTime.now());
                     return parentsRepository.save(parent);
                 })
@@ -82,7 +82,7 @@ public class ParentService {
 							existingParent.setEmail(parent.getEmail());
 							existingParent.setPhone(parent.getPhone());
 							existingParent.setUpdatedAt(LocalDateTime.now());
-							existingParent.setModifiedBy(fullName);
+							existingParent.setModifiedBy(fullName.getName() + " " + fullName.getSurname());
 							return parentsRepository.save(existingParent);
 						}))
 				.onErrorMap(e -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,

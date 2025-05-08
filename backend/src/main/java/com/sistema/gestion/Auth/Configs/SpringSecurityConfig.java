@@ -18,7 +18,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
@@ -37,7 +36,7 @@ public class SpringSecurityConfig {
 	@Bean
 	public CorsWebFilter corsWebFilter() {
 		CorsConfiguration config = new CorsConfiguration();
-		config.setAllowedOrigins(List.of("https://institutosanpablo.netlify.app")); //"https://institutosanpablo.netlify.app"
+		config.setAllowedOrigins(List.of("http://localhost:3000")); //"https://institutosanpablo.netlify.app"
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 		config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 		config.setAllowCredentials(true);
@@ -65,10 +64,9 @@ public class SpringSecurityConfig {
 					
 					// ? ENDPOINTS RESTRINGIDOS POR ROL
 					exchanges.pathMatchers(HttpMethod.POST, "/api/auth/registrar")
-							.permitAll();
-							//.hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
-					exchanges.pathMatchers(HttpMethod.PUT, "/api/auth/editar/**")
 							.hasAnyAuthority("ROLE_ADMIN", "ROLE_DEV");
+					exchanges.pathMatchers(HttpMethod.PUT, "/api/auth/editar/**", "/api/auth/editar")
+							.authenticated();
 
 					// ? MÉTODOS AUTENTICADOS
 					authenticateEndpoints(exchanges, "/api/caja/**", "/api/facturas/**", "/api/pagos/**",

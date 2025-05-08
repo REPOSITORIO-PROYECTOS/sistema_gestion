@@ -9,8 +9,12 @@ import { ModeToggle } from "./mode-toggle";
 import Link from "next/link";
 import { useAuthStore } from "@/context/store";
 import Image from "next/image";
+import PersonaForm from "./form-persona";
+import UserForm from "./form-user";
+import UserFormNoAdmin from "./form-user-no-admin";
 
 export function Navbar() {
+    const [profileOpen, setProfileOpen] = useState(false);
     const pathname = usePathname();
     const { user } = useAuthStore();
     const { logout } = useAuth();
@@ -67,6 +71,11 @@ export function Navbar() {
         }
     }, [activeIndex]);
 
+
+    const handleOpenProfile = () => {
+        setProfileOpen(profileOpen => !profileOpen);
+    }
+
     return (
         <nav className="relative flex flex-col z-50 shadow-md border-b dark:border-gray-700">
             <div className="bg-blue-800 mb-2">
@@ -118,6 +127,13 @@ export function Navbar() {
                         />
                     </Button>
                     <Button
+                                            variant={"ghost"}
+                                            onClick={handleOpenProfile}
+                                            className="text-sm font-medium hover:underline"
+                                        >
+                                            Mi Perfil
+                                        </Button>
+                    <Button
                         variant="ghost"
                         onClick={logout}
                         className="text-sm font-semibold hover:bg-red-500 hover:text-white"
@@ -127,6 +143,9 @@ export function Navbar() {
                     <ModeToggle />
                 </div>
             </div>
+            {
+                profileOpen && <UserFormNoAdmin isEditable={true} mutate={()=>{}} onClose={setProfileOpen} />
+            }
         </nav>
     );
 }

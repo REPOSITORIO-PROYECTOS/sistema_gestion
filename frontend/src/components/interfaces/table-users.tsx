@@ -196,7 +196,23 @@ const columns: ColumnDef<Item>[] = [
                         : "bg-blue-600 text-background"
                 )}
             >
-                {row.getValue("roles")}
+                {(row.getValue("roles") as string[])?.map((rol: string) => {
+                    return rol === "ROLE_ADMIN"
+                        ? "Administrador"
+                        : rol === "ROLE_CASHER"
+                        ? "Cajero"
+                        : rol === "ROLE_ADMIN_VC"
+                        ? "Administrador VC"
+                        : rol === "ROLE_ADMIN_USERS"
+                        ? "Administrador Usuarios"
+                        : rol === "ROLE_ADMIN_COURSES"
+                        ? "Administrador Cursos"
+                        : rol === "ROLE_PARENT"
+                        ? "Padre/Madre"
+                        : rol === "ROLE_TEACHER"
+                        ? "Profesor"
+                        : rol;
+                })}
             </Badge>
         },
         size: 100,
@@ -278,7 +294,17 @@ export default function TableUsers() {
         return `/usuarios/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
     }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm, user?.token]);
 
-    const { data: swrData, error, isLoading, mutate } = useSWR(
+    const swrUrlTeachers = useMemo(() => {
+        if (!user?.token) return null; // Evita llamada antes de que esté el user
+        return `/profesores/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
+    }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm, user?.token]);
+
+    const swrUrlParents = useMemo(() => {
+        if (!user?.token) return null; // Evita llamada antes de que esté el user
+        return `/padres/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
+    }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm, user?.token]);
+
+    const { data: swrDataUsers, error, isLoading, mutate } = useSWR(
         swrUrl,
         swrUrl ? fetcher : null, // Si la URL es null, SWR no hace la petición
         {
@@ -286,12 +312,26 @@ export default function TableUsers() {
         }
     );
 
+    const { data: swrDataTeachers } = useSWR(
+        swrUrlTeachers,
+        swrUrlTeachers ? fetcher : null,
+        {
+            keepPreviousData: true,
+        }
+    );
+
+    const { data: swrDataParents } = useSWR(
+        swrUrlParents,
+        swrUrlParents ? fetcher : null,
+        {
+            keepPreviousData: true,
+        }
+    );
+
     useEffect(() => {
-        console.log("Datos de SWR:", swrData);
-        
-        if (swrData && Array.isArray(swrData.content)) {
+        if (swrDataUsers) {
             // Mapea los datos para extraer el objeto user de cada elemento
-            const mappedData = swrData.content
+            const mappedData = swrDataUsers.content
                 .map((item:any) => {
                     // Cada elemento tiene un objeto user anidado
                     if (!item.user) {
@@ -311,10 +351,63 @@ export default function TableUsers() {
                 .filter(Boolean); // Filtrar elementos nulos
 
             console.log("Datos mapeados para la tabla:", mappedData);
-            setData(mappedData);
-            setTotalElements(swrData.totalElements);
+            setData(actual=>{
+                const newData = [...actual, ...mappedData];
+                return newData;
+            });
+            setTotalElements(swrDataUsers.totalElements);
         }
-    }, [swrData]);
+    }, [swrDataUsers]);
+
+    useEffect(() => {
+        if (swrDataTeachers) {
+            // Mapea los datos para extraer el objeto user de cada elemento
+            const mappedData = swrDataTeachers.content
+                .map((item:any) => {
+                    return {
+                        ...item, // Expandir todas las propiedades del usuario
+                        // Convierte el array de roles a un valor único para el filtro
+                        rol:
+                            item.roles && item.roles.length > 0
+                                ? item.roles[0]
+                                : "sin rol",
+                    };
+                })
+                .filter(Boolean); // Filtrar elementos nulos
+
+            console.log("Datos mapeados para la tabla:", mappedData);
+            setData(actual=>{
+                const newData = [...actual, ...mappedData];
+                return newData;
+            });
+            setTotalElements(swrDataTeachers.totalElements);
+        }
+    }, [swrDataTeachers]);
+
+    useEffect(() => {
+        if (swrDataParents) {
+            // Mapea los datos para extraer el objeto user de cada elemento
+            const mappedData = swrDataParents.content
+                .map((item:any) => {
+                    return {
+                        ...item.user, // Expandir todas las propiedades del usuario
+                        // Convierte el array de roles a un valor único para el filtro
+                        rol:
+                            item.roles && item.roles.length > 0
+                                ? item.roles[0]
+                                : "sin rol",
+                    };
+                })
+                .filter(Boolean); // Filtrar elementos nulos
+
+            console.log("Datos mapeados para la tabla:", mappedData);
+            setData(actual=>{
+                const newData = [...actual, ...mappedData];
+                return newData;
+            });
+            setTotalElements(swrDataParents.totalElements);
+        }
+    }, [swrDataParents]);
 
     // const handleDeleteRow = async (row: Row<Item>) => {
     //   startLoading()
@@ -811,6 +904,7 @@ export default function TableUsers() {
                     <Select
                         value={table.getState().pagination.pageSize.toString()}
                         onValueChange={(value) => {
+                            setData([]);
                             table.setPageSize(Number(value));
                         }}
                     >
@@ -866,7 +960,7 @@ export default function TableUsers() {
                                     size="icon"
                                     variant="outline"
                                     className="disabled:pointer-events-none disabled:opacity-50"
-                                    onClick={() => table.setPageIndex(0)}
+                                    onClick={() => {setData([]); table.setPageIndex(0)}}
                                     disabled={!table.getCanPreviousPage()}
                                     aria-label="Go to first page"
                                 >
@@ -883,7 +977,7 @@ export default function TableUsers() {
                                     size="icon"
                                     variant="outline"
                                     className="disabled:pointer-events-none disabled:opacity-50"
-                                    onClick={() => table.previousPage()}
+                                    onClick={() => {setData([]); table.previousPage()}}
                                     disabled={!table.getCanPreviousPage()}
                                     aria-label="Go to previous page"
                                 >
@@ -900,7 +994,7 @@ export default function TableUsers() {
                                     size="icon"
                                     variant="outline"
                                     className="disabled:pointer-events-none disabled:opacity-50"
-                                    onClick={() => table.nextPage()}
+                                    onClick={() => {setData([]); table.nextPage()}}
                                     disabled={!table.getCanNextPage()}
                                     aria-label="Go to next page"
                                 >
@@ -917,11 +1011,12 @@ export default function TableUsers() {
                                     size="icon"
                                     variant="outline"
                                     className="disabled:pointer-events-none disabled:opacity-50"
-                                    onClick={() =>
+                                    onClick={() =>{
+                                        setData([]);
                                         table.setPageIndex(
                                             table.getPageCount() - 1
                                         )
-                                    }
+                                    }}
                                     disabled={!table.getCanNextPage()}
                                     aria-label="Go to last page"
                                 >

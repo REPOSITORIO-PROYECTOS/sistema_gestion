@@ -31,6 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -48,6 +49,18 @@ public class CourseController {
 			@RequestParam(defaultValue = "10") int size,
 			@RequestParam(required = false) String keyword) {
 		return courseService.getCoursesPaged(page, size, keyword);
+	}
+
+	@GetMapping("/obtenerPorProfesor/{professorId}")
+	@Operation(summary = "Obtener cursos por ID de profesor", description = "Obtiene los cursos asociados a un profesor por su ID.")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Cursos obtenidos exitosamente", content = @Content(schema = @Schema(implementation = Course.class))),
+			@ApiResponse(responseCode = "404", description = "No se encontraron cursos para el profesor especificado")
+	})
+	public Flux<Course> getCoursesByProfessorId(
+			@Parameter(description = "ID del profesor", required = true) @PathVariable String professorId) {
+		return courseService.getCoursesByProfessorId(professorId)
+				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron cursos para el profesor especificado")));
 	}
 
 	@Operation(summary = "Registrar un nuevo curso", description = "Registra un nuevo curso en el sistema.", responses = {
@@ -73,6 +86,7 @@ public class CourseController {
 			@ApiResponse(responseCode = "400", description = "Error en los datos proporcionados."),
 			@ApiResponse(responseCode = "404", description = "No se encontró el curso a actualizar.")
 	})
+
 	@PutMapping("/{courseId}")
 	public Mono<ResponseEntity<Course>> updateCourse(
 			Authentication auth,

@@ -18,6 +18,10 @@ public interface CourseRepository extends ReactiveMongoRepository<Course, String
     @Query("{ $or: [ { 'title': { $regex: ?0, $options: 'i' } }, { 'description': { $regex: ?0, $options: 'i' } } ] }")
     Flux<Course> findByKeywordPaged(String keyword, PageRequest pageRequest);
 
+    Flux<Course> findByTeacherIdsContaining(String professorId);
+
+    Mono<Long> countByTeacherId(String professorId);
+
     // Contar la cantidad de cursos que coinciden con la keyword
     @Query(value = "{ $or: [ { 'title': { $regex: ?0, $options: 'i' } }, { 'description': { $regex: ?0, $options: 'i' } } ] }", count = true)
     Mono<Long> countByKeyword(String keyword);

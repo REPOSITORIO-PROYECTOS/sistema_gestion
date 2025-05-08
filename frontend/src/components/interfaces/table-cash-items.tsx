@@ -100,7 +100,7 @@ import { useFetch } from "@/hooks/useFetch";
 import { useLoading } from "@/hooks/useLoading";
 import { toast } from "sonner";
 import type { DateRange } from "react-day-picker";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useAuthStore } from "@/context/store";
 import { useDebt } from "@/context/coutasAdeudadasContext";
@@ -484,6 +484,8 @@ export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:b
     }, [data]);
 
     const handlePagoParcial = async (cuota:any) => {
+        const fecha = new Date().toISOString().slice(0, 16)
+        const date = `${fecha.split("T")[0].split("-").reverse().join("-")}T${fecha.split("T")[1]}`;
         try {
             const response = await fetch({
                 endpoint: `/pagos/realizar/${cuota.id}`,
@@ -494,12 +496,15 @@ export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:b
                 },
                 formData: JSON.stringify({
                     id: cuota.id,
-                    courseId: cuota.curseId,
+                    courseId: cuota.courseId,
                     studentId: cuota.studentId,
                     paymentAmount: cuota.paymentAmount,
                     paymentType: "CUOTE",
+                    isPaid: cuota.isPaid,
+                    hasDebt: cuota.hasDebt,
+                    paidAmount: cuota.paidAmount,
                     paymentDueDate: cuota.paymentDueDate,
-                    lastPaymentDate: new Date().toISOString(),
+                    lastPaymentDate: date,
                 }),
             });
     
@@ -547,6 +552,8 @@ export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:b
     };
 
     const handleActualizarCosto = async (cuota: any) => {
+        const fecha = new Date().toISOString().slice(0, 16)
+        const date = `${fecha.split("T")[0].split("-").reverse().join("-")}T${fecha.split("T")[1]}`;
         try {
             const response = await fetch({
                 endpoint: `/pagos/editar/${cuota.id}`,
@@ -555,7 +562,12 @@ export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:b
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${user?.token}`,
                 },
-                formData:JSON.stringify(cuota)
+                formData:JSON.stringify({
+                    ...cuota,
+                    hasDebt: true,
+                    isPaid: false,
+                    lastPaymentDate: date,
+                })
             });
     
             const data = await response.json();
@@ -1196,7 +1208,8 @@ export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:b
         <div className="grid gap-4">
             {cuotasFiltradas.map((cuota: any, index: number) => {
                 const saldoPendiente = cuota.paymentAmount - cuota.paidAmount;
-
+                console.log(cuota);
+                
                 return (
                     <Card key={index} className="border p-4">
                         <div className="grid grid-cols-4 items-center gap-4">
@@ -1210,7 +1223,9 @@ export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:b
                             </div>
                             <div className="flex flex-col gap-1">
                                 <p className="text-sm text-muted-foreground">Vencimiento</p>
-                                <p className="font-medium">{format(cuota.paymentDueDate, "dd/MM/yyyy")}</p>
+                                <p className="font-medium">
+                                    {format(parse(cuota.paymentDueDate, "dd-MM-yyyy", new Date()), "dd/MM/yyyy")}
+                                </p>
                             </div>
                             <div>
                                 <p className="text-sm text-muted-foreground">Saldo Pendiente</p>

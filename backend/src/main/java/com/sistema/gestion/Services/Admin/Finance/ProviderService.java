@@ -53,7 +53,7 @@ public class ProviderService {
 		return userService.getFullName(username)
 				.flatMap(fullName -> {
 					provider.setCreatedAt(LocalDateTime.now());
-					provider.setCreatedBy(fullName);
+					provider.setCreatedBy(fullName.getName() + " " + fullName.getSurname());
 					return providerRepo.save(provider);
 				});
 	}
@@ -69,7 +69,7 @@ public class ProviderService {
 						"No se encontró el proveedor con ID: " + providerId)))
 				.flatMap(existingProvider -> userService.getFullName(username)
 						.flatMap(fullName -> {
-							Provider updatedProvider = mappingProviderToUpdate(existingProvider, provider, fullName);
+							Provider updatedProvider = mappingProviderToUpdate(existingProvider, provider, fullName.getName() + " " + fullName.getSurname());
 							return providerRepo.save(updatedProvider);
 						}));
 	}

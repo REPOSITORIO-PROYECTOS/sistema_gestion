@@ -40,8 +40,11 @@ public class StudentAttendanceService {
     public Mono<StudentAttendance> takeAttendance(StudentAttendance studentAttendance, String username) {
         return userService.getFullName(username)
                 .flatMap(fullName -> {
-                    studentAttendance.setCreatedBy(fullName);
+                    studentAttendance.setCreatedBy(fullName.getName() + " " + fullName.getSurname());
                     studentAttendance.setCreatedAt(LocalDateTime.now());
+
+                    System.out.println("ID antes de guardar: " + studentAttendance.getId());
+
                     return validateCourseAndStudents(studentAttendance)
                             .then(studentAttendanceRepository.save(studentAttendance));
                 });
@@ -56,7 +59,7 @@ public class StudentAttendanceService {
                             existingAttendance.setStudentsIds(studentAttendance.getStudentsIds());
                             existingAttendance.setAttendanceStatus(studentAttendance.getAttendanceStatus());
                             existingAttendance.setUpdatedAt(LocalDateTime.now());
-                            existingAttendance.setModifiedBy(fullName);
+                            existingAttendance.setModifiedBy(fullName.getName() + " " + fullName.getSurname());
                             return studentAttendanceRepository.save(existingAttendance);
                         }));
     }

@@ -30,10 +30,9 @@ import { useAuthStore } from "@/context/store";
 
 // Esquema de validación con Zod
 const formSchema = z.object({
-    email: z
+    dni: z
         .string()
-        .email({ message: "Ingresa un correo electrónico válido" })
-        .min(1, { message: "El correo electrónico es requerido" }),
+        .min(1, { message: "El dni es requerido" }),
     password: z
         .string()
         .min(6, { message: "La contraseña debe tener al menos 6 caracteres" })
@@ -56,7 +55,7 @@ export default function LoginPage() {
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            email: "",
+            dni: "",
             password: "",
         },
     });
@@ -71,7 +70,7 @@ export default function LoginPage() {
             clearError();
 
             // Llamar a la función login del store
-            const success = await login(data.email, data.password, activeTab);
+            const success = await login(data.dni, data.password, activeTab);
 
             // Redireccionar según el rol si el login fue exitoso
             if (success) {
@@ -138,16 +137,15 @@ export default function LoginPage() {
                                             )}
                                             <FormField
                                                 control={form.control}
-                                                name="email"
+                                                name="dni"
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>
-                                                            Correo electrónico
+                                                            DNI
                                                         </FormLabel>
                                                         <FormControl>
                                                             <Input
-                                                                placeholder="tu@email.com"
-                                                                type="email"
+                                                                type="text"
                                                                 {...field}
                                                             />
                                                         </FormControl>
@@ -241,16 +239,15 @@ export default function LoginPage() {
                                             )}
                                             <FormField
                                                 control={form.control}
-                                                name="email"
+                                                name="dni"
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>
-                                                            Correo electrónico
+                                                            DNI
                                                         </FormLabel>
                                                         <FormControl>
                                                             <Input
-                                                                placeholder="admin@email.com"
-                                                                type="email"
+                                                                type="text"
                                                                 {...field}
                                                             />
                                                         </FormControl>

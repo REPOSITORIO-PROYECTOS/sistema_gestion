@@ -32,7 +32,7 @@ public class Payment extends ModelClass {
     @Min(value = 0, message = "El valor del pago debe ser 0 o mayor.")
     private Double paymentAmount;
 
-    @Min(value = 0, message = "El valor pagado debe ser 0 o mayor.")
+    //@Min(value = 0, message = "El valor pagado debe ser 0 o mayor.")
     private Double paidAmount;
 
     private Boolean hasDebt;

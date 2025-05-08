@@ -2,6 +2,8 @@ package com.sistema.gestion.Services.Profiles;
 
 import com.sistema.gestion.DTO.PagedResponse;
 import com.sistema.gestion.DTO.UserInfo;
+import com.sistema.gestion.Models.Profiles.User;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -66,11 +68,11 @@ public class UserService {
                         "No se encontró el usuario con ID: " + id)));
     }
 
-    public Mono<String> getFullName(String email) {
+    public Mono<User> getFullName(String email) {
         return userRepository.findByEmail(email)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "No se encontró el usuario: " + email)))
-                .map(user -> user.getName() + " " + user.getSurname() + "-" + user.getInstitution());
+                .map(user -> user);
     }
 
     // Método para crear un usuario

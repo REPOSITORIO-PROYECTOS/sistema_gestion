@@ -48,7 +48,7 @@ public class TeacherService {
 	public Mono<Teacher> create(Teacher teacher, String username) {
 		return userService.getFullName(username)
 				.flatMap(fullName -> {
-					teacher.setCreatedBy(fullName);
+					teacher.setCreatedBy(fullName.getName() + " " + fullName.getSurname());
 					teacher.setCreatedAt(LocalDateTime.now());
 					return teacherRepository.save(teacher)
 							.flatMap(savedTeacher -> assignTeacherToCourses(savedTeacher));
@@ -68,7 +68,7 @@ public class TeacherService {
 							existingTeacher.setEmail(teacher.getEmail());
 							existingTeacher.setPhone(teacher.getPhone());
 							existingTeacher.setUpdatedAt(LocalDateTime.now());
-							existingTeacher.setModifiedBy(fullName);
+							existingTeacher.setModifiedBy(fullName.getName() + " " + fullName.getSurname());
 							return teacherRepository.save(existingTeacher);
 						}))
 				.onErrorResume(e -> Mono.error(new ResponseStatusException(

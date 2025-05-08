@@ -253,7 +253,11 @@ export default function TablePerson() {
 
     const swrUrl = useMemo(() => {
         if (!user?.token) return null; // Evita llamada antes de que esté el user
-        return `/cursos/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
+        if(user.role.includes("ROLE_TEACHER")){
+            return `/cursos/obtenerPorProfesor/${user.id}`
+        } else {
+            return `/cursos/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
+        }
     }, [pagination.pageIndex, pagination.pageSize, debouncedSearchTerm, user?.token]);
 
     const { data: swrData, error, isLoading, mutate } = useSWR(
@@ -266,7 +270,11 @@ export default function TablePerson() {
 
     useEffect(()=>{
         if(swrData){
-            setData(swrData.content);
+            if(user?.role.includes("ROLE_TEACHER")){
+                setData(swrData);
+            } else {
+                setData(swrData.content);
+            }
             setTotalElements(swrData.totalElements);
         }
     },[swrData])

@@ -20,6 +20,8 @@ public interface StudentRepository extends ReactiveMongoRepository<Student, Stri
 
     Mono<Student> findByEmail(String email);
 
+    Mono<Student> findByDni(String dni);
+
     // Conteo total de registros
     @Query(value = "{}", count = true)
     Mono<Long> countAll();

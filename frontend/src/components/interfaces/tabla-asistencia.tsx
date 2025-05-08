@@ -41,7 +41,7 @@ type Alumno = {
 type AsistenciaItem = {
     alumnoId: string
     fecha: string
-    presente: boolean
+    presente: "PRESENT" | "ABSENT" | "LATE"
 }
 interface TablaAsistenciaProps {
     id: string
@@ -102,24 +102,38 @@ export function TablaAsistencia(props: TablaAsistenciaProps) {
         {
             id: "asistencia",
             header: "Asistencia",
-            cell: ({ row }) => (
-                <Checkbox
-                    checked={asistencia.some(
-                        (a) => a.alumnoId === row.original.id && a.fecha === format(fechaSeleccionada, "yyyy-MM-dd") && a.presente
-                    )}
-                    onCheckedChange={(value) =>
-                        handleAsistenciaChange(row.original.id, !!value)
-                    }
-                />
-            ),
-        },
+            cell: ({ row }) => {
+                const currentAsistencia = asistencia.find(
+                    (a) =>
+                        a.alumnoId === row.original.id &&
+                        a.fecha === format(fechaSeleccionada, "yyyy-MM-dd")
+                );
+        
+                const valorSeleccionado = currentAsistencia?.presente || "";
+        
+                const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+                    const nuevoEstado = e.target.value;
+                    handleAsistenciaChange(row.original.id, nuevoEstado);
+                };
+        
+                return (
+                    <select value={valorSeleccionado} onChange={handleChange}>
+                        <option value="">Seleccione</option>
+                        <option value="PRESENT">Presente</option>
+                        <option value="ABSENT">Ausente</option>
+                        <option value="LATE">Tardanza</option>
+                    </select>
+                );
+            },
+        }
+        
     ];
 
-    const handleAsistenciaChange = (alumnoId: string, presente: boolean) => {
+    const handleAsistenciaChange = (alumnoId: string, presente: string) => {
         const fechaStr = format(fechaSeleccionada, "yyyy-MM-dd");
-        setAsistencia((prev) => {
+        setAsistencia((prev:any) => {
             const index = prev.findIndex(
-                (a) => a.alumnoId === alumnoId && a.fecha === fechaStr
+                (a:any) => a.alumnoId === alumnoId && a.fecha === fechaStr
             );
             if (index >= 0) {
                 return [
@@ -155,32 +169,32 @@ export function TablaAsistencia(props: TablaAsistenciaProps) {
     async function enviarAsistencia(
         courseId: string,
         asistencia: AsistenciaItem[],
-        modifiedBy: string,
-        createdBy: string
+        modifiedBy: string
       ) {
+        const fecha = new Date().toISOString().slice(0, 16)
+        const date = `${fecha.split("T")[0].split("-").reverse().join("-")}T${fecha.split("T")[1]}`;
         const attendanceStatus: { [key: string]: string } = {};
       
         // Generar el objeto "attendanceStatus" con los estudiantes presentes
         asistencia.forEach((item) => {
-          if (item.presente) {
-            attendanceStatus[item.alumnoId] = "PRESENT";
-          }
+            attendanceStatus[item.alumnoId] = item.presente;
         });
       
         const attendanceData = {
-          createdAt: new Date().toISOString(),
+          createdAt: date,
+          createdBy: modifiedBy,
+          updatedAt: date,
           modifiedBy: modifiedBy,
-          createdBy: createdBy,
           courseId: courseId,
           studentsIds: asistencia
             .filter((item) => item.presente)
             .map((item) => item.alumnoId),
           attendanceStatus: attendanceStatus,
-          attendanceDate: new Date().toISOString(),
+          attendanceDate: date,
         };
       
         try {
-          const response = await fetch("https://instituto.sistemataup.online/api/asistencias", {
+          const response = await fetch("https://instituto.sistemataup.online/api/asistencias/tomar-asistencia", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -202,61 +216,103 @@ export function TablaAsistencia(props: TablaAsistenciaProps) {
         }
       }
       
-
-    useEffect(() => {
-        // Sample data for alumnos
-        const sampleAlumnos: Alumno[] = [
-            {
-                id: "1",
-                nombre: "Juan",
-                apellido: "Pérez",
-                email: "juan@example.com",
-                dni: "12345678",
-                telefono: "1234567890",
-            },
-            {
-                id: "2",
-                nombre: "María",
-                apellido: "González",
-                email: "maria@example.com",
-                dni: "87654321",
-                telefono: "0987654321",
-            },
-            {
-                id: "3",
-                nombre: "Carlos",
-                apellido: "López",
-                email: "carlos@example.com",
-                dni: "11111111",
-                telefono: "1111111111",
-            },
-            {
-                id: "4",
-                nombre: "Ana",
-                apellido: "Martínez",
-                email: "ana@example.com",
-                dni: "22222222",
-                telefono: "2222222222",
-            },
-            {
-                id: "5",
-                nombre: "Pedro",
-                apellido: "Rodríguez",
-                email: "pedro@example.com",
-                dni: "33333333",
-                telefono: "3333333333",
+      useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const currentDate = new Date();
+                const month = currentDate.getMonth() + 1;
+                const year = currentDate.getFullYear();
+    
+                // 1. Obtener alumnos
+                const studentsRes = await fetch(`https://instituto.sistemataup.online/api/estudiantes/getStudentsByCourseId?courseId=${id}&page=0&size=100`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${user?.token}`,
+                    }
+                });
+                const studentsData = await studentsRes.json();
+    
+                if (studentsData?.content) {
+                    setAlumnos(studentsData.content);
+                }
+    
+                // 2. Obtener asistencias
+                const attendanceRes = await fetch(`https://instituto.sistemataup.online/api/asistencias/${id}?month=${month}&year=${year}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${user?.token}`,
+                    }
+                });
+                const attendanceData = await attendanceRes.json();
+    
+                if (attendanceData.data) {
+                    // Asegúrate de mapear al formato correcto si es necesario
+                    setAsistencia(attendanceData.data);
+                }
+            } catch (error) {
+                console.error("Error fetching students or attendance:", error);
             }
-        ];
-        setAlumnos(sampleAlumnos);
-
-        // Sample data for asistencia
-        const today = format(new Date(), "yyyy-MM-dd");
-        const sampleAsistencia: AsistenciaItem[] = [
-            { alumnoId: "1", fecha: today, presente: true },
-            { alumnoId: "2", fecha: today, presente: false },
-        ];
-        setAsistencia(sampleAsistencia);
+        };
+    
+        fetchData();
     }, []);
+
+    // useEffect(() => {
+    //     // Sample data for alumnos
+    //     const sampleAlumnos: Alumno[] = [
+    //         {
+    //             id: "1",
+    //             nombre: "Juan",
+    //             apellido: "Pérez",
+    //             email: "juan@example.com",
+    //             dni: "12345678",
+    //             telefono: "1234567890",
+    //         },
+    //         {
+    //             id: "2",
+    //             nombre: "María",
+    //             apellido: "González",
+    //             email: "maria@example.com",
+    //             dni: "87654321",
+    //             telefono: "0987654321",
+    //         },
+    //         {
+    //             id: "3",
+    //             nombre: "Carlos",
+    //             apellido: "López",
+    //             email: "carlos@example.com",
+    //             dni: "11111111",
+    //             telefono: "1111111111",
+    //         },
+    //         {
+    //             id: "4",
+    //             nombre: "Ana",
+    //             apellido: "Martínez",
+    //             email: "ana@example.com",
+    //             dni: "22222222",
+    //             telefono: "2222222222",
+    //         },
+    //         {
+    //             id: "5",
+    //             nombre: "Pedro",
+    //             apellido: "Rodríguez",
+    //             email: "pedro@example.com",
+    //             dni: "33333333",
+    //             telefono: "3333333333",
+    //         }
+    //     ];
+    //     setAlumnos(sampleAlumnos);
+
+    //     // Sample data for asistencia
+    //     const today = format(new Date(), "yyyy-MM-dd");
+    //     const sampleAsistencia: AsistenciaItem[] = [
+    //         { alumnoId: "1", fecha: today, presente: "PRESENT" },
+    //         { alumnoId: "2", fecha: today, presente: "LATE" },
+    //     ];
+    //     setAsistencia(sampleAsistencia);
+    // }, []);
 
     const table = useReactTable({
         data: alumnos,
@@ -356,6 +412,7 @@ export function TablaAsistencia(props: TablaAsistenciaProps) {
                     </TableBody>
                 </Table>
             </div>
+            <Button onClick={()=>enviarAsistencia(id, asistencia, user ? user.name : "undefined")}>Guardar</Button>
             <CalendarioHorizontal onSelectDate={setFechaSeleccionada} />
         </div>
     )

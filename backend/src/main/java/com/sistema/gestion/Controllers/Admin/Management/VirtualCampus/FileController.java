@@ -47,14 +47,14 @@ public class FileController {
             .map((url) -> ResponseEntity.ok("Archivo subido: " + url));
     }
 
-    @PutMapping("/{id}")
-    public Mono<File> updateFile(ServerWebExchange exchange, @PathVariable String id, @RequestPart Mono<FilePart> file) {
-        return fileService.update(exchange, id, file);
-    }
+    // @PutMapping("/{id}")
+    // public Mono<File> updateFile(ServerWebExchange exchange, @PathVariable String id, @RequestPart Mono<FilePart> file) {
+    //     return fileService.update(exchange, id, file);
+    // }
 
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<Void> deleteFile(ServerWebExchange exchange, @PathVariable String id) {
-        return fileService.delete(exchange, id);
-    }
+    // @DeleteMapping("/{id}")
+    // @ResponseStatus(HttpStatus.NO_CONTENT)
+    // public Mono<Void> deleteFile(ServerWebExchange exchange, @PathVariable String id) {
+    //     return fileService.delete(exchange, id);
+    // }
 }

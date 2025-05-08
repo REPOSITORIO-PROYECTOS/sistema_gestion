@@ -43,12 +43,15 @@ import {
 } from "@/components/ui/accordion";
 import { useAuthStore } from "@/context/store";
 import { sub } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@radix-ui/react-select";
+import toast from "react-hot-toast";
 // import { useAuth } from "@/components/auth-provider"
 
 // Tipos
 type CourseLink = {
     id: string;
     title: string;
+    url: string;
     file: File | null;
 };
 
@@ -61,6 +64,7 @@ type Subsection = {
 
 type Section = {
     id: string;
+    teacherId: string;
     title: string;
     description: string;
     subsections: Subsection[];
@@ -98,6 +102,7 @@ export default function EditCourseContentPage({
         sections: [
             {
                 id: "",
+                teacherId: "",
                 title: "",
                 description: "",
                 subsections: [
@@ -119,6 +124,9 @@ export default function EditCourseContentPage({
     );
     const [isSectionDialogOpen, setIsSectionDialogOpen] = useState(false);
     const [isSubsectionDialogOpen, setIsSubsectionDialogOpen] = useState(false);
+    const [teachersOptions, setTeachersOptions] = useState<
+        { label: string; value: string }[]
+    >([]);
     const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<{
@@ -129,6 +137,7 @@ export default function EditCourseContentPage({
     // Estados para formularios
     const [sectionForm, setSectionForm] = useState({
         id: "",
+        teacherId: "",
         title: "",
         description: "",
     });
@@ -150,6 +159,43 @@ export default function EditCourseContentPage({
         setIsClient(true);
         fetchCourseData();
     }, [id]);
+
+    useEffect(() => {
+        const fetchTeachers = async () => {
+            setIsLoading(true);
+            try {
+                const teachersResponse = await fetch("https://instituto.sistemataup.online/api/profesores/paged?page=0&size=1000",{
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${user?.token}`,
+                    }
+                });
+                const data = await teachersResponse.json();
+                if (data && data.content) {
+                    const teachers = data.content;
+                    const teacherOptions = teachers.map((teacher: any) => ({
+                        label: `${teacher.name} ${teacher.surname}`,
+                        value: teacher.id,
+                    }));
+                    setTeachersOptions(teacherOptions);
+                }
+            } catch (error: any) {
+                const errorMessage =
+                    (typeof error === "object" && error.response
+                        ? error.response.data?.message
+                        : error?.message) ||
+                    "Error al cargar las opciones de profesores. Inténtalo de nuevo.";
+                console.error("Error en fetchTeachers: ", errorMessage);
+                toast.error(errorMessage);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+    
+        fetchTeachers();
+    }, []); // Dependencias vacías para que se ejecute solo una vez al montar el componente
+    
 
     const fetchCourseData = async () => {
         if (!user?.token) return;
@@ -178,9 +224,15 @@ export default function EditCourseContentPage({
             
             if (responseText) {
                 try {
-                    sectionsData = JSON.parse(responseText).sections;
-                    console.log(sectionsData);
+                    if(user.role.includes("ROLE_TEACHER")){
+                    sectionsData = JSON.parse(responseText).sections.filter(
+                        (section: any) => section.teacherId === user.id
+                    );
+                    console.log(JSON.parse(responseText).sections);
                     
+                    } else {
+                        sectionsData = JSON.parse(responseText).sections;
+                    }
                 } catch (parseError) {
                     console.error("Error al parsear la respuesta:", parseError);
                     sectionsData = [];
@@ -230,6 +282,7 @@ export default function EditCourseContentPage({
     const resetSectionForm = () => {
         setSectionForm({
             id: "",
+            teacherId: "",
             title: "",
             description: "",
         });
@@ -258,6 +311,7 @@ export default function EditCourseContentPage({
     const handleEditSection = (section: Section) => {
         setSectionForm({
             id: section.id,
+            teacherId: section.teacherId,
             title: section.title,
             description: section.description,
         });
@@ -301,6 +355,7 @@ export default function EditCourseContentPage({
                                   ...section,
                                   title: sectionForm.title,
                                   description: sectionForm.description,
+                                  teacherId: sectionForm.teacherId,
                               }
                             : section
                     ),
@@ -315,7 +370,8 @@ export default function EditCourseContentPage({
                         },
                         body: JSON.stringify({
                             name: sectionForm.title,
-                            description: sectionForm.description
+                            description: sectionForm.description,
+                            teacherId: user.id,
                         }),
                     }
                 );
@@ -336,6 +392,7 @@ export default function EditCourseContentPage({
                         body: JSON.stringify({
                             id: `section-${Date.now()}`,
                             name: sectionForm.title,
+                            teacherId: user.id,
                             description: sectionForm.description,
                             courseId: id,
                             subSectionsIds: [],
@@ -356,6 +413,7 @@ export default function EditCourseContentPage({
                         ...course.sections,
                         {
                             id: newSection._id,
+                            teacherId: newSection.teacherId,
                             title: newSection.name,
                             description: newSection.description,
                             subsections: [],
@@ -469,7 +527,7 @@ export default function EditCourseContentPage({
     };
 
     // Guardar enlace (nuevo o editado)
-    const handleSaveLink = () => {
+    const handleSaveLink = async () => {
         if (!activeSection || !activeSubsection) return;
 
         const updatedLinks = subsectionForm.filesIds.slice();
@@ -483,6 +541,7 @@ export default function EditCourseContentPage({
                 updatedLinks[linkIndex] = {
                     id: fileForm.id,
                     title: fileForm.title,
+                    url: "",
                     file: fileForm.file,
                 };
             }
@@ -492,23 +551,25 @@ export default function EditCourseContentPage({
             updatedLinks.push({
                 id: newId,
                 title: fileForm.title,
+                url: "",
                 file: fileForm.file,
             });
 
-            const response = fetch(
-                "https://instituto.sistemataup.online/api/files/subir",
-                {
-                    method: "POST",
-                    headers: {
-                        //"Content-Type": "application/json",
-                        Authorization: `Bearer ${user?.token}`,
-                    },
-                    body: JSON.stringify({
-                        //title: fileForm.title,
-                        file: fileForm.file,
-                    }),
-                }
-            );
+            const response = await fetch(`https://instituto.sistemataup.online/api/course-subsections/${activeSubsection}/addFile`, {
+                method: "POST",
+                headers: {
+                    // No es necesario agregar Content-Type, ya que lo manejará automáticamente FormData
+                    Authorization: `Bearer ${user?.token}`,
+                },
+                body: (() => {
+                    // Crea una instancia de FormData para enviar el archivo y otros campos
+                    const formData = new FormData();
+                    formData.append('title', fileForm.title); // Agrega el título
+                    formData.append('file', fileForm.file ? fileForm.file : "");   // Agrega el archivo
+            
+                    return formData; // Devuelve el FormData con el archivo y el título
+                })(),
+            });
         }
 
         setSubsectionForm({
@@ -677,6 +738,25 @@ export default function EditCourseContentPage({
                                     rows={3}
                                 />
                             </div>
+                            {/* <div className="grid gap-2">
+                                <Label htmlFor="section-teacherId">
+                                    Profesor
+                                </Label>
+                                <Select value={sectionForm.teacherId} onValueChange={(value) => setSectionForm({ ...sectionForm, teacherId: value })}>
+                                    <SelectTrigger id="section-teacherId">
+                                        <SelectValue placeholder="Seleccionar docente" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {teachersOptions.map((teacher) => {
+                                            console.log("TEACHER: ",teacher);
+                                            
+                                            return (<SelectItem key={teacher.value} value={teacher.value}>
+                                                {teacher.label}
+                                            </SelectItem>)
+                                        })}
+                                    </SelectContent>
+                                </Select>
+                            </div> */}
                         </div>
                         <DialogFooter>
                             <Button
@@ -834,6 +914,8 @@ export default function EditCourseContentPage({
                                                                         setActiveSubsection(
                                                                             subsection.id
                                                                         );
+                                                                        setSubsectionForm(
+                                                                            subsection);
                                                                     }}
                                                                 >
                                                                     <ChevronRight className="mr-1 h-3 w-3" />
@@ -957,11 +1039,11 @@ export default function EditCourseContentPage({
                                             <Input
                                                 id="subsection-title"
                                                 value={subsectionForm.title}
-                                                onChange={(e) =>
+                                                onChange={(e) =>{
                                                     setSubsectionForm({
                                                         ...subsectionForm,
                                                         title: e.target.value,
-                                                    })
+                                                    })}
                                                 }
                                                 placeholder="Título de la subsección"
                                             />

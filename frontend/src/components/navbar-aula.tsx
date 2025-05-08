@@ -18,6 +18,7 @@ export default function NavbarAula() {
     if (pathname.startsWith("/admin")) {
         return <Navbar />;
     }
+
     return (
         <header className="relative z-50 border-b shadow-md bg-zinc-50 dark:bg-zinc-800 dark:border-gray-700">
             <div>
@@ -40,18 +41,19 @@ export default function NavbarAula() {
                     >
                         Inicio
                     </Link>
-                    <Link
+                    {/* <Link
                         href="#"
                         className="text-sm font-medium hover:underline"
                     >
                         Cursos
-                    </Link>
-                    <Link
-                        href="#"
+                    </Link> */}
+                    {/* <Button
+                        variant={"ghost"}
+                        onClick={handleOpenProfile}
                         className="text-sm font-medium hover:underline"
                     >
                         Mi Perfil
-                    </Link>
+                    </Button> */}
                     <Button
                         variant="ghost"
                         onClick={logout}

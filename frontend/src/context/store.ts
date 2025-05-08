@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 
 // Definición de tipos para la respuesta del API
 export interface AuthResponse {
+    id: string;
     token: string;
     username: string;
     name: string;
@@ -11,6 +12,7 @@ export interface AuthResponse {
 
 // Tipo de usuario simplificado para mantener compatibilidad
 export type User = {
+    id: string;
     token: string;
     username: string;
     name: string;
@@ -44,7 +46,7 @@ export const useAuthStore = create<AuthState>()(
 
             // Función de login
             login: async (
-                email: string,
+                dni: string,
                 password: string,
                 role: "ROLE_ADMIN" | "ROLE_STUDENT"
             ) => {
@@ -57,7 +59,7 @@ export const useAuthStore = create<AuthState>()(
                         {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ username: email, password }),
+                            body: JSON.stringify({ dni, password }),
                         }
                     );
 

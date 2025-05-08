@@ -55,7 +55,7 @@ public class ParentsController {
 			@ApiResponse(responseCode = "404", description = "Padre no encontrado"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
-	@GetMapping("/{id}")
+	@GetMapping("/obtener/{id}")
 	public Mono<Parent> findById(
 			@Parameter(description = "ID del padre", required = true) @PathVariable String id) {
 		return parentService.findById(id)

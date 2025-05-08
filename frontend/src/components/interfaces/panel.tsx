@@ -26,7 +26,7 @@ export default function Panel() {
                         asChild
                         className="w-full flex justify-between h-16 p-6 text-[#1e1e1e] text-2xl font-semibold bg-white rounded-lg border border-[#d9d9d9] hover:bg-[#f5f5f5]"
                     >
-                        <Link href="#">
+                        <Link href="/admin/caja">
                             Balance
                             <CopyPlus />
                         </Link>
@@ -35,7 +35,7 @@ export default function Panel() {
                         asChild
                         className="w-full flex justify-between h-16 p-6 text-[#1e1e1e] text-2xl font-semibold bg-white rounded-lg border border-[#d9d9d9] hover:bg-[#f5f5f5]"
                     >
-                        <Link href="/admin/coutas">
+                        <Link href="/admin/cuotas">
                             Cuotas adeudadas
                             <CopyMinus />
                         </Link>

@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sistema.gestion.Models.ModelClass;
 import com.sistema.gestion.Utils.AttendanceStatus;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -30,7 +29,6 @@ public class StudentAttendance extends ModelClass {
     private Set<String> studentsIds;
 
     @NotNull(message = "El mapa de estado de asistencia no puede ser nulo.")
-    @Valid
     private Map<String, AttendanceStatus> attendanceStatus;
 
     @NotNull(message = "La fecha de asistencia no puede ser nula.")

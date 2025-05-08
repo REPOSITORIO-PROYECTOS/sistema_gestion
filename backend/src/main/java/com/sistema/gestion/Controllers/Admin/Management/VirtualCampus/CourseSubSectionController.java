@@ -55,7 +55,7 @@ public class CourseSubSectionController {
     }
 
     @PostMapping("/{subSectionId}/addFile")
-    public Mono<ResponseEntity<String>> addFile(ServerWebExchange exchange, @PathVariable String subSectionId, @RequestPart("fileName") String name, @RequestPart("newFile") Mono<FilePart> file) {
+    public Mono<ResponseEntity<String>> addFile(ServerWebExchange exchange, @PathVariable String subSectionId, @RequestPart("title") String name, @RequestPart("file") Mono<FilePart> file) {
         return courseSubSectionService.addFile(exchange, subSectionId, name, file).map(id -> ResponseEntity.ok("Id del archivo subido: " + id));
     }
 }

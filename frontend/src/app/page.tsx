@@ -213,7 +213,7 @@ export default function Home() {
                                 ))}
                             </div>
     
-                            <div className="pt-4">
+                            {/* <div className="pt-4">
                                 <h2 className="text-xl font-semibold tracking-tight mb-4">
                                     Cursos Recomendados
                                 </h2>
@@ -269,12 +269,12 @@ export default function Home() {
                                         </CardFooter>
                                     </Card>
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
     
                         {/* Sidebar - Cursos inscritos */}
                         <div className="space-y-6">
-                            <div>
+                            {/* <div>
                                 <div className="flex items-center mb-6">
                                     <Bell className="mr-2 h-5 w-5" />
                                     <h2 className="text-xl font-semibold tracking-tight ">
@@ -314,9 +314,9 @@ export default function Home() {
                                         <ChevronRight className="size-5 ml-1 group-hover:translate-x-1 transition-transform" />
                                     </Link>
                                 </div>
-                            </div>
+                            </div> 
     
-                            <Separator className="bg-zinc-400 dark:bg-zinc-700" />
+                            <Separator className="bg-zinc-400 dark:bg-zinc-700" />*/}
     
                             <div className="flex items-center">
                                 <BookOpen className="mr-2 h-5 w-5" />

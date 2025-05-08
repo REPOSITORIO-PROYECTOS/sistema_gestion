@@ -60,16 +60,16 @@ public class StudentAttendanceController {
 			@ApiResponse(responseCode = "400", description = "Datos de la asistencia inválidos"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
-	@PostMapping
+	@PostMapping("/tomar-asistencia")
 	public Mono<StudentAttendance> takeAttendance(
 			Authentication auth,
-			@Parameter(description = "Datos de la asistencia", required = true) @RequestBody @Valid StudentAttendance studentAttendance) {
+			@Parameter(description = "Datos de la asistencia", required = true) @RequestBody StudentAttendance studentAttendance) {
 
 		String user = auth.getName();
 
 		return studentAttendanceService.takeAttendance(studentAttendance, user)
 				.onErrorResume(e -> Mono.error(new ResponseStatusException(
-						HttpStatus.BAD_REQUEST, "Error al tomar asistencia.")));
+						HttpStatus.BAD_REQUEST, "Error al tomar asistencia." + e.getMessage())));
 	}
 
 	@Operation(summary = "Modificar asistencia", description = "Actualiza la asistencia de un estudiante")

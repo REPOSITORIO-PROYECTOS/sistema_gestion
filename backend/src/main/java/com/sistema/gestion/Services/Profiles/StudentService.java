@@ -51,7 +51,7 @@ public class StudentService {
 	public Mono<Student> createStudentWithCourses(Student student, String username) {
 		return userService.getFullName(username)
 				.flatMap(fullName -> {
-					student.setCreatedBy(fullName);
+					student.setCreatedBy(fullName.getName() + " " + fullName.getSurname());
 					student.setCreatedAt(LocalDateTime.now());
 					return studentRepository.save(student)
 							.flatMap(savedStudent -> enrollStudentInCourses(savedStudent));
@@ -84,7 +84,7 @@ public class StudentService {
 	public Mono<Student> createStudentWithCoursesAndParents(Student student, String username) {
 		return userService.getFullName(username)
 				.flatMap(fullName -> {
-					student.setCreatedBy(fullName);
+					student.setCreatedBy(fullName.getName() + " " + fullName.getSurname());
 					student.setCreatedAt(LocalDateTime.now());
 					return studentRepository.save(student)
 							.flatMap(savedStudent -> enrollStudentInCourses(savedStudent))
@@ -113,7 +113,7 @@ public class StudentService {
 							existingStudent.setEmail(student.getEmail());
 							existingStudent.setPhone(student.getPhone());
 							existingStudent.setUpdatedAt(LocalDateTime.now());
-							existingStudent.setModifiedBy(fullName);
+							existingStudent.setModifiedBy(fullName.getName() + " " + fullName.getSurname());
 							return studentRepository.save(existingStudent);
 						}))
 				.onErrorMap(e -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
@@ -155,7 +155,7 @@ public class StudentService {
 						pageRequest.getPageSize()));
 	}
 
-	private Mono<Student> enrollStudentInCourses(Student student) {
+	public Mono<Student> enrollStudentInCourses(Student student) {
 		Set<String> courseIds = student.getCoursesIds();
 
 		if (courseIds == null || courseIds.isEmpty()) {
@@ -173,7 +173,7 @@ public class StudentService {
 				.then(Mono.just(student)); // Devolver el estudiante guardado
 	}
 
-	private Mono<Student> enrollStudentInParents(Student student) {
+	public Mono<Student> enrollStudentInParents(Student student) {
     String parentId = student.getParentId();
 
     if (parentId == null || parentId.isEmpty()) {

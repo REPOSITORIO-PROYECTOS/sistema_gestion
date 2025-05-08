@@ -40,7 +40,9 @@ export function ModalPago({ cuota, onSubmit, setPago }: { cuota: any; onSubmit: 
             onSubmit({
                 ...pago,
                 title: cuota.studentName,
+                courseId: pago.courseId,
                 description: "Pago parcial cuota",
+                paymentAmount: cuota.paymentAmount,
                 paidAmount,
                 isPaid,
                 hasDebt: !isPaid,
@@ -60,10 +62,13 @@ export function ModalPago({ cuota, onSubmit, setPago }: { cuota: any; onSubmit: 
 
         if (tipoPago === "ACTUALIZAR") {
             const porcentajeAplicado = parseFloat(porcentaje);
-            const nuevoMonto = (cuota.paymentAmount * porcentajeAplicado) / 100;
+            const nuevoMonto = cuota.paymentAmount + (cuota.paymentAmount * porcentajeAplicado) / 100;
+            //const fechaCorregida = cuota.paymentDueDate.split("T")[0].split("-").reverse().join("-");
             onSubmit({
                 ...pago,
-                paymentAmount: nuevoMonto
+                paidAmount: cuota.paidAmount,
+                paymentAmount: nuevoMonto,
+                //paymentDueDate: fechaCorregida,
             }, "ACTUALIZAR");
         }
 

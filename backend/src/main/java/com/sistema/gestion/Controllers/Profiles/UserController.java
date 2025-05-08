@@ -46,7 +46,7 @@ public class UserController {
 			@ApiResponse(responseCode = "400", description = "Error en la solicitud."),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor.")
 	})
-	@GetMapping("/{userId}")
+	@GetMapping("/obtener/{userId}")
 	public Mono<ResponseEntity<UserInfo>> getUserById(
 			@Parameter(description = "ID del usuario", required = true, example = "12345") @PathVariable String userId) {
 		return userService.findById(userId)

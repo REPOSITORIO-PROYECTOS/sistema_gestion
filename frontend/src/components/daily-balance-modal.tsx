@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -130,6 +130,47 @@ export function DailyBalanceModal() {
         { value: "11", label: "Noviembre" },
         { value: "12", label: "Diciembre" },
     ];
+    const contentRef = useRef<HTMLDivElement>(null);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    const handleDownloadPDF = async () => { // Asegúrate que sea async
+        if (isClient) {
+            const element = contentRef.current;
+            if (!element) {
+                console.error("Elemento no encontrado para PDF.");
+                return; // Salir si no hay elemento
+            }
+    
+            try {
+                // IMPORTACIÓN DINÁMICA - La forma correcta
+                const html2pdf = (await import('html2pdf.js')).default;
+    
+                if (!html2pdf) {
+                     throw new Error("La librería html2pdf no se pudo cargar.");
+                }
+    
+                const opt = {
+                    margin: 1,
+                    filename: 'balance-mensual.pdf',
+                    image: { type: 'jpg', quality: 0.98 },
+                    html2canvas: { scale: 1 },
+                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                };
+    
+                html2pdf().from(element).set(opt).save().then(() => {
+                    console.log("PDF generado y descargado.");
+                });
+    
+            } catch (error) {
+                console.error("Error generando PDF:", error);
+                // Considera mostrar un error al usuario aquí
+            }
+        }
+    };
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -202,7 +243,8 @@ export function DailyBalanceModal() {
                 )}
 
                 {data && (
-                    <div className="space-y-6 max-h-96 overflow-y-scroll">
+                    <>
+                    <div className="space-y-6 max-h-96 overflow-y-scroll" ref={contentRef}>
                         <div className="grid grid-cols-2 gap-4">
                             <Card>
                                 <CardHeader className="pb-2">
@@ -336,6 +378,10 @@ export function DailyBalanceModal() {
                             )}
                         </div>
                     </div>
+                    <Button onClick={handleDownloadPDF} variant="outline">
+                        Descargar PDF
+                    </Button>
+                    </>
                 )}
             </DialogContent>
         </Dialog>

@@ -112,10 +112,18 @@ export default function FormCurso({
                     fetch({
                         endpoint: "/estudiantes/paged?page=0&size=10",
                         method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${user?.token}`
+                        }
                     }),
                     fetch({
                         endpoint: "/profesores/paged?page=0&size=1000",
                         method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${user?.token}`
+                        }
                     }),
                 ]);
                 if (studentsResponse && studentsResponse.content) {
@@ -152,6 +160,7 @@ export default function FormCurso({
 
     async function onSubmit(data: z.infer<typeof formSchema>) {
         const formData = {
+            id: isEditable ? datos?.id : undefined,
             title: data.title,
             description: data.description,
             status: data.status,
@@ -391,7 +400,33 @@ export default function FormCurso({
                                     render={({ field }:any) => (
                                         <FormItem>
                                             <FormLabel>Profesores</FormLabel>
-                                            <Select
+                                            <MultipleSelector
+                                                    options={teacherOptions}
+                                                    //@ts-ignore
+                                                    selected={
+                                                        field.value?.map(
+                                                            (id: string) =>
+                                                                teacherOptions.find(
+                                                                    (option) =>
+                                                                        option.value ===
+                                                                        id
+                                                                ) || {
+                                                                    value: id,
+                                                                    label: id,
+                                                                }
+                                                        ) || []
+                                                    }
+                                                    onChange={(selected) =>
+                                                        field.onChange(
+                                                            selected.map(
+                                                                (option) =>
+                                                                    option.value
+                                                            )
+                                                        )
+                                                    }
+                                                    placeholder="Seleccionar profesores..."
+                                                />
+                                            {/* <Select
                                                 onValueChange={field.onChange}
                                                 defaultValue={field.value}
                                             >
@@ -429,7 +464,7 @@ export default function FormCurso({
                                                         )
                                                     )}
                                                 </SelectContent>
-                                            </Select>
+                                            </Select> */}
                                             <FormMessage />
                                         </FormItem>
                                     )}

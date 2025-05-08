@@ -18,6 +18,8 @@ public interface TeacherRepository extends ReactiveMongoRepository<Teacher, Stri
 
     Mono<Teacher> findByEmail(String email);
 
+    Mono<Teacher> findByDni(String dni);
+
     // Conteo total de registros
     @Query(value = "{}", count = true)
     Mono<Long> countAll();

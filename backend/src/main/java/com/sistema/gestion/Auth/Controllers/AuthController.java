@@ -118,6 +118,43 @@ public class AuthController {
         }
     }
 
+    @PutMapping("/editar")
+    public Mono<UserInfo> updateUserByEmail(
+            @RequestParam String userType,
+            @RequestBody UserInfo userDetails,
+            Authentication auth) {
+        String username = auth.getName();
+
+        switch (userType.toLowerCase()) {
+            case "student":
+                return authService.updateStudentProfile(userDetails, username).map(user -> {
+                    UserInfo userInfo = new UserInfo();
+                    userInfo.setStudent(user);
+                    return userInfo;
+                });  // Actualizar estudiante
+            case "teacher":
+                return authService.updateTeacherProfile(userDetails, username).map(user -> {
+                    UserInfo userInfo = new UserInfo();
+                    userInfo.setTeacher(user);
+                    return userInfo;
+                });   // Actualizar profesor
+            case "user":
+                return authService.updateUserProfile(userDetails, username).map(user -> {
+                    UserInfo userInfo = new UserInfo();
+                    userInfo.setUser(user);
+                    return userInfo;
+                });   // Actualizar usuario
+            case "parent":
+                return authService.updateParentProfile(userDetails, username).map(user -> {
+                    UserInfo userInfo = new UserInfo();
+                    userInfo.setParent(user);
+                    return userInfo;
+                });
+            default:
+                return Mono.empty();   // Actualizar usuario
+        }
+    }
+
     @Operation(summary = "Eliminar usuario por ID", description = "Elimina un usuario del sistema")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Usuario eliminado exitosamente"),
@@ -151,7 +188,7 @@ public class AuthController {
     @PostMapping("/login")
     public Mono<ResponseEntity<UserCredentialsDTO>> login(
             @RequestBody LoginRequest loginRequest) {
-        return authService.login(loginRequest.getUsername(), loginRequest.getPassword())
+        return authService.login(loginRequest.getDni(), loginRequest.getPassword())
                 .flatMap(credentialsDTO -> {
                     // Crear la cookie con el token JWT
                     ResponseCookie tokenCookie = ResponseCookie.from("token", credentialsDTO.getToken())

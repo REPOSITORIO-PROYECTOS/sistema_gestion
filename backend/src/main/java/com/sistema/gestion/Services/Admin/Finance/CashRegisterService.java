@@ -51,7 +51,7 @@ public class CashRegisterService {
 								CashRegister newCashRegister = new CashRegister();
 								newCashRegister.setStartDate(LocalDateTime.now());
 								newCashRegister.setIsClosed(false);
-								newCashRegister.setCreatedBy(name);
+								newCashRegister.setCreatedBy(name.getName() + " " + name.getSurname());
 								return cashRegisterRepo.save(newCashRegister);
 							})
 						)
@@ -248,7 +248,7 @@ public class CashRegisterService {
 								movement.setIncome(request.isIncome());
 								movement.setAmount(request.getAmount());
 								movement.setDate(LocalDateTime.now());
-								movement.setRegisteredBy(fullName);
+								movement.setRegisteredBy(fullName.getName() + " " + fullName.getSurname());
 								return cashMovementRepo.save(movement);
 							}))
 					)

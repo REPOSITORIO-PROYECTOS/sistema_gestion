@@ -1,7 +1,6 @@
 package com.sistema.gestion.Models.Profiles;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Set;
 
 import org.springframework.data.annotation.Id;
@@ -31,5 +30,5 @@ public class Teacher extends ProfileClass{
 
     private Set<String> coursesIds;
 
-    private ArrayList<String> sectionsIds;
+    private Set<String> sectionsIds;
 }

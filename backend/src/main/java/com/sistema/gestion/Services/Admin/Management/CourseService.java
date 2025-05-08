@@ -62,6 +62,10 @@ public class CourseService {
 		return getAllCoursesPaged(pageRequest);
 	}
 
+    public Flux<Course> getCoursesByProfessorId(String professorId) {
+        return courseRepo.findByTeacherIdsContaining(professorId);
+    }
+
 	public Mono<Course> saveCourse(Course course, String username) {
 		if (course.getId() != null && !course.getId().isEmpty()) {
 			return monoError(HttpStatus.BAD_REQUEST,
@@ -71,7 +75,7 @@ public class CourseService {
 		return userService.getFullName(username)
 				.flatMap(fullName -> {
 					course.setCreatedAt(LocalDateTime.now());
-					course.setCreatedBy(fullName);
+					course.setCreatedBy(fullName.getName() + " " + fullName.getSurname());
 					return courseRepo.save(course)
 							.flatMap(savedCourse -> updateTeacherCourses(savedCourse));
 				});
@@ -87,7 +91,7 @@ public class CourseService {
 				.switchIfEmpty(monoError(HttpStatus.NOT_FOUND, "No se encontró el curso con ID: " + courseId))
 				.flatMap(existingCourse -> userService.getFullName(username)
 						.flatMap(fullName -> {
-							Course updatedCourse = mappingCourseToUpdate(existingCourse, course, fullName);
+							Course updatedCourse = mappingCourseToUpdate(existingCourse, course, fullName.getName() + " " + fullName.getSurname());
 							return courseRepo.save(updatedCourse);
 						}));
 	}
@@ -166,34 +170,40 @@ public class CourseService {
                                             e.printStackTrace();
                                         })
                                         .flatMap(subSection -> {
-                                            // System.out.println("Procesando subsección ID: " + subSection.getId()); // Puede ser muy verboso
-                                            Mono<List<File>> filesMono = fileRepo.findBySubSectionId(subSection.getId()) // Flux<File>
-                                                    .doOnError(e -> {
-                                                        System.err.println("Error al buscar archivos para subsección ID: " + subSection.getId()); // Log después de findBySubSectionId
-                                                        e.printStackTrace();
-                                                    })
-                                                    .collectList()
-                                                    .doOnSuccess(files -> {
-                                                        if(files.isEmpty()) {
-                                                            // System.out.println("No se encontraron archivos para subsección ID: " + subSection.getId());
-                                                        }
-                                                    }); // Log si no hay archivos
-
+                                            // Log de inicio
+                                            System.out.println("Procesando subsección ID: " + subSection.getId());
+                                        
+                                            // Obtener archivos por los IDs de los archivos en la subsección
+                                            Mono<List<File>> filesMono = fileRepo.findByIdIn(subSection.getFilesIds()) // Flux<File>
+                                                .doOnError(e -> {
+                                                    // Log si ocurre un error al buscar los archivos
+                                                    System.err.println("Error al buscar archivos para subsección ID: " + subSection.getId());
+                                                    e.printStackTrace();
+                                                })
+                                                .collectList() // Convertir Flux<File> en Mono<List<File>>
+                                                .doOnSuccess(files -> {
+                                                    if (files.isEmpty()) {
+                                                        // Log si no se encuentran archivos
+                                                        System.out.println("No se encontraron archivos para subsección ID: " + subSection.getId());
+                                                    }
+                                                });
+                                        
                                             // Crear el SubSectionDTO cuando los archivos estén listos
                                             return filesMono.map(files -> {
                                                 SubSectionDTO subSectionDTO = new SubSectionDTO();
                                                 subSectionDTO.setId(subSection.getId());
                                                 subSectionDTO.setTitle(subSection.getTitle());
                                                 subSectionDTO.setBody(subSection.getBody());
-                                                subSectionDTO.setFiles(files);
-                                                // System.out.println("SubSectionDTO creado para ID: " + subSection.getId());
+                                                subSectionDTO.setFiles(files); // Establecer los archivos obtenidos
                                                 return subSectionDTO;
                                             })
                                             .doOnError(e -> {
-                                                System.err.println("Error mapeando archivos a SubSectionDTO para subsección ID: " + subSection.getId()); // Log en mapeo
+                                                // Log de error cuando ocurre al mapear archivos a SubSectionDTO
+                                                System.err.println("Error mapeando archivos a SubSectionDTO para subsección ID: " + subSection.getId());
                                                 e.printStackTrace();
-                                             });
-                                        }) // Flux<SubSectionDTO>
+                                            });
+                                        })
+                                         // Flux<SubSectionDTO>
                                         .collectList() // Mono<List<SubSectionDTO>>
                                         .doOnSuccess(subs -> {
                                             // System.out.println("Subsecciones recolectadas (" + subs.size() + ") para sección ID: " + section.getId());
@@ -205,6 +215,7 @@ public class CourseService {
                                     SectionDTO sectionDTO = new SectionDTO();
                                     sectionDTO.setId(section.getId());
                                     sectionDTO.setTitle(section.getName());
+                                    sectionDTO.setTeacherId(section.getTeacherId());
                                     sectionDTO.setDescription(section.getDescription());
                                     sectionDTO.setSubSections(subSectionDTOs);
                                     // System.out.println("SectionDTO creado para ID: " + section.getId());

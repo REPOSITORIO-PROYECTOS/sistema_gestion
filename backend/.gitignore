@@ -4,7 +4,9 @@ HELP.md
 !**/src/main/**/target/
 !**/src/test/**/target/
 /src/main/resources/credentials.json
+/src/main/resources/credentialss.json
 /target/classes/credentials.json
+/target/classes/credentialss.json
 
 ### STS ###
 .apt_generated

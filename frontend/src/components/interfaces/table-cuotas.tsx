@@ -261,6 +261,30 @@ export default function TableCuotas() {
         selectedYear,
         selectedMonth,
     ]);
+
+    const handleGenerarCuotasMesActual = async () => {
+        startLoading();
+        try {
+            const response = await fetch({
+                endpoint: `/pagos/generar-cuotas`,
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user?.token}`,
+                },
+            });
+            const data = await response;
+            if (data) {
+                // Aquí puedes manejar la respuesta después de generar las cuotas
+                alert("Cuotas generadas correctamente");
+            }
+        } catch (error) {
+            alert("Error generando cuotas, intentelo de nuevo.");
+        }
+        finally {
+            finishLoading();
+        }
+    };
     
 
     return (
@@ -355,8 +379,13 @@ export default function TableCuotas() {
                                 })}
                         </DropdownMenuContent>
                     </DropdownMenu>
+                    <Button className="absolute right-[8%]"
+                        onClick={async () => handleGenerarCuotasMesActual() }
+                        >Generar cuotas del mes actual
+                    </Button>
                 </div>
             </div>
+
             <div className="rounded-md border bg-white shadow-sm">
                 <Table>
                     <TableHeader>

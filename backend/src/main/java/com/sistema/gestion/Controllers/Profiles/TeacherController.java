@@ -60,7 +60,7 @@ public class TeacherController {
 			@ApiResponse(responseCode = "404", description = "Profesor no encontrado"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
-	@GetMapping("/{id}")
+	@GetMapping("/obtener/{id}")
 	public Mono<ResponseEntity<Teacher>> findById(
 			@Parameter(description = "ID del profesor", required = true) @PathVariable String id) {
 		return teacherService.findById(id)

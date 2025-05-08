@@ -15,6 +15,8 @@ public interface UserRepository extends ReactiveMongoRepository<User, String> {
 
     Mono<User> findByEmail(String email);
 
+    Mono<User> findByDni(String dni);
+
     // Buscar usuarios por keyword en el título o descripción con paginación
     @Query("{ $or: [ { 'name': { $regex: ?0, $options: 'i' } }, { 'surname': { $regex: ?0, $options: 'i' } } ] }")
     Flux<User> findByKeywordPaged(String keyword, PageRequest pageRequest);

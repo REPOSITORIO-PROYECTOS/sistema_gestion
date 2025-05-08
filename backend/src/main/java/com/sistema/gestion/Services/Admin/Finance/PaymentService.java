@@ -132,10 +132,10 @@ public class PaymentService {
 										return monoError(HttpStatus.CONFLICT,
 												"Ya existe una cuota registrada para este estudiante y curso en el mes actual.");
 									}
-									return savePayment(payment, startOfMonth, name);
+									return savePayment(payment, startOfMonth, name.getName() + " " + name.getSurname());
 								});
 					}
-					return savePayment(payment, startOfMonth, name);
+					return savePayment(payment, startOfMonth, name.getName() + " " + name.getSurname());
 				});
 	}
 
@@ -159,7 +159,7 @@ public class PaymentService {
 				.flatMapMany(name -> paymentRepo.findByPaymentDueDateBetween(startOfMonth, endOfMonth)
 						.filter(payment -> payment.getPaymentType() == PaymentType.CUOTE)
 						.collectList()
-						.flatMapMany(existingPayments -> generatePaymentsForActiveStudents(existingPayments, startOfMonth, name)));
+						.flatMapMany(existingPayments -> generatePaymentsForActiveStudents(existingPayments, startOfMonth, name.getName() + " " + name.getSurname())));
 	}
 
 	public Mono<Payment> doPayment(String paymentId, Payment payment, String username) {
@@ -169,7 +169,7 @@ public class PaymentService {
 		}
 
 		return userService.getFullName(username)
-				.flatMap(name -> validateAndProcessPayment(payment, name))
+				.flatMap(name -> validateAndProcessPayment(payment, name.getName() + " " + name.getSurname()))
 				.onErrorResume(ResponseStatusException.class, Mono::error);
 	}
 

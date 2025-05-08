@@ -152,7 +152,7 @@ export default function UserForm({ isEditable = false, datos, mutate, onClose }:
         }
         startLoading()
         try {
-            const profileType = formData.roles.includes("ROLE_PARENT") ? "parent" : "user"
+            const profileType = formData.roles.includes("ROLE_PARENT") ? "parent" : formData.roles.includes("ROLE_TEACHER") ? "teacher" : "user"
             profileType === "parent" && formData.roles
             const endpoint = isEditable ? `/auth/editar/${datos?.id}?userType=${profileType}` : `/auth/registrar?userType=${profileType}`
             const response = await fetch({

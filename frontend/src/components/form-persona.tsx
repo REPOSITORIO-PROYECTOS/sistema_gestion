@@ -21,6 +21,8 @@ import { Input } from "./ui/input"
 import { toast } from "sonner"
 import * as z from "zod"
 import { useAuthStore } from "@/context/store"
+import { DialogFooter, DialogHeader } from "./ui/dialog"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@radix-ui/react-dialog"
 
 const formSchema = z.object({
     name: z.string().min(2, {
@@ -91,8 +93,8 @@ export default function PersonaForm({ isEditable = false, datos, mutate, onClose
             dni: datos?.dni || "",
             status: datos?.status || undefined,
             phone: datos?.phone || "",
-            dateOfBirth: datos?.dateOfBirth ? parse(datos.dateOfBirth.toString(), "dd-MM-yyyy", new Date()) : new Date(Date.now()),
-            ingressDate: datos?.ingressDate ? parse(datos.ingressDate.toString(), "dd-MM-yyyy", new Date()) : new Date(Date.now()),
+            dateOfBirth: datos?.dateOfBirth ? parse(datos.dateOfBirth.toString(), "dd-MM-yyyy", new Date()) : undefined,//new Date(Date.now()),
+            ingressDate: datos?.ingressDate ? parse(datos.ingressDate.toString(), "dd-MM-yyyy", new Date()) : undefined,//new Date(Date.now()),
             parentId: [datos?.parentId || ""],
             cursesIds: datos?.cursesIds ?? [],
         },
@@ -224,6 +226,455 @@ export default function PersonaForm({ isEditable = false, datos, mutate, onClose
     }
     
     return (
+        <div className="flex items-center gap-3">
+            <Dialog
+                open={isEditable ? true : open}
+                onOpenChange={isEditable ? onClose : setOpen}
+            >
+                {isEditable ? null : (
+                    <Button
+                        className="ml-auto"
+                        variant="outline"
+                        onClick={() => setOpen(true)}
+                    >
+                        <Plus
+                            className="-ms-1 me-2 opacity-60"
+                            size={16}
+                            strokeWidth={2}
+                            aria-hidden="true"
+                        />
+                        Agregar Estudiante
+                    </Button>
+                )}
+
+                <DialogContent className="sm:max-w-lg">
+                    <div className="relative flex flex-col gap-2 max-sm:items-center sm:flex-row sm:gap-4 z-10">
+                        <div
+                            className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border"
+                            aria-hidden="true"
+                        >
+                            <CircleAlert
+                                className="opacity-80"
+                                size={16}
+                                strokeWidth={2}
+                            />
+                        </div>
+                        <DialogHeader>
+                            <DialogHeader>
+                                <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    {isEditable
+                                        ? "Editar Usuario"
+                                        : "Formulario de inscripción"}
+                                </DialogTitle>
+
+                                <DialogDescription>
+                                    Por favor, complete todos los campos del
+                                    formulario.
+                                </DialogDescription>
+                            </DialogHeader>
+                        </DialogHeader>
+                    </div>
+                    <Form {...form}>
+                        <form
+                            onSubmit={form.handleSubmit(onSubmit)}
+                            className="space-y-4 mt-4 py-6 px-2 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300"
+                        >
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="name"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Nombre</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="surname"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Apellido</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email</FormLabel>
+                                        <FormControl>
+                                            <Input type="email" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="dni"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>DNI</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="phone"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Teléfono</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                            <FormField
+                                control={form.control}
+                                name="status"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Estado</FormLabel>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Seleccione un estado" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="activo">
+                                                    Activo
+                                                </SelectItem>
+                                                <SelectItem value="inactivo">
+                                                    Inactivo
+                                                </SelectItem>
+                                                <SelectItem value="pendiente">
+                                                    Pendiente
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="dateOfBirth"
+                                    render={({ field }) => {
+                                        let dateObj: Date | undefined;
+                                        if (
+                                            typeof field.value === "string" &&
+                                            field.value
+                                        ) {
+                                            dateObj = parse(
+                                                field.value,
+                                                "dd-MM-yyyy",
+                                                new Date(),
+                                                { locale: es }
+                                            ); // Asegúrate de usar el locale
+                                        } else if (
+                                            field.value instanceof Date
+                                        ) {
+                                            dateObj = field.value;
+                                        }
+                                        const formattedDate =
+                                            dateObj && isValid(dateObj)
+                                                ? format(dateObj, "PPP", {
+                                                      locale: es,
+                                                  })
+                                                : "";
+                                        return (
+                                            <FormItem className="flex flex-col">
+                                                <FormLabel>
+                                                    Fecha de Nacimiento
+                                                </FormLabel>
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <FormControl>
+                                                            <Button
+                                                                variant={
+                                                                    "outline"
+                                                                }
+                                                                className={cn(
+                                                                    "w-full pl-3 text-left font-normal",
+                                                                    !field.value &&
+                                                                        "text-muted-foreground"
+                                                                )}
+                                                            >
+                                                                {formattedDate || (
+                                                                    <span>
+                                                                        Seleccione
+                                                                        una
+                                                                        fecha
+                                                                    </span>
+                                                                )}
+                                                            </Button>
+                                                        </FormControl>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent
+                                                        className="w-auto p-0 z-50"
+                                                        align="start"
+                                                    >
+                                                        <CalendarWithMonthYearPicker
+                                                            mode="single"
+                                                            selected={
+                                                                field.value
+                                                            }
+                                                            onSelect={
+                                                                field.onChange
+                                                            }
+                                                            disabled={(date) =>
+                                                                date >
+                                                                    new Date() ||
+                                                                date <
+                                                                    new Date(
+                                                                        "1900-01-01"
+                                                                    )
+                                                            }
+                                                            initialFocus
+                                                        />
+                                                    </PopoverContent>
+                                                </Popover>
+                                                <FormMessage />
+                                            </FormItem>
+                                        );
+                                    }}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="ingressDate"
+                                    render={({ field }) => {
+                                        let dateObj: Date | undefined;
+                                        if (
+                                            typeof field.value === "string" &&
+                                            field.value
+                                        ) {
+                                            dateObj = parse(
+                                                field.value,
+                                                "dd-MM-yyyy",
+                                                new Date(),
+                                                { locale: es }
+                                            ); // Asegúrate de usar el locale
+                                        } else if (
+                                            field.value instanceof Date
+                                        ) {
+                                            dateObj = field.value;
+                                        }
+                                        const formattedDate =
+                                            dateObj && isValid(dateObj)
+                                                ? format(dateObj, "PPP", {
+                                                      locale: es,
+                                                  })
+                                                : "";
+                                        return (
+                                            <FormItem className="flex flex-col">
+                                                <FormLabel>
+                                                    Fecha de Ingreso
+                                                </FormLabel>
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <FormControl>
+                                                            <Button
+                                                                variant={
+                                                                    "outline"
+                                                                }
+                                                                className={cn(
+                                                                    "w-full pl-3 text-left font-normal",
+                                                                    !field.value &&
+                                                                        "text-muted-foreground"
+                                                                )}
+                                                            >
+                                                                {formattedDate || (
+                                                                    <span>
+                                                                        Seleccione
+                                                                        una
+                                                                        fecha
+                                                                    </span>
+                                                                )}
+                                                            </Button>
+                                                        </FormControl>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent
+                                                        className="w-auto p-0 z-50"
+                                                        align="start"
+                                                        sideOffset={4}
+                                                    >
+                                                        <CalendarWithMonthYearPicker
+                                                            mode="single"
+                                                            selected={
+                                                                field.value
+                                                            }
+                                                            onSelect={
+                                                                field.onChange
+                                                            }
+                                                            disabled={(date) =>
+                                                                date >
+                                                                    new Date() ||
+                                                                date <
+                                                                    new Date(
+                                                                        "1900-01-01"
+                                                                    )
+                                                            }
+                                                            initialFocus
+                                                        />
+                                                    </PopoverContent>
+                                                </Popover>
+                                                <FormMessage />
+                                            </FormItem>
+                                        );
+                                    }}
+                                />
+                            </div>
+                            {isLoading ? (
+                                <Loader2Icon
+                                    className="animate-spin"
+                                    size={16}
+                                    strokeWidth={2}
+                                />
+                            ) : (
+                                <>
+                                    <FormField
+                                        control={form.control}
+                                        name="parentId"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Padres</FormLabel>
+                                                <FormControl>
+                                                    <MultipleSelector
+                                                        options={parentsOptions}
+                                                        // @ts-ignore
+                                                        selected={(
+                                                            field.value || []
+                                                        ).map(
+                                                            (id: string) =>
+                                                                parentsOptions.find(
+                                                                    (option) =>
+                                                                        option.value ===
+                                                                        id
+                                                                ) || {
+                                                                    value: id,
+                                                                    label: id,
+                                                                }
+                                                        )}
+                                                        onChange={(selected) =>
+                                                            field.onChange(
+                                                                selected.map(
+                                                                    (option) =>
+                                                                        option.value
+                                                                )
+                                                            )
+                                                        }
+                                                        placeholder="Seleccionar padre..."
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="cursesIds"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Cursos</FormLabel>
+                                                <FormControl>
+                                                    <MultipleSelector
+                                                        options={courseOptions}
+                                                        // @ts-ignore
+                                                        selected={(
+                                                            field.value || []
+                                                        ).map(
+                                                            (id: string) =>
+                                                                courseOptions.find(
+                                                                    (option) =>
+                                                                        option.value ===
+                                                                        id
+                                                                ) || {
+                                                                    value: id,
+                                                                    label: id,
+                                                                }
+                                                        )}
+                                                        onChange={(selected) =>
+                                                            field.onChange(
+                                                                selected.map(
+                                                                    (option) =>
+                                                                        option.value
+                                                                )
+                                                            )
+                                                        }
+                                                        placeholder="Seleccionar cursos..."
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </>
+                            )}
+                        </form>
+                    </Form>
+                    <DialogFooter>
+                        <DialogClose onClick={() => setOpen(false)}>
+                            Cancelar
+                        </DialogClose>
+                        <Button onClick={form.handleSubmit(onSubmit)}>
+                            {loading ? (
+                                <Loader2Icon
+                                    className="animate-spin"
+                                    size={16}
+                                    strokeWidth={2}
+                                />
+                            ) : (
+                                <Plus
+                                    className="-ms-1 me-2 opacity-60"
+                                    size={16}
+                                    strokeWidth={2}
+                                    aria-hidden="true"
+                                />
+                            )}
+                            {loading
+                                ? isEditable
+                                    ? "Actualizando..."
+                                    : "Creando..."
+                                : isEditable
+                                ? "Actualizar"
+                                : "Crear"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
+    
+}
+
+
+
+/*
+ return (
         <div className="flex items-center gap-3">
             <AlertDialog open={isEditable ? true : open} onOpenChange={isEditable ? onClose : setOpen}>
                 <AlertDialogTrigger asChild>
@@ -368,7 +819,7 @@ export default function PersonaForm({ isEditable = false, datos, mutate, onClose
                                                             </Button>
                                                         </FormControl>
                                                     </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0" align="start">
+                                                    <PopoverContent className="w-auto p-0 relative z-50" align="start">
                                                         <CalendarWithMonthYearPicker
                                                             mode="single"
                                                             selected={field.value}
@@ -494,4 +945,4 @@ export default function PersonaForm({ isEditable = false, datos, mutate, onClose
             </AlertDialog>
         </div>
     )
-}
+ */
