@@ -259,7 +259,14 @@ export default function EditCourseContentPage({
                                 id: subsection.id,
                                 title: subsection.title,
                                 body: subsection.body || "",
-                                filesIds: subsection.filesIds || []
+                                filesIds: subsection.files ? subsection.files.map(
+                                    (file: any) => ({
+                                        id: file.id,
+                                        title: file.name,
+                                        url: file.link,
+                                        file: null,
+                                    })
+                                ) : [],
                             })
                         ),
                     })),
@@ -467,8 +474,7 @@ export default function EditCourseContentPage({
                     },
                     body: JSON.stringify({  
                         title: subsectionForm.title,
-                        body: subsectionForm.body,
-                        filesIds: subsectionForm.filesIds,
+                        body: subsectionForm.body
                     }),
                 }
             );
@@ -545,6 +551,7 @@ export default function EditCourseContentPage({
                     file: fileForm.file,
                 };
             }
+            handleActualizarArchivo(fileForm.file, fileForm.id);
         } else {
             // Crear nuevo
             const newId = `link-${Date.now()}`;
@@ -581,11 +588,35 @@ export default function EditCourseContentPage({
         resetLinkForm();
     };
 
+    const handleActualizarArchivo = async (file: File | null, fileId: string) => {
+        if (!file) return;
+        try{
+            const formData = new FormData();
+            formData.append("file", file);
+            const response = await fetch(
+                `https://instituto.sistemataup.online/api/files/update/${fileId}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        Authorization: `Bearer ${user?.token}`,
+                    },
+                    body: formData,
+                }
+            );
+            if (!response.ok) {
+                throw new Error("Error al actualizar el archivo");
+            }
+        } catch (error) {
+            console.error("Error al actualizar el archivo:", error);
+        }
+    }
+
     // Confirmar eliminación
     const handleDelete = () => {
         if (!itemToDelete) return;
 
         if (itemToDelete.type === "section") {
+            handleDeleteSection(itemToDelete.id);
             setCourse({
                 ...course,
                 sections: course.sections.filter(
@@ -593,6 +624,7 @@ export default function EditCourseContentPage({
                 ),
             });
         } else if (itemToDelete.type === "subsection") {
+            handleDeleteSubsection(itemToDelete.id);
             setCourse({
                 ...course,
                 sections: course.sections.map((section) => ({
@@ -603,7 +635,7 @@ export default function EditCourseContentPage({
                 })),
             });
         } else if (itemToDelete.type === "link") {
-            // Eliminar enlace del formulario de subsección
+            handleDeleteLink(itemToDelete.id);
             setSubsectionForm({
                 ...subsectionForm,
                 filesIds: subsectionForm.filesIds.filter(
@@ -615,6 +647,69 @@ export default function EditCourseContentPage({
         setIsDeleteDialogOpen(false);
         setItemToDelete(null);
     };
+
+    const handleDeleteSection = async (sectionId: string) => {
+        if (!activeSection) return;
+        try {
+            const response = await fetch(
+                `https://instituto.sistemataup.online/api/course-sections/delete/${sectionId}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${user?.token}`,
+                    },
+                }
+            );
+            if (!response.ok) {
+                throw new Error("Error al eliminar la sección");
+            }
+        } catch (error) {
+            console.error("Error al eliminar la sección:", error);
+        }
+    }
+
+    const handleDeleteSubsection = async (subsectionId: string) => {
+        if (!activeSection) return;
+        try {
+            const response = await fetch(
+                `https://instituto.sistemataup.online/api/course-subsections/delete/${subsectionId}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${user?.token}`,
+                    },
+                }
+            );
+            if (!response.ok) {
+                throw new Error("Error al eliminar la subsección");
+            }
+        } catch (error) {
+            console.error("Error al eliminar la subsección:", error);
+        }
+    }
+
+    const handleDeleteLink = async (linkId: string) => {
+        if (!activeSubsection) return;
+        try {
+            const response = await fetch(
+                `https://instituto.sistemataup.online/api/files/delete/${linkId}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${user?.token}`,
+                    },
+                }
+            );
+            if (!response.ok) {
+                throw new Error("Error al eliminar el enlace");
+            }
+        } catch (error) {
+            console.error("Error al eliminar el enlace:", error);
+        }
+    }
 
     // Guardar todos los cambios
     const handleSaveCourse = () => {
@@ -1118,20 +1213,22 @@ export default function EditCourseContentPage({
                                                             className="flex items-center justify-between p-2 rounded-md border hover:bg-muted"
                                                         >
                                                             <div className="flex items-center">
-                                                                <ExternalLink className="mr-2 h-4 w-4 text-muted-foreground" />
-                                                                <div>
-                                                                    <div className="font-medium">
-                                                                        {
-                                                                            link.title
-                                                                        }
+                                                                <a href={link.url} target="_blank" rel="noopener noreferrer">
+                                                                    <ExternalLink className="mr-2 h-4 w-4 text-muted-foreground" />
+                                                                    <div>
+                                                                        <div className="font-medium">
+                                                                            {
+                                                                                link.title
+                                                                            }
+                                                                        </div>
+                                                                        <div className="text-xs text-muted-foreground truncate max-w-md">
+                                                                            {
+                                                                                //TODO: Cambiar a un enlace real
+                                                                                //link.file
+                                                                            }
+                                                                        </div>
                                                                     </div>
-                                                                    <div className="text-xs text-muted-foreground truncate max-w-md">
-                                                                        {
-                                                                            //TODO: Cambiar a un enlace real
-                                                                            //link.file
-                                                                        }
-                                                                    </div>
-                                                                </div>
+                                                                </a>
                                                             </div>
                                                             <div className="flex space-x-2">
                                                                 <Button

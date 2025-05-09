@@ -67,10 +67,10 @@ public class CourseController {
 			@ApiResponse(responseCode = "201", description = "Curso registrado exitosamente."),
 			@ApiResponse(responseCode = "400", description = "Error en los datos proporcionados.")
 	})
-	@PostMapping
+	@PostMapping("/create")
 	public Mono<ResponseEntity<Course>> createCourse(
 			Authentication auth,
-			@RequestBody @Valid Course course
+			@RequestBody Course course
 	) {
 
 		String user = auth.getName();
@@ -87,11 +87,11 @@ public class CourseController {
 			@ApiResponse(responseCode = "404", description = "No se encontró el curso a actualizar.")
 	})
 
-	@PutMapping("/{courseId}")
+	@PutMapping("/update/{courseId}")
 	public Mono<ResponseEntity<Course>> updateCourse(
 			Authentication auth,
 			@PathVariable @Parameter(description = "ID del curso a actualizar", required = true) String courseId,
-			@RequestBody @Valid Course course) {
+			@RequestBody Course course) {
 
 		String user = auth.getName();
 
@@ -155,7 +155,7 @@ public class CourseController {
 			@ApiResponse(responseCode = "204", description = "Curso eliminado exitosamente."),
 			@ApiResponse(responseCode = "404", description = "No se encontró el curso.")
 	})
-	@DeleteMapping("/{courseId}")
+	@DeleteMapping("/delete/{courseId}")
 	public Mono<ResponseEntity<Void>> deleteCourse(
 			@PathVariable @Parameter(description = "ID del curso a eliminar", required = true) String courseId) {
 		return courseService.deleteCourse(courseId)

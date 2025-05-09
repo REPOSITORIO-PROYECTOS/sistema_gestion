@@ -12,6 +12,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CourseSubSectionRepository extends ReactiveMongoRepository<CourseSubSection, String> {
     Flux<CourseSubSection> findBySectionId(String sectionId);
+
     @Query("{ '_id': ?0 }")
-    Mono<CourseSubSection> updateBody(String id, String body);
+    Mono<CourseSubSection> updateTitleById(String id, String title);
+    
+    @Query("{ '_id': ?0 }")
+    Mono<CourseSubSection> updateBodyById(String id, String body);
 }

@@ -106,7 +106,7 @@ public class FileService {
     //     // file.setId(id);
     //     // return template.save(file);
     //     Mono<File> dbFile = this.findById(exchange, id);
-    //     File dbFileFlatVar = dbFile.block();
+    //     //File dbFileFlatVar = dbFile.block();
     //     return dbFile
     //     .flatMap(dbFileFlat -> {
     //         return this.actualizarArchivoEnDrive(
@@ -119,15 +119,31 @@ public class FileService {
     //     //return fileRepository.save(file);
     // }
 
-    // public Mono<Void> delete(ServerWebExchange exchange, String id) {
-    //     // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
-    //     // if (template == null) {
-    //     //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
-    //     // }
-    //     // return template.remove(File.class, id);
-    //     this.findById(exchange, id).flatMap(file -> this.eliminarArchivoEnDrive(file.getLink())).subscribe();
-    //     return fileRepository.deleteById(id);
-    // }
+    public Mono<File> update(ServerWebExchange exchange, String id, Mono<FilePart> file) {
+    // Obtener el archivo de la base de datos por su ID
+    return fileRepository.findById(id)
+        .flatMap(dbFile -> {
+            // Actualizar el archivo en Google Drive y obtener el nuevo enlace
+            return this.actualizarArchivoEnDrive(this.obtenerIdDesdeLink(dbFile.getLink()), file)
+                .flatMap(fileUrlUpdated -> {
+                    // Actualizar el enlace del archivo en la base de datos
+                    dbFile.setLink(fileUrlUpdated);
+                    // Guardar el archivo actualizado en la base de datos
+                    return fileRepository.save(dbFile);
+                });
+        })
+        .switchIfEmpty(Mono.error(new IllegalArgumentException("Archivo no encontrado con el id: " + id)));
+    }
+
+    public Mono<Void> delete(ServerWebExchange exchange, String id) {
+        // ReactiveMongoTemplate template = (ReactiveMongoTemplate) exchange.getAttribute("mongoTemplate");
+        // if (template == null) {
+        //     return Mono.error(new IllegalStateException("No se encontró la conexión a la base de datos."));
+        // }
+        // return template.remove(File.class, id);
+        this.findById(exchange, id).flatMap(file -> this.eliminarArchivoEnDrive(file.getLink())).subscribe();
+        return fileRepository.deleteById(id);
+    }
 
     // public Mono<String> subirArchivoADrive(Mono<FilePart> file) {
     //     Mono<Drive> googleDriveService = googleDriveCredentialsService.googleDriveService(); // Obtenemos el servicio de Google Drive de manera reactiva
@@ -222,60 +238,60 @@ public class FileService {
     }
 
     // Método para actualizar archivo en Google Drive
-    // public Mono<String> actualizarArchivoEnDrive(String fileId, Mono<FilePart> file) {
-    //     Mono<Drive> googleDriveService = googleDriveCredentialsService.googleDriveService();
-    //     return googleDriveService // Obtener el servicio de Google Drive de manera reactiva
-    //         .flatMap(drive -> file.flatMap(f -> {
-    //             com.google.api.services.drive.model.File fileMetadata = new com.google.api.services.drive.model.File();
-    //             fileMetadata.setName(f.filename());
+    public Mono<String> actualizarArchivoEnDrive(String fileId, Mono<FilePart> file) {
+        //Mono<Drive> googleDriveService = googleDriveCredentialsService.googleDriveService();
+        return Mono.just(googleDriveService) // Obtener el servicio de Google Drive de manera reactiva
+            .flatMap(drive -> file.flatMap(f -> {
+                com.google.api.services.drive.model.File fileMetadata = new com.google.api.services.drive.model.File();
+                fileMetadata.setName(f.filename());
     
-    //             return f.content().collectList().flatMap(dataBuffers -> {
-    //                 int totalSize = dataBuffers.stream().mapToInt(DataBuffer::readableByteCount).sum();
-    //                 byte[] bytes = new byte[totalSize];
-    //                 int offset = 0;
-    //                 for (DataBuffer buffer : dataBuffers) {
-    //                     int length = buffer.readableByteCount();
-    //                     buffer.read(bytes, offset, length);
-    //                     offset += length;
-    //                 }
+                return f.content().collectList().flatMap(dataBuffers -> {
+                    int totalSize = dataBuffers.stream().mapToInt(DataBuffer::readableByteCount).sum();
+                    byte[] bytes = new byte[totalSize];
+                    int offset = 0;
+                    for (DataBuffer buffer : dataBuffers) {
+                        int length = buffer.readableByteCount();
+                        buffer.read(bytes, offset, length);
+                        offset += length;
+                    }
     
-    //                 // Crear el contenido del archivo
-    //                 AbstractInputStreamContent fileContent = new InputStreamContent(
-    //                         f.headers().getContentType().toString(),
-    //                         new java.io.ByteArrayInputStream(bytes)
-    //                 );
+                    // Crear el contenido del archivo
+                    AbstractInputStreamContent fileContent = new InputStreamContent(
+                            f.headers().getContentType().toString(),
+                            new java.io.ByteArrayInputStream(bytes)
+                    );
     
-    //                 return Mono.fromCallable(() -> {
-    //                     try {
-    //                         // Actualizar el archivo en Google Drive
-    //                         return drive.files()
-    //                                 .update(fileId, fileMetadata, fileContent)
-    //                                 .setFields("id, webViewLink")
-    //                                 .execute()
-    //                                 .getWebViewLink();
-    //                     } catch (Exception e) {
-    //                         throw new RuntimeException("Error actualizando archivo en Drive", e);
-    //                     }
-    //                 });
-    //             });
-    //         }));
-    // }
+                    return Mono.fromCallable(() -> {
+                        try {
+                            // Actualizar el archivo en Google Drive
+                            return drive.files()
+                                    .update(fileId, fileMetadata, fileContent)
+                                    .setFields("id, webViewLink")
+                                    .execute()
+                                    .getWebViewLink();
+                        } catch (Exception e) {
+                            throw new RuntimeException("Error actualizando archivo en Drive", e);
+                        }
+                    });
+                });
+            }));
+    }
     
 
     // Método para eliminar archivo en Google Drive
-    // public Mono<Void> eliminarArchivoEnDrive(String fileUrl) {
-    //     String driveFileId = this.obtenerIdDesdeLink(fileUrl);
-    //     Mono<Drive> googleDriveService = googleDriveCredentialsService.googleDriveService();
-    //     return googleDriveService // Obtener el servicio de Google Drive de manera reactiva
-    //         .flatMap(drive -> Mono.fromRunnable(() -> {
-    //             try {
-    //                 // Eliminar archivo en Google Drive
-    //                 drive.files().delete(driveFileId).execute();
-    //             } catch (Exception e) {
-    //                 throw new RuntimeException("Error eliminando archivo en Drive", e);
-    //             }
-    //         }));
-    // }
+    public Mono<Void> eliminarArchivoEnDrive(String fileUrl) {
+        String driveFileId = this.obtenerIdDesdeLink(fileUrl);
+        //Mono<Drive> googleDriveService = googleDriveCredentialsService.googleDriveService();
+        return Mono.just(driveFileId) // Obtener el servicio de Google Drive de manera reactiva
+            .flatMap(file -> Mono.fromRunnable(() -> {
+                try {
+                    // Eliminar archivo en Google Drive
+                    googleDriveService.files().delete(file).execute();
+                } catch (Exception e) {
+                    throw new RuntimeException("Error eliminando archivo en Drive", e);
+                }
+            }));
+    }
     
 
     public String obtenerIdDesdeLink(String link) {

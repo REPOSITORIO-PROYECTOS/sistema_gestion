@@ -68,7 +68,8 @@ public class CourseSubSectionService {
         // }
         // courseSubSection.setId(id);
         // return template.save(courseSubSection);
-        return courseSubSectionRepository.updateBody(courseSubSection.getId(), courseSubSection.getBody());
+        return courseSubSectionRepository.updateTitleById(courseSubSection.getId(), courseSubSection.getTitle())
+        .then(courseSubSectionRepository.updateBodyById(courseSubSection.getId(), courseSubSection.getBody()));
     }
 
     public Mono<Void> delete(ServerWebExchange exchange, String id) {

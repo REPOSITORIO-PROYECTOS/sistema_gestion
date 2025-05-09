@@ -14,6 +14,7 @@ public class CourseSubSection {
     @Id
     private String id;
 
+    @NotNull(message = "El campo 'title' no puede estar vacío")
     private String title;
 
     @NotNull(message = "El campo 'body' no puede estar vacío")

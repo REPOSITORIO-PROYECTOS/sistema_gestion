@@ -25,12 +25,12 @@ public class FileController {
         this.fileService = fileService;
     }
 
-    @GetMapping
+    @GetMapping("/obtener-todos")
     public Flux<File> getAllFiles(ServerWebExchange exchange) {
         return fileService.findAll(exchange);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/obtener/{id}")
     public Mono<File> getFileById(ServerWebExchange exchange, @PathVariable String id) {
         return fileService.findById(exchange, id);
     }
@@ -47,14 +47,14 @@ public class FileController {
             .map((url) -> ResponseEntity.ok("Archivo subido: " + url));
     }
 
-    // @PutMapping("/{id}")
-    // public Mono<File> updateFile(ServerWebExchange exchange, @PathVariable String id, @RequestPart Mono<FilePart> file) {
-    //     return fileService.update(exchange, id, file);
-    // }
+    @PutMapping("/update/{id}")
+    public Mono<File> updateFile(ServerWebExchange exchange, @PathVariable String id, @RequestPart Mono<FilePart> file) {
+        return fileService.update(exchange, id, file);
+    }
 
-    // @DeleteMapping("/{id}")
-    // @ResponseStatus(HttpStatus.NO_CONTENT)
-    // public Mono<Void> deleteFile(ServerWebExchange exchange, @PathVariable String id) {
-    //     return fileService.delete(exchange, id);
-    // }
+    @DeleteMapping("/delete/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> deleteFile(ServerWebExchange exchange, @PathVariable String id) {
+        return fileService.delete(exchange, id);
+    }
 }
