@@ -254,13 +254,22 @@ const columns: ColumnDef<CashItem>[] = [
     },
 ];
 
-export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:boolean}) {
-    const {cuotas} = useDebt();
+export default function TableCashItems({
+    cajaActivaGeneral,
+}: {
+    cajaActivaGeneral: boolean;
+}) {
+    const { cuotas } = useDebt();
     const { user } = useAuthStore();
-    const fetcher = (url: string) => fetch({endpoint:url, method:"GET", headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${user?.token}`,
-    }}).then((res) => res);
+    const fetcher = (url: string) =>
+        fetch({
+            endpoint: url,
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${user?.token}`,
+            },
+        }).then((res) => res);
     const id = useId();
     const { finishLoading, loading, startLoading } = useLoading();
     const fetch = useFetch();
@@ -293,7 +302,9 @@ export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:b
 
     const [data, setData] = useState<CashItem[]>([]);
     const [totalElements, setTotalElements] = useState<number>(0);
-    const cuotasFiltradas = cuotas.filter((cuota: any) => cuota.studentName.toLowerCase().includes(searchName.toLowerCase()));
+    const cuotasFiltradas = cuotas.filter((cuota: any) =>
+        cuota.studentName.toLowerCase().includes(searchName.toLowerCase())
+    );
 
     // Debounce function
     useEffect(() => {
@@ -336,7 +347,7 @@ export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:b
 
     useEffect(() => {
         console.log(swrData);
-        
+
         if (swrData) {
             // setData(actual=>{
             //     for (let item of swrData){
@@ -357,7 +368,7 @@ export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:b
             setTotalElements(swrData.length);
         }
     }, [swrData]);
-    
+
     const handleDeleteRows = async () => {
         try {
             startLoading();
@@ -483,9 +494,11 @@ export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:b
         return { ingresos, egresos, balance };
     }, [data]);
 
-    const handlePagoParcial = async (cuota:any) => {
-        const fecha = new Date().toISOString().slice(0, 16)
-        const date = `${fecha.split("T")[0].split("-").reverse().join("-")}T${fecha.split("T")[1]}`;
+    const handlePagoParcial = async (cuota: any) => {
+        const fecha = new Date().toISOString().slice(0, 16);
+        const date = `${fecha.split("T")[0].split("-").reverse().join("-")}T${
+            fecha.split("T")[1]
+        }`;
         try {
             const response = await fetch({
                 endpoint: `/pagos/realizar/${cuota.id}`,
@@ -507,24 +520,23 @@ export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:b
                     lastPaymentDate: date,
                 }),
             });
-    
+
             const data = await response.json();
             console.log("Pago parcial registrado:", data);
         } catch (error) {
             console.error("Error al registrar pago parcial:", error);
         }
     };
-    
 
     const handlePagoTotal = async (cuota: any) => {
         const date = new Date(Date.now());
 
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
         const year = date.getFullYear();
 
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
         try {
             const response = await fetch({
                 endpoint: `/caja/registrar-movimiento`,
@@ -533,17 +545,17 @@ export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:b
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${user?.token}`,
                 },
-                formData:JSON.stringify({
+                formData: JSON.stringify({
                     PaymentId: cuota.id,
                     title: cuota.title,
                     description: cuota.description,
                     concept: cuota.concept,
                     hasDebt: false,
                     isIncome: true,
-                    amount: cuota.paidAmount
-                })
+                    amount: cuota.paidAmount,
+                }),
             });
-    
+
             const data = await response.json();
             console.log("Pago total registrado:", data);
         } catch (error) {
@@ -552,8 +564,10 @@ export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:b
     };
 
     const handleActualizarCosto = async (cuota: any) => {
-        const fecha = new Date().toISOString().slice(0, 16)
-        const date = `${fecha.split("T")[0].split("-").reverse().join("-")}T${fecha.split("T")[1]}`;
+        const fecha = new Date().toISOString().slice(0, 16);
+        const date = `${fecha.split("T")[0].split("-").reverse().join("-")}T${
+            fecha.split("T")[1]
+        }`;
         try {
             const response = await fetch({
                 endpoint: `/pagos/editar/${cuota.id}`,
@@ -562,22 +576,22 @@ export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:b
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${user?.token}`,
                 },
-                formData:JSON.stringify({
+                formData: JSON.stringify({
                     ...cuota,
                     hasDebt: true,
                     isPaid: false,
                     lastPaymentDate: date,
-                })
+                }),
             });
-    
+
             const data = await response.json();
             console.log("Pago total registrado:", data);
         } catch (error) {
             console.error("Error al registrar pago total:", error);
         }
-    }
+    };
 
-    const handlePago = async(cuota:any, tipoPago:string) => {
+    const handlePago = async (cuota: any, tipoPago: string) => {
         if (tipoPago === "PARCIAL") {
             await handlePagoParcial(cuota);
         } else if (tipoPago === "TOTAL") {
@@ -585,8 +599,7 @@ export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:b
         } else if (tipoPago === "ACTUALIZAR") {
             await handleActualizarCosto(cuota);
         }
-    }
-    
+    };
 
     return (
         <div className="container mx-auto my-10 space-y-4">
@@ -861,9 +874,14 @@ export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:b
                         </AlertDialog>
                     )}
                     {/* Add item button */}
-                    {
-                        cajaActivaGeneral && <Button onClick={()=>setRegistrandoPago(true)}>Registrar pago</Button>
-                    }
+                    {cajaActivaGeneral && (
+                        <Button
+                            variant={"outline"}
+                            onClick={() => setRegistrandoPago(true)}
+                        >
+                            Registrar pago
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -1192,60 +1210,98 @@ export default function TableCashItems({cajaActivaGeneral}: {cajaActivaGeneral:b
                 </div>
             </div>
             {registrandoPago && (
-    <div className="absolute top-0 left-0 right-0 w-full py-10 px-20 bg-card rounded-md shadow-lg overflow-y-auto max-h-[90vh] z-50">
-        <h2 className="text-xl font-semibold mb-6">Seleccionar una cuota adeudada</h2>
-        <div className="flex justify-between">
-            <div className="flex mb-6 gap-2 font-semibold">
-                <p>Buscar:</p>
-                <input 
-                    type="text" 
-                    value={searchName} 
-                    onChange={(e) => setSearchName(e.target.value)} 
-                    className="w-full max-w-[200px] border-1 bg-gray-700 rounded-lg" />
-            </div>
-            <button className="bg-red-700 rounded-lg px-5 h-8 font-semibold" onClick={() => setRegistrandoPago(false)}>Cerrar</button>
-        </div>
-        <div className="grid gap-4">
-            {cuotasFiltradas.map((cuota: any, index: number) => {
-                const saldoPendiente = cuota.paymentAmount - cuota.paidAmount;
-                console.log(cuota);
-                
-                return (
-                    <Card key={index} className="border p-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Alumno</p>
-                                <p className="font-medium">{cuota.studentName}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Curso</p>
-                                <p className="font-medium">{cuota.curseName}</p>
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <p className="text-sm text-muted-foreground">Vencimiento</p>
-                                <p className="font-medium">
-                                    {format(parse(cuota.paymentDueDate, "dd-MM-yyyy", new Date()), "dd/MM/yyyy")}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Saldo Pendiente</p>
-                                <p className="font-medium text-red-500">${saldoPendiente.toFixed(2)}</p>
-                            </div>
+                <div className="absolute top-0 left-0 right-0 w-full py-10 px-20 bg-card rounded-md shadow-lg overflow-y-auto max-h-[90vh] z-50">
+                    <h2 className="text-xl font-semibold mb-6">
+                        Seleccionar una cuota adeudada
+                    </h2>
+                    <div className="flex justify-between">
+                        <div className="flex mb-6 gap-2 font-semibold">
+                            <p>Buscar:</p>
+                            <input
+                                type="text"
+                                value={searchName}
+                                onChange={(e) => setSearchName(e.target.value)}
+                                className="w-full max-w-[200px] border-1 bg-gray-700 rounded-lg"
+                            />
                         </div>
+                        <button
+                            className="bg-red-700 rounded-lg px-5 h-8 font-semibold"
+                            onClick={() => setRegistrandoPago(false)}
+                        >
+                            Cerrar
+                        </button>
+                    </div>
+                    <div className="grid gap-4">
+                        {cuotasFiltradas.map((cuota: any, index: number) => {
+                            const saldoPendiente =
+                                cuota.paymentAmount - cuota.paidAmount;
+                            console.log(cuota);
 
-                        <div className="mt-4 flex justify-end gap-2">
-                            <ModalPago cuota={cuota} onSubmit={handlePago} setPago={setPago} />
-                        </div>
-                    </Card>
-                );
-            })}
-        </div>
-    </div>
-)}
+                            return (
+                                <Card key={index} className="border p-4">
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">
+                                                Alumno
+                                            </p>
+                                            <p className="font-medium">
+                                                {cuota.studentName}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">
+                                                Curso
+                                            </p>
+                                            <p className="font-medium">
+                                                {cuota.curseName}
+                                            </p>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <p className="text-sm text-muted-foreground">
+                                                Vencimiento
+                                            </p>
+                                            <p className="font-medium">
+                                                {format(
+                                                    parse(
+                                                        cuota.paymentDueDate,
+                                                        "dd-MM-yyyy",
+                                                        new Date()
+                                                    ),
+                                                    "dd/MM/yyyy"
+                                                )}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">
+                                                Saldo Pendiente
+                                            </p>
+                                            <p className="font-medium text-red-500">
+                                                ${saldoPendiente.toFixed(2)}
+                                            </p>
+                                        </div>
+                                    </div>
 
-            {
-                tipoPago !== "" && <ModalPago cuota={cuota} onSubmit={handlePago} setPago={setPago} />
-            }
+                                    <div className="mt-4 flex justify-end gap-2">
+                                        <ModalPago
+                                            cuota={cuota}
+                                            onSubmit={handlePago}
+                                            setPago={setPago}
+                                        />
+                                    </div>
+                                </Card>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {tipoPago !== "" && (
+                <ModalPago
+                    cuota={cuota}
+                    onSubmit={handlePago}
+                    setPago={setPago}
+                />
+            )}
         </div>
     );
 }
