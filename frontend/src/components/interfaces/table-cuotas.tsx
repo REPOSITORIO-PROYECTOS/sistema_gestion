@@ -228,8 +228,8 @@ export default function TableCuotas() {
     });
 
     useEffect(() => {
-        if (!user?.token) return;  // Evita hacer la petición si el token no está disponible
-    
+        if (!user?.token) return; // Evita hacer la petición si el token no está disponible
+
         const fetchData = async () => {
             startLoading();
             try {
@@ -252,10 +252,10 @@ export default function TableCuotas() {
                 finishLoading();
             }
         };
-    
+
         fetchData();
     }, [
-        user?.token,  // Se vuelve a ejecutar solo cuando el token cambia
+        user?.token, // Se vuelve a ejecutar solo cuando el token cambia
         pagination.pageIndex,
         pagination.pageSize,
         selectedYear,
@@ -280,12 +280,10 @@ export default function TableCuotas() {
             }
         } catch (error) {
             alert("Error generando cuotas, intentelo de nuevo.");
-        }
-        finally {
+        } finally {
             finishLoading();
         }
     };
-    
 
     return (
         <div className="space-y-4">
@@ -379,14 +377,17 @@ export default function TableCuotas() {
                                 })}
                         </DropdownMenuContent>
                     </DropdownMenu>
-                    <Button className="absolute right-[8%]"
-                        onClick={async () => handleGenerarCuotasMesActual() }
-                        >Generar cuotas del mes actual
-                    </Button>
                 </div>
+                <Button
+                    variant="outline"
+                    className="ml-auto"
+                    onClick={async () => handleGenerarCuotasMesActual()}
+                >
+                    Generar cuotas del mes actual
+                </Button>
             </div>
 
-            <div className="rounded-md border bg-white shadow-sm">
+            <div className="overflow-hidden rounded-lg border border-border bg-background">
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (

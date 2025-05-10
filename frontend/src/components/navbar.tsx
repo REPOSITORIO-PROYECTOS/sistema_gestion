@@ -49,7 +49,6 @@ export function Navbar() {
     // (user?.role === "ROLE_ADMIN_VC" || user?.role === "ROLE_ADMIN") &&
     // navItems.push({ href: "/admin/aula-virtual", label: "Aula Virtual" });
 
-
     useEffect(() => {
         const newActiveIndex = navItems.findIndex(
             (item) => item.href === pathname
@@ -71,20 +70,19 @@ export function Navbar() {
         }
     }, [activeIndex]);
 
-
     const handleOpenProfile = () => {
-        setProfileOpen(profileOpen => !profileOpen);
-    }
+        setProfileOpen((profileOpen) => !profileOpen);
+    };
 
     return (
         <nav className="relative flex flex-col z-50 shadow-md border-b dark:border-gray-700">
             <div className="bg-blue-800 mb-2">
                 <Image
-                src={"/resources/isp.png"}
-                className="mt-2 ml-4 pb-2"
-                width={50}
-                height={100}
-                alt="Logo"
+                    src={"/resources/isp.png"}
+                    className="mt-2 ml-4 pb-2"
+                    width={50}
+                    height={100}
+                    alt="Logo"
                 />
             </div>
             <div className="container mx-auto px-6 pb-3 flex justify-between items-center space-x-4">
@@ -112,14 +110,14 @@ export function Navbar() {
                     />
                 </div>
                 <div className="space-x-4 flex items-center">
-                    <Button className="bg-blue-600 hover:bg-blue-800">
+                    <Button className="bg-blue-600 text-white hover:bg-blue-800">
                         Manual del Usuario
                         <BookOpenIcon
                             className="w-5 h-5 ml-2"
                             aria-hidden="true"
                         />
                     </Button>
-                    <Button className="bg-blue-600 hover:bg-blue-800">
+                    <Button className="bg-blue-600 text-white hover:bg-blue-800">
                         Soporte
                         <PhoneCall
                             className="w-5 h-5 ml-2"
@@ -127,12 +125,12 @@ export function Navbar() {
                         />
                     </Button>
                     <Button
-                                            variant={"ghost"}
-                                            onClick={handleOpenProfile}
-                                            className="text-sm font-medium hover:underline"
-                                        >
-                                            Mi Perfil
-                                        </Button>
+                        variant={"ghost"}
+                        onClick={handleOpenProfile}
+                        className="text-sm font-medium hover:underline"
+                    >
+                        Mi Perfil
+                    </Button>
                     <Button
                         variant="ghost"
                         onClick={logout}
@@ -143,9 +141,13 @@ export function Navbar() {
                     <ModeToggle />
                 </div>
             </div>
-            {
-                profileOpen && <UserFormNoAdmin isEditable={true} mutate={()=>{}} onClose={setProfileOpen} />
-            }
+            {profileOpen && (
+                <UserFormNoAdmin
+                    isEditable={true}
+                    mutate={() => {}}
+                    onClose={setProfileOpen}
+                />
+            )}
         </nav>
     );
 }
