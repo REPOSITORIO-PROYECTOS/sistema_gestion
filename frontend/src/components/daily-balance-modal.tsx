@@ -67,7 +67,7 @@ export function DailyBalanceModal() {
         try {
             // Using the provided endpoint with query parameters
             const response = await fetch(
-                `https://instituto.sistemataup.online/api/caja/balance-mensual?year=${year}&month=${month}`,
+                `http://localhost:3030/api/caja/balance-mensual?year=${year}&month=${month}`,
                 {
                     method: "GET",
                     headers: {
