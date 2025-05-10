@@ -137,34 +137,42 @@ export function DailyBalanceModal() {
         setIsClient(true);
     }, []);
 
-    const handleDownloadPDF = async () => { // Asegúrate que sea async
+    const handleDownloadPDF = async () => {
+        // Asegúrate que sea async
         if (isClient) {
             const element = contentRef.current;
             if (!element) {
                 console.error("Elemento no encontrado para PDF.");
                 return; // Salir si no hay elemento
             }
-    
+
             try {
                 // IMPORTACIÓN DINÁMICA - La forma correcta
-                const html2pdf = (await import('html2pdf.js')).default;
-    
+                const html2pdf = (await import("html2pdf.js")).default;
+
                 if (!html2pdf) {
-                     throw new Error("La librería html2pdf no se pudo cargar.");
+                    throw new Error("La librería html2pdf no se pudo cargar.");
                 }
-    
+
                 const opt = {
                     margin: 1,
-                    filename: 'balance-mensual.pdf',
-                    image: { type: 'jpg', quality: 0.98 },
+                    filename: "balance-mensual.pdf",
+                    image: { type: "jpg", quality: 0.98 },
                     html2canvas: { scale: 1 },
-                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                    jsPDF: {
+                        unit: "in",
+                        format: "letter",
+                        orientation: "portrait",
+                    },
                 };
-    
-                html2pdf().from(element).set(opt).save().then(() => {
-                    console.log("PDF generado y descargado.");
-                });
-    
+
+                html2pdf()
+                    .from(element)
+                    .set(opt)
+                    .save()
+                    .then(() => {
+                        console.log("PDF generado y descargado.");
+                    });
             } catch (error) {
                 console.error("Error generando PDF:", error);
                 // Considera mostrar un error al usuario aquí
@@ -175,7 +183,7 @@ export function DailyBalanceModal() {
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
-                <Button>Ver Balance Mensual</Button>
+                <Button variant="outline">Ver Balance Mensual</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
                 <DialogHeader>
@@ -244,143 +252,150 @@ export function DailyBalanceModal() {
 
                 {data && (
                     <>
-                    <div className="space-y-6 max-h-96 overflow-y-scroll" ref={contentRef}>
-                        <div className="grid grid-cols-2 gap-4">
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium flex items-center">
-                                        <TrendingUp className="h-4 w-4 mr-2 text-green-500" />
-                                        Ingresos Totales
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-2xl font-bold">
-                                        ${data.totalIncome.toFixed(2)}
+                        <div
+                            className="space-y-6 max-h-96 overflow-y-scroll"
+                            ref={contentRef}
+                        >
+                            <div className="grid grid-cols-2 gap-4">
+                                <Card>
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-sm font-medium flex items-center">
+                                            <TrendingUp className="h-4 w-4 mr-2 text-green-500" />
+                                            Ingresos Totales
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-2xl font-bold">
+                                            ${data.totalIncome.toFixed(2)}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-sm font-medium flex items-center">
+                                            <TrendingDown className="h-4 w-4 mr-2 text-red-500" />
+                                            Gastos Totales
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-2xl font-bold">
+                                            ${data.totalExpense.toFixed(2)}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            <div>
+                                <h3 className="text-lg font-medium mb-3">
+                                    Balances Diarios
+                                </h3>
+                                {data.dailyBalances.length > 0 ? (
+                                    data.dailyBalances.map((balance) => (
+                                        <Card key={balance.id} className="mb-4">
+                                            <CardContent className="pt-6">
+                                                <div className="grid gap-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center text-sm text-muted-foreground">
+                                                            <CalendarIcon className="h-4 w-4 mr-1" />
+                                                            <span>
+                                                                Desde:{" "}
+                                                                {formatDate(
+                                                                    balance.startDate
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center text-sm text-muted-foreground">
+                                                            <CalendarIcon className="h-4 w-4 mr-1" />
+                                                            <span>
+                                                                Hasta:{" "}
+                                                                {formatDate(
+                                                                    balance.endDate
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-4 mt-2">
+                                                        <div className="flex items-center">
+                                                            <DollarSign className="h-4 w-4 mr-1 text-green-500" />
+                                                            <span className="font-medium">
+                                                                Ingresos:
+                                                            </span>
+                                                            <span className="ml-1">
+                                                                $
+                                                                {balance.totalIncome.toFixed(
+                                                                    2
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center">
+                                                            <DollarSign className="h-4 w-4 mr-1 text-red-500" />
+                                                            <span className="font-medium">
+                                                                Gastos:
+                                                            </span>
+                                                            <span className="ml-1">
+                                                                $
+                                                                {balance.totalExpense.toFixed(
+                                                                    2
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex justify-between mt-2 text-sm">
+                                                        <div>
+                                                            <span className="text-muted-foreground">
+                                                                Creado por:
+                                                            </span>
+                                                            <span className="ml-1 font-medium">
+                                                                {
+                                                                    balance.createdBy
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-muted-foreground">
+                                                                Cerrado por:
+                                                            </span>
+                                                            <span className="ml-1 font-medium">
+                                                                {
+                                                                    balance.closedBy
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-muted-foreground">
+                                                                Estado:
+                                                            </span>
+                                                            <span
+                                                                className={`ml-1 font-medium ${
+                                                                    balance.isClosed
+                                                                        ? "text-red-500"
+                                                                        : "text-green-500"
+                                                                }`}
+                                                            >
+                                                                {balance.isClosed
+                                                                    ? "Cerrado"
+                                                                    : "Abierto"}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))
+                                ) : (
+                                    <p className="text-center py-4 text-muted-foreground">
+                                        No hay balances diarios para el período
+                                        seleccionado
                                     </p>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium flex items-center">
-                                        <TrendingDown className="h-4 w-4 mr-2 text-red-500" />
-                                        Gastos Totales
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-2xl font-bold">
-                                        ${data.totalExpense.toFixed(2)}
-                                    </p>
-                                </CardContent>
-                            </Card>
+                                )}
+                            </div>
                         </div>
-
-                        <div>
-                            <h3 className="text-lg font-medium mb-3">
-                                Balances Diarios
-                            </h3>
-                            {data.dailyBalances.length > 0 ? (
-                                data.dailyBalances.map((balance) => (
-                                    <Card key={balance.id} className="mb-4">
-                                        <CardContent className="pt-6">
-                                            <div className="grid gap-2">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center text-sm text-muted-foreground">
-                                                        <CalendarIcon className="h-4 w-4 mr-1" />
-                                                        <span>
-                                                            Desde:{" "}
-                                                            {formatDate(
-                                                                balance.startDate
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center text-sm text-muted-foreground">
-                                                        <CalendarIcon className="h-4 w-4 mr-1" />
-                                                        <span>
-                                                            Hasta:{" "}
-                                                            {formatDate(
-                                                                balance.endDate
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                <div className="grid grid-cols-2 gap-4 mt-2">
-                                                    <div className="flex items-center">
-                                                        <DollarSign className="h-4 w-4 mr-1 text-green-500" />
-                                                        <span className="font-medium">
-                                                            Ingresos:
-                                                        </span>
-                                                        <span className="ml-1">
-                                                            $
-                                                            {balance.totalIncome.toFixed(
-                                                                2
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center">
-                                                        <DollarSign className="h-4 w-4 mr-1 text-red-500" />
-                                                        <span className="font-medium">
-                                                            Gastos:
-                                                        </span>
-                                                        <span className="ml-1">
-                                                            $
-                                                            {balance.totalExpense.toFixed(
-                                                                2
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex justify-between mt-2 text-sm">
-                                                    <div>
-                                                        <span className="text-muted-foreground">
-                                                            Creado por:
-                                                        </span>
-                                                        <span className="ml-1 font-medium">
-                                                            {balance.createdBy}
-                                                        </span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-muted-foreground">
-                                                            Cerrado por:
-                                                        </span>
-                                                        <span className="ml-1 font-medium">
-                                                            {balance.closedBy}
-                                                        </span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-muted-foreground">
-                                                            Estado:
-                                                        </span>
-                                                        <span
-                                                            className={`ml-1 font-medium ${
-                                                                balance.isClosed
-                                                                    ? "text-red-500"
-                                                                    : "text-green-500"
-                                                            }`}
-                                                        >
-                                                            {balance.isClosed
-                                                                ? "Cerrado"
-                                                                : "Abierto"}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))
-                            ) : (
-                                <p className="text-center py-4 text-muted-foreground">
-                                    No hay balances diarios para el período
-                                    seleccionado
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                    <Button onClick={handleDownloadPDF} variant="outline">
-                        Descargar PDF
-                    </Button>
+                        <Button onClick={handleDownloadPDF} variant="outline">
+                            Descargar PDF
+                        </Button>
                     </>
                 )}
             </DialogContent>
