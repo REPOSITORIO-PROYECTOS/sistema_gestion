@@ -44,7 +44,7 @@ import {
 import { useAuthStore } from "@/context/store";
 import { sub } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@radix-ui/react-select";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 // import { useAuth } from "@/components/auth-provider"
 
 // Tipos
@@ -181,7 +181,7 @@ export default function EditCourseContentPage({
                     setTeachersOptions(teacherOptions);
                 }
             } catch (error: any) {
-                const errorMessage =
+                const errorMessage:string =
                     (typeof error === "object" && error.response
                         ? error.response.data?.message
                         : error?.message) ||

@@ -387,6 +387,7 @@ export default function TableUsers() {
     useEffect(() => {
         if (swrDataParents) {
             // Mapea los datos para extraer el objeto user de cada elemento
+            console.log("swrDataParents", swrDataParents);
             const mappedData = swrDataParents.content
                 .map((item:any) => {
                     return {
@@ -400,7 +401,7 @@ export default function TableUsers() {
                 })
                 .filter(Boolean); // Filtrar elementos nulos
 
-            console.log("Datos mapeados para la tabla:", mappedData);
+            console.log("Datos mapeados para la tabla padres:", mappedData);
             setData(actual=>{
                 const newData = [...actual, ...mappedData];
                 return newData;

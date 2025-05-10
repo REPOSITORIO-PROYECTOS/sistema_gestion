@@ -20,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type CourseLink = {
+    id: string;
     title: string;
     url: string;
 };
@@ -81,10 +82,12 @@ export default function CourseDetail({ params }: { params: Promise<{ id: string 
                             body: "<h2>Bienvenido al curso</h2><p>Este curso te guiará a través de los conceptos fundamentales.</p>",
                             links: [
                                 {
+                                    id: "sfd",
                                     title: "Guía del estudiante",
                                     url: "https://example.com/guia-estudiante.pdf",
                                 },
                                 {
+                                    id: "sfd",
                                     title: "Normas del curso",
                                     url: "https://example.com/normas.pdf",
                                 },
@@ -104,10 +107,12 @@ export default function CourseDetail({ params }: { params: Promise<{ id: string 
                             body: "<p>En este módulo aprenderás los conceptos esenciales.</p><ul><li>Concepto 1</li><li>Concepto 2</li></ul>",
                             links: [
                                 {
+                                    id: "sfd",
                                     title: "Material de apoyo",
                                     url: "https://example.com/material-apoyo.docx",
                                 },
                                 {
+                                    id: "sfd",
                                     title: "Lectura recomendada",
                                     url: "https://example.com/lectura.pdf",
                                 },
