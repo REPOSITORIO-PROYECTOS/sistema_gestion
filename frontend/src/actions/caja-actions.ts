@@ -3,7 +3,7 @@
 export async function toggleCajaEstado(activa: boolean, token: string) {
     try {
         const response = await fetch(
-            `http://localhost:3030/api/caja/estado?operacion=${activa ? "abrir" : "cerrar"}`,
+            `https://instituto.sistemataup.online/api/caja/estado?operacion=${activa ? "abrir" : "cerrar"}`,
             {
                 method: "POST",
                 headers: {

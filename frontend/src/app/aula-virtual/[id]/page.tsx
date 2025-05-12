@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import {
     ChevronRight,
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuthStore } from "@/context/store";
 
 type CourseLink = {
     id: string;
@@ -53,84 +54,50 @@ type Course = {
     status: string;
     monthlyPrice: number;
     studentsIds: string[] | null;
-    teacherId: string;
+    teacherId: string[];
     sections: Section[];
 };
 
 export default function CourseDetail({ params }: { params: Promise<{ id: string }> }) {
-    const courseData: Course = {
-        createdAt: "07-02-2025T18:53",
+    const {user} = useAuthStore();
+    const { id } = use(params);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [courseData, setCourse] = useState<Course>({
+        createdAt: "",
         updatedAt: null,
         modifiedBy: null,
-        createdBy: "ADMIN",
-        id: "67a656e0f9ff8d5d561d9a6e",
-        title: "curso 2025",
-        description: "guardado como usuario.",
-        status: "ACTIVE",
-        monthlyPrice: 7000.99,
+        createdBy: "",
+        id: id,
+        title: "",
+        description: "",
+        status: "",
+        monthlyPrice: 0,
         studentsIds: null,
-        teacherId: "67a65539fff1b421994b0b33",
+        teacherId: [],
         sections: [
             {
-                id: "section-1",
-                title: "Introducción al curso",
+                id: "",
+                title: "",
                 subsections: [
                     {
-                        id: "subsection-1-1",
-                        title: "Bienvenida",
+                        id: "",
+                        title: "",
                         content: {
-                            body: "<h2>Bienvenido al curso</h2><p>Este curso te guiará a través de los conceptos fundamentales.</p>",
+                            body: "",
                             links: [
                                 {
-                                    id: "sfd",
-                                    title: "Guía del estudiante",
-                                    url: "https://example.com/guia-estudiante.pdf",
-                                },
-                                {
-                                    id: "sfd",
-                                    title: "Normas del curso",
-                                    url: "https://example.com/normas.pdf",
-                                },
+                                    id: "",
+                                    title: "",
+                                    url: "",
+                                }
                             ],
-                        },
-                    },
-                ],
-            },
-            {
-                id: "section-2",
-                title: "Módulo 1: Conceptos básicos",
-                subsections: [
-                    {
-                        id: "subsection-2-1",
-                        title: "Introducción a los fundamentos",
-                        content: {
-                            body: "<p>En este módulo aprenderás los conceptos esenciales.</p><ul><li>Concepto 1</li><li>Concepto 2</li></ul>",
-                            links: [
-                                {
-                                    id: "sfd",
-                                    title: "Material de apoyo",
-                                    url: "https://example.com/material-apoyo.docx",
-                                },
-                                {
-                                    id: "sfd",
-                                    title: "Lectura recomendada",
-                                    url: "https://example.com/lectura.pdf",
-                                },
-                            ],
-                        },
-                    },
-                    {
-                        id: "subsection-2-2",
-                        title: "Ejercicios prácticos",
-                        content: {
-                            body: "<p>Realiza los siguientes ejercicios para practicar.</p><ol><li>Ejercicio 1</li><li>Ejercicio 2</li></ol>",
-                            links: [],
                         },
                     },
                 ],
             },
         ],
-    };
+    });
 
     const [activeSection, setActiveSection] = useState(
         courseData.sections[0].id
@@ -146,6 +113,98 @@ export default function CourseDetail({ params }: { params: Promise<{ id: string 
     const currentSubsection = currentSection?.subsections.find(
         (subsection) => subsection.id === activeSubsection
     );
+
+    useEffect(()=>{
+        fetchCourseData();
+    },[id])
+
+    const fetchCourseData = async () => {
+        if (!user?.token) return;
+        try {
+            setIsLoading(true);
+            setError(null);
+            
+            // Obtener las secciones del curso
+            const sectionsResponse = await fetch(
+                `https://instituto.sistemataup.online/api/cursos/obtenerContenido/${id}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${user?.token}`,
+                    },
+                }
+            );
+
+            if (!sectionsResponse.ok) {
+                throw new Error("Error al obtener las secciones del curso");
+            }
+
+            // Verificar si la respuesta tiene contenido
+            const responseText = await sectionsResponse.text();
+            let sectionsData = [];
+            
+            if (responseText) {
+                try {
+                    if(user.role.includes("ROLE_TEACHER")){
+                    sectionsData = JSON.parse(responseText).sections.filter(
+                        (section: any) => section.teacherId === user.id
+                    );
+                    console.log(JSON.parse(responseText).sections);
+                    
+                    } else {
+                        sectionsData = JSON.parse(responseText).sections;
+                    }
+                } catch (parseError) {
+                    console.error("Error al parsear la respuesta:", parseError);
+                    sectionsData = [];
+                }
+            }
+
+            // Si no hay secciones o la respuesta está vacía, mantenemos el estado inicial
+            if (!sectionsData || sectionsData.length === 0) {
+                setCourse((prevCourse) => ({
+                    ...prevCourse,
+                    id: id,
+                    sections: [],
+                }));
+            } else {
+                // Actualizar el estado del curso con las secciones
+                setCourse((prevCourse) => ({
+                    ...prevCourse,
+                    sections: sectionsData.map((section: any) => ({
+                        id: section.id,
+                        title: section.title,
+                        description: section.description,
+                        subsections: section.subSections?.map(
+                            (subsection: any) => ({
+                                id: subsection.id,
+                                title: subsection.title,
+                                body: subsection.body || "",
+                                filesIds: subsection.files ? subsection.files.map(
+                                    (file: any) => ({
+                                        id: file.id,
+                                        title: file.name,
+                                        url: file.link,
+                                        file: null,
+                                    })
+                                ) : [],
+                            })
+                        ),
+                    })),
+                }));
+            }
+        } catch (err) {
+            console.error("Error fetching course data:", err);
+            // Si hay un error, mostramos la interfaz para crear secciones
+            setCourse((prevCourse) => ({
+                ...prevCourse,
+                id: id,
+                sections: [],
+            }));
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <div className="container mx-auto py-6 min-h-[calc(100vh-65px)]">

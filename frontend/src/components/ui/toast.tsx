@@ -29,7 +29,9 @@ export const toastMessage = ({ variant, title, description }: any) => {
 
     toast.custom((t) => (
         <div
-            className={`toast ${t.visible ? "fade-in" : "fade-out"}`}
+            //TODO t.visible Property 'visible' does not exist on type 'string | number'. 
+            //               Property 'visible' does not exist on type 'string'
+            className={`toast ${true ? "fade-in" : "fade-out"}`}
             style={{
                 ...commonStyles,
                 ...variantStyles,

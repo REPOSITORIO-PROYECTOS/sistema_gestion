@@ -55,7 +55,7 @@ export const useAuthStore = create<AuthState>()(
                 try {
                     // Llamada al endpoint de autenticación
                     const response = await fetch(
-                        "http://localhost:3030/api/auth/login",
+                        "https://instituto.sistemataup.online/api/auth/login",
                         {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },

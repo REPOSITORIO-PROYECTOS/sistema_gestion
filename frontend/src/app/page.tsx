@@ -19,8 +19,6 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/components/providers/auth-provider";
 import { useAuthStore } from "@/context/store";
 import { useRouter } from "next/navigation";
 
@@ -29,8 +27,6 @@ type Course = {
     title: string;
     description: string;
     status: "ACTIVE" | "PENDING" | "COMPLETED";
-    progress: number;
-    nextClass?: string;
 };
 
 type News = {
@@ -56,24 +52,7 @@ export default function Home() {
             title: "Curso 2025",
             description: "Guardado como usuario",
             status: "ACTIVE",
-            progress: 35,
-            nextClass: "Lunes 25 de Marzo, 18:00hs",
-        },
-        {
-            id: "67a656e0f9ff8d5d561d9a6f",
-            title: "Programación Web",
-            description: "Desarrollo de aplicaciones web modernas",
-            status: "ACTIVE",
-            progress: 68,
-            nextClass: "Miércoles 27 de Marzo, 19:30hs",
-        },
-        {
-            id: "67a656e0f9ff8d5d561d9a70",
-            title: "Diseño UX/UI",
-            description: "Fundamentos de diseño de experiencia de usuario",
-            status: "PENDING",
-            progress: 0,
-        },
+        }
     ];
 
     // Datos de ejemplo - noticias
@@ -337,7 +316,7 @@ export default function Home() {
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent className="pb-3">
-                                            <div className="space-y-2">
+                                            {/* <div className="space-y-2">
                                                 <div className="flex justify-between text-sm">
                                                     <span>Progreso:</span>
                                                     <span className="font-medium">
@@ -361,7 +340,7 @@ export default function Home() {
                                                         {course.nextClass}
                                                     </div>
                                                 )}
-                                            </div>
+                                            </div> */}
                                         </CardContent>
                                         <CardFooter className="pt-0">
                                             <Link

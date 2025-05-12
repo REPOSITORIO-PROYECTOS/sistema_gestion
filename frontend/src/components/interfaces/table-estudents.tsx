@@ -106,6 +106,7 @@ type Item = {
     dni: string;
     phone: string;
     status: "activo" | "inactivo" | "pendiente";
+    active: boolean,
     dateOfBirth: Date; // Se agrega esta propiedad
     ingressDate: Date; // Se agrega esta propiedad
     parentId: string;
@@ -190,16 +191,16 @@ const columns: ColumnDef<Item>[] = [
     },
     {
         header: "Estado",
-        accessorKey: "status",
+        accessorKey: "active",
         cell: ({ row }) => (
             <Badge
                 className={cn(
-                    row.getValue("status") === "Inactive"
+                    row.getValue("active") === false
                         ? "bg-muted-foreground/60 text-primary-foreground"
                         : "bg-blue-600 text-background"
                 )}
             >
-                {row.getValue("status")}
+                {row.getValue("active") === true ? "Activo" : "Inactivo"}
             </Badge>
         ),
         size: 100,
@@ -352,30 +353,30 @@ export default function TableEstudents() {
 
     // Get unique status values
     const uniqueStatusValues = useMemo(() => {
-        const statusColumn = table.getColumn("status");
+        const statusColumn = table.getColumn("active");
         console.log(statusColumn);
         if (!statusColumn) return [];
         const values = Array.from(statusColumn.getFacetedUniqueValues().keys());
         return values.sort();
-    }, [table.getColumn("status")?.getFacetedUniqueValues()]);
+    }, [table.getColumn("active")?.getFacetedUniqueValues()]);
 
     // Get counts for each status
     const statusCounts = useMemo(() => {
-        const statusColumn = table.getColumn("status");
+        const statusColumn = table.getColumn("active");
         if (!statusColumn) return new Map();
         return statusColumn.getFacetedUniqueValues();
-    }, [table.getColumn("status")?.getFacetedUniqueValues()]);
+    }, [table.getColumn("active")?.getFacetedUniqueValues()]);
 
     const selectedStatuses = useMemo(() => {
         const filterValue = table
-            .getColumn("status")
+            .getColumn("active")
             ?.getFilterValue() as string[];
         return filterValue ?? [];
-    }, [table.getColumn("status")?.getFilterValue()]);
+    }, [table.getColumn("active")?.getFilterValue()]);
 
     const handleStatusChange = (checked: boolean, value: string) => {
         const filterValue = table
-            .getColumn("status")
+            .getColumn("active")
             ?.getFilterValue() as string[];
         const newFilterValue = filterValue ? [...filterValue] : [];
 
@@ -389,7 +390,7 @@ export default function TableEstudents() {
         }
 
         table
-            .getColumn("status")
+            .getColumn("active")
             ?.setFilterValue(
                 newFilterValue.length ? newFilterValue : undefined
             );
@@ -919,11 +920,11 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                             <span>Editar</span>
                             <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        {/* <DropdownMenuItem>
                             <span>Duplicar</span>
                             <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
-                        </DropdownMenuItem>
-                    </DropdownMenuGroup>
+                        </DropdownMenuItem> */}
+                    {/* </DropdownMenuGroup>
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                         <DropdownMenuItem>
@@ -946,9 +947,9 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                                     </DropdownMenuItem>
                                 </DropdownMenuSubContent>
                             </DropdownMenuPortal>
-                        </DropdownMenuSub>
+                        </DropdownMenuSub> */}
                     </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
+                    {/* <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                         <DropdownMenuItem>Enviar</DropdownMenuItem>
                         <DropdownMenuItem>Imprimir</DropdownMenuItem>
@@ -957,7 +958,7 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                     <DropdownMenuItem className="text-destructive focus:text-destructive">
                         <span>Borrar</span>
                         <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
-                    </DropdownMenuItem>
+                    </DropdownMenuItem> */}
                 </DropdownMenuContent>
             </DropdownMenu>
             {isEditDialogOpen && (

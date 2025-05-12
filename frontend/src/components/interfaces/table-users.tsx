@@ -196,23 +196,25 @@ const columns: ColumnDef<Item>[] = [
                         : "bg-blue-600 text-background"
                 )}
             >
-                {(row.getValue("roles") as string[])?.map((rol: string) => {
+                <div className="flex flex-col text-white min-w-[90px] text-center">
+                    {(row.getValue("roles") as string[])?.map((rol: string) => {
                     return rol === "ROLE_ADMIN"
-                        ? "Administrador"
+                        ? <p>Administrador</p>
                         : rol === "ROLE_CASHER"
-                        ? "Cajero"
+                        ? <p>Cajero</p>
                         : rol === "ROLE_ADMIN_VC"
-                        ? "Administrador VC"
+                        ? <p className="text-nowrap">Administrador VC</p>
                         : rol === "ROLE_ADMIN_USERS"
-                        ? "Administrador Usuarios"
+                        ? <p className="text-nowrap">Administrador Usuarios</p>
                         : rol === "ROLE_ADMIN_COURSES"
-                        ? "Administrador Cursos"
+                        ? <p className="text-nowrap">Administrador Cursos</p>
                         : rol === "ROLE_PARENT"
-                        ? "Padre/Madre"
+                        ? <p>Padre/Madre</p>
                         : rol === "ROLE_TEACHER"
-                        ? "Profesor"
+                        ? <p>Profesor</p>
                         : rol;
                 })}
+                </div>
             </Badge>
         },
         size: 100,
@@ -243,7 +245,6 @@ export default function TableUsers() {
             })
                 .then((response) => {
                     // Suponiendo que tu función fetch ya devuelve los datos JSON procesados
-                    console.log("JSON RESPONSE: ", response);
                     return response;
                 })
                 .catch((error) => {
@@ -335,7 +336,6 @@ export default function TableUsers() {
                 .map((item:any) => {
                     // Cada elemento tiene un objeto user anidado
                     if (!item.user) {
-                        console.log("Elemento sin user:", item);
                         return null;
                     }
 
@@ -349,8 +349,6 @@ export default function TableUsers() {
                     };
                 })
                 .filter(Boolean); // Filtrar elementos nulos
-
-            console.log("Datos mapeados para la tabla:", mappedData);
             setData(actual=>{
                 const newData = [...actual, ...mappedData];
                 return newData;
@@ -374,8 +372,6 @@ export default function TableUsers() {
                     };
                 })
                 .filter(Boolean); // Filtrar elementos nulos
-
-            console.log("Datos mapeados para la tabla:", mappedData);
             setData(actual=>{
                 const newData = [...actual, ...mappedData];
                 return newData;
@@ -387,11 +383,10 @@ export default function TableUsers() {
     useEffect(() => {
         if (swrDataParents) {
             // Mapea los datos para extraer el objeto user de cada elemento
-            console.log("swrDataParents", swrDataParents);
             const mappedData = swrDataParents.content
                 .map((item:any) => {
                     return {
-                        ...item.user, // Expandir todas las propiedades del usuario
+                        ...item, // Expandir todas las propiedades del usuario
                         // Convierte el array de roles a un valor único para el filtro
                         rol:
                             item.roles && item.roles.length > 0
@@ -400,8 +395,6 @@ export default function TableUsers() {
                     };
                 })
                 .filter(Boolean); // Filtrar elementos nulos
-
-            console.log("Datos mapeados para la tabla padres:", mappedData);
             setData(actual=>{
                 const newData = [...actual, ...mappedData];
                 return newData;
@@ -410,17 +403,33 @@ export default function TableUsers() {
         }
     }, [swrDataParents]);
 
-    // const handleDeleteRow = async (row: Row<Item>) => {
-    //   startLoading()
-    //   const updatedData = data.filter((item) => item.id !== row.original.id);
-    //   setData(updatedData);
-    //   await fetch({
-    //     endpoint: `/cursos/${row.original.id}`,
-    //     method: 'delete'
-    //   });
-    //   await mutate();
-    //   finishLoading()
-    // }
+    const handleDeleteRow = async (row: Row<Item>) => {
+      startLoading()
+      const updatedData = data.filter((item) => item.id !== row.original.id);
+      setData(updatedData);
+      try {
+            const role = row.original.roles.includes("ROLE_PARENT") ? "parent" :
+                row.original.roles.includes("ROLE_TEACHER") ? "teacher" : "user";
+            await fetch({
+                endpoint: `/auth/eliminar/${row.original.id}?userType=${role}`,
+                method: "delete",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user?.token}`,
+                },
+            });
+        } catch (error: any) {
+            console.error(
+                `Error deleting row ${row.original.id}:`,
+                error
+            );
+            toast.error(
+                `Error al eliminar el curso ${row.original.id}.`
+            );
+        }
+      await mutate();
+      finishLoading()
+    }
 
     const handleDeleteRows = async () => {
         try {
@@ -434,9 +443,10 @@ export default function TableUsers() {
 
             for (const row of selectedRows) {
                 try {
-                    console.log("Deleting row", row.original.id);
+                    const role = row.original.roles.includes("ROLE_PARENT") ? "parent" :
+                        row.original.roles.includes("ROLE_TEACHER") ? "teacher" : "user";
                     await fetch({
-                        endpoint: `/auth/eliminar/${row.original.id}?userType=user`,
+                        endpoint: `/auth/eliminar/${row.original.id}?userType=${role}`,
                         method: "delete",
                         headers: {
                             "Content-Type": "application/json",
@@ -537,8 +547,6 @@ export default function TableUsers() {
                 newFilterValue.length ? newFilterValue : undefined
             );
     };
-
-    console.log(uniqueStatusValues);
 
     return (
         <div className="container mx-auto my-10 space-y-4">
@@ -1066,13 +1074,13 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                             <span>Editar</span>
                             <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        {/* <DropdownMenuItem>
                             <span>Duplicar</span>
                             <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
-                        </DropdownMenuItem>
+                        </DropdownMenuItem> */}
                     </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
+                    {/*<DropdownMenuSeparator />
+                     <DropdownMenuGroup>
                         <DropdownMenuItem>
                             <span>Archivar</span>
                             <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
@@ -1100,11 +1108,11 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                         <DropdownMenuItem>Enviar</DropdownMenuItem>
                         <DropdownMenuItem>Imprimir</DropdownMenuItem>
                     </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive focus:text-destructive">
-                        <span>Borrar</span>
+                    <DropdownMenuSeparator /> */}
+                    {/* <DropdownMenuItem className="text-destructive focus:text-destructive">
+                        <span onClick={() => handleDeleteRow()}>Borrar</span>
                         <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
-                    </DropdownMenuItem>
+                    </DropdownMenuItem> */}
                 </DropdownMenuContent>
             </DropdownMenu>
             {isEditDialogOpen && (

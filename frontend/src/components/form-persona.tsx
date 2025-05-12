@@ -26,7 +26,7 @@ import {
     FormLabel,
     FormMessage,
 } from "./ui/form";
-import { CircleAlert, Loader2Icon, Plus } from "lucide-react";
+import { CircleAlert, Eye, EyeOff, Loader2Icon, Plus } from "lucide-react";
 import MultipleSelector from "@/components/ui/multiselect";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { parse } from "date-fns";
@@ -40,6 +40,33 @@ import { ScopedMutator } from "swr";
 import { Input } from "./ui/input";
 import { toast } from "sonner";
 import * as z from "zod";
+import { useAuthStore } from "@/context/store";
+
+interface PersonaFormProps {
+    isEditable?: boolean;
+    datos?: {
+        id: string;
+        name: string;
+        surname: string;
+        email: string;
+        dni: string;
+        status: "activo" | "inactivo" | "pendiente";
+        phone: string;
+        dateOfBirth: Date;
+        ingressDate: Date;
+        parentId: string,
+        cursesIds: string[];
+    };
+    mutate?: ScopedMutator | (() => void); // Acepta tanto ScopedMutator como una función sin argumentos
+    onClose?: () => void;
+}
+
+export default function PersonaForm({
+    isEditable = false,
+    datos,
+    mutate,
+    onClose,
+}: PersonaFormProps) {
 
 const formSchema = z.object({
     name: z.string().min(2, {
@@ -57,6 +84,13 @@ const formSchema = z.object({
     status: z.enum(["activo", "inactivo", "pendiente"], {
         required_error: "Por favor seleccione un estado.",
     }),
+    password: isEditable
+                ? z
+                    .string()
+                    .optional()
+                : z.string().min(6, {
+                    message: "La contraseña debe tener al menos 6 caracteres.",
+            }),
     phone: z.string().min(10, {
         message: "El teléfono debe tener al menos 10 dígitos.",
     }),
@@ -66,40 +100,22 @@ const formSchema = z.object({
     ingressDate: z.date({
         required_error: "La fecha de ingreso es requerida.",
     }),
+    parentId: z.array(z.string()).max(1, {
+        message: "Debe seleccionar al menos un padre.",
+    }),
     cursesIds: z.array(z.string()).min(1, {
         message: "Debe seleccionar al menos un curso.",
     }),
 });
 
-interface PersonaFormProps {
-    isEditable?: boolean;
-    datos?: {
-        id: string;
-        name: string;
-        surname: string;
-        email: string;
-        dni: string;
-        status: "activo" | "inactivo" | "pendiente";
-        phone: string;
-        dateOfBirth: Date;
-        ingressDate: Date;
-        cursesIds: string[];
-    };
-    mutate?: ScopedMutator | (() => void); // Acepta tanto ScopedMutator como una función sin argumentos
-    onClose?: () => void;
-}
-
-export default function PersonaForm({
-    isEditable = false,
-    datos,
-    mutate,
-    onClose,
-}: PersonaFormProps) {
     const [courseOptions, setCourseOptions] = useState<
         { label: string; value: string }[]
     >([]);
+    const [parentsOptions, setParentsOptions] = useState<{ label: string; value: string }[]>([])
     const [isLoading, setIsLoading] = useState(true);
+    const [showPassword, setShowPassword] = useState(false)
     const [open, setOpen] = useState(false);
+    const {user} = useAuthStore()
     const { finishLoading, loading, startLoading } = useLoading();
     const fetch = useFetch();
     const form = useForm<z.infer<typeof formSchema>>({
@@ -117,6 +133,7 @@ export default function PersonaForm({
             ingressDate: datos?.ingressDate
                 ? parse(datos.ingressDate.toString(), "dd-MM-yyyy", new Date())
                 : undefined,
+            parentId: [datos?.parentId || ""],
             cursesIds: datos?.cursesIds ?? [],
         },
     });
@@ -128,8 +145,12 @@ export default function PersonaForm({
             setIsLoading(true);
             try {
                 const response = await fetch({
-                    endpoint: "cursos/paged",
+                    endpoint: "/cursos/paged?page=0&size=50",
                     method: "GET",
+                    headers:{
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${user?.token}`,
+                    }
                 });
                 if (response) {
                     const courses = response.content;
@@ -158,10 +179,42 @@ export default function PersonaForm({
             }
         };
 
-        getCourseOptions();
-    }, []);
+        const getParentOptions = async () => {
+            setIsLoading(true)
+            try {
+                const response = await fetch({
+                    endpoint: '/padres/paged',
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user?.token}`
+                    },
+                })
+                if (response) {
+                    const courses = response.content
+                    if (courses) {
+                        const options = courses.map((course: any) => ({ label: course.name + " " + course.surname, value: course.id }))
+                        setParentsOptions(options)
+                    } else {
+                        toast.error("Error al cargar los padres. Inténtalo de nuevo.")
+                    }
+                }
+            } catch (error: any) {
+                const errorMessage =
+                    (typeof error === 'object' && error.response
+                        ? error.response.data?.message
+                        : error?.message) ||
+                    "Error al cargar los padres. Inténtalo de nuevo.";
+                console.error("Error en getParentsOptions: ", errorMessage)
+                toast.error(errorMessage)
+            } finally {
+                setIsLoading(false)
+            }
+        }
 
-    console.log("algo intermedio");
+        getCourseOptions();
+        getParentOptions();
+    }, [user?.token]);
 
     async function onSubmit(data: z.infer<typeof formSchema>) {
         const formData = {
@@ -169,21 +222,30 @@ export default function PersonaForm({
             surname: data.surname,
             email: data.email,
             dni: data.dni,
-            status: data.status,
+            active: data.status === "activo",
             phone: data.phone,
+            password: data.password,
             dateOfBirth: formatDate(data.dateOfBirth),
             ingressDate: formatDate(data.ingressDate),
+            parentId: data.parentId[0],
             cursesIds: data.cursesIds,
+            roles: ["ROLE_STUDENT"]
         };
         startLoading();
         try {
             const endpoint = isEditable
-                ? `estudiantes/actualizar/${datos?.id}`
-                : "estudiantes/crear";
+                ? `/auth/editar/${datos?.id}`
+                : "/auth/registrar?userType=student";
             const response = await fetch({
                 endpoint,
                 method: isEditable ? "PUT" : "POST",
-                formData,
+                headers:{
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${user?.token}`,
+                },
+                formData:{
+                    student: formData
+                },
             });
             if (response) {
                 console.log(response);
@@ -367,6 +429,34 @@ export default function PersonaForm({
                                     </FormItem>
                                 )}
                             />
+                            <FormField
+                                control={isEditable ? form.control : undefined}
+                                name="password"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Contraseña</FormLabel>
+                                        <FormControl>
+                                            <div className="relative">
+                                                <Input type={showPassword ? "text" : "password"} {...field} />
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                >
+                                                    {showPassword ? (
+                                                        <EyeOff className="h-4 w-4" aria-hidden="true" />
+                                                    ) : (
+                                                        <Eye className="h-4 w-4" aria-hidden="true" />
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                             <div className="grid grid-cols-2 gap-4">
                                 <FormField
                                     control={form.control}
@@ -475,13 +565,31 @@ export default function PersonaForm({
                                     }}
                                 />
                             </div>
-                            {isLoading ? (
-                                <Loader2Icon
-                                    className="animate-spin"
-                                    size={16}
-                                    strokeWidth={2}
+                            {
+                                isLoading ? <Loader2Icon className="animate-spin" size={16} strokeWidth={2} /> : 
+                                <>
+                                <FormField
+                                    control={form.control}
+                                    name="parentId"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Padres</FormLabel>
+                                            <FormControl>
+                                                <MultipleSelector
+                                                    options={parentsOptions}
+                                                    // @ts-ignore
+                                                    selected={(field.value || []).map(
+                                                        (id: string) =>
+                                                            parentsOptions.find((option) => option.value === id) || { value: id, label: id }
+                                                    )}
+                                                    onChange={(selected) => field.onChange(selected.map((option) => option.value))}
+                                                    placeholder="Seleccionar padre..."
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
                                 />
-                            ) : (
                                 <FormField
                                     control={form.control}
                                     name="cursesIds"
@@ -492,27 +600,11 @@ export default function PersonaForm({
                                                 <MultipleSelector
                                                     options={courseOptions}
                                                     // @ts-ignore
-                                                    selected={(
-                                                        field.value || []
-                                                    ).map(
+                                                    selected={(field.value || []).map(
                                                         (id: string) =>
-                                                            courseOptions.find(
-                                                                (option) =>
-                                                                    option.value ===
-                                                                    id
-                                                            ) || {
-                                                                value: id,
-                                                                label: id,
-                                                            }
+                                                            courseOptions.find((option) => option.value === id) || { value: id, label: id }
                                                     )}
-                                                    onChange={(selected) =>
-                                                        field.onChange(
-                                                            selected.map(
-                                                                (option) =>
-                                                                    option.value
-                                                            )
-                                                        )
-                                                    }
+                                                    onChange={(selected) => field.onChange(selected.map((option) => option.value))}
                                                     placeholder="Seleccionar cursos..."
                                                 />
                                             </FormControl>
@@ -520,7 +612,8 @@ export default function PersonaForm({
                                         </FormItem>
                                     )}
                                 />
-                            )}
+                                </>
+                            }
                         </form>
                     </Form>
                     <AlertDialogFooter>
