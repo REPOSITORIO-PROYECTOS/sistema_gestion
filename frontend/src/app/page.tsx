@@ -118,7 +118,7 @@ export default function Home() {
     const capitalizedDate =
         formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
         
-    // const returnAV = () => {
+    const returnAV = () => {
         return (
             <section className="">
                 <div className="container mx-auto py-6 px-4">
@@ -372,34 +372,34 @@ export default function Home() {
                 </footer>
             </section>
         );
-    //}
+    }
 
-    // switch (user?.role) {
-    //     case "ROLE_STUDENT":
-    //       return returnAV();
-    //     case "ROLE_ADMIN":
-    //       router.push("/admin");
-    //       break;
-    //     case "ROLE_TEACHER":
-    //       router.push("/admin/cursos");
-    //       break;
-    //     case "ROLE_PARENT":
-    //       router.push("/padres");
-    //       break;
-    //     case "ROLE_CASHER":
-    //       router.push("/admin/caja");
-    //       break;
-    //     case "ROLE_ADMIN_COURSES":
-    //       router.push("/admin/cursos");
-    //       break;
-    //     case "ROLE_ADMIN_USERS":
-    //       router.push("/admin/usuarios");
-    //       break;
-    //     case "ROLE_ADMIN_VC":
-    //       router.push("/admin/aula-virtual");
-    //       break;
-    //     default:
-    //       router.push("/login");
-    //       break;
-    //   }
+    switch (user?.role) {
+        case "ROLE_STUDENT":
+          return returnAV();
+        case "ROLE_ADMIN":
+          router.push("/admin");
+          break;
+        case "ROLE_TEACHER":
+          router.push("/admin/cursos");
+          break;
+        case "ROLE_PARENT":
+          router.push("/padres");
+          break;
+        case "ROLE_CASHER":
+          router.push("/admin/caja");
+          break;
+        case "ROLE_ADMIN_COURSES":
+          router.push("/admin/cursos");
+          break;
+        case "ROLE_ADMIN_USERS":
+          router.push("/admin/usuarios");
+          break;
+        case "ROLE_ADMIN_VC":
+          router.push("/admin/aula-virtual");
+          break;
+        default:
+          router.push("/login");
+          break;
+      }
 }
