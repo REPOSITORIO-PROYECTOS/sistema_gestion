@@ -45,6 +45,17 @@ export default function Home() {
     const [isClient, setIsClient] = useState(false);
     const [currentTime, setCurrentTime] = useState(new Date());
 
+    const roleToRoute:any = {
+        "ROLE_STUDENT": "/",
+        "ROLE_ADMIN": "/admin",
+        "ROLE_TEACHER": "/admin/cursos",
+        "ROLE_PARENT": "/padres",
+        "ROLE_CASHER": "/admin/caja",
+        "ROLE_ADMIN_COURSES": "/admin/cursos",
+        "ROLE_ADMIN_USERS": "/admin/usuarios",
+        "ROLE_ADMIN_VC": "/admin/aula-virtual",
+    };
+
     // Datos de ejemplo - cursos inscritos
     const enrolledCourses: Course[] = [
         {
@@ -374,32 +385,24 @@ export default function Home() {
         );
     }
 
-    switch (user?.role) {
-        case "ROLE_STUDENT":
-          return returnAV();
-        case "ROLE_ADMIN":
-          router.push("/admin");
-          break;
-        case "ROLE_TEACHER":
-          router.push("/admin/cursos");
-          break;
-        case "ROLE_PARENT":
-          router.push("/padres");
-          break;
-        case "ROLE_CASHER":
-          router.push("/admin/caja");
-          break;
-        case "ROLE_ADMIN_COURSES":
-          router.push("/admin/cursos");
-          break;
-        case "ROLE_ADMIN_USERS":
-          router.push("/admin/usuarios");
-          break;
-        case "ROLE_ADMIN_VC":
-          router.push("/admin/aula-virtual");
-          break;
-        default:
-          router.push("/login");
-          break;
-      }
+    const redirectToRoleRoute = (roles:any) => {
+        for (const role of roles) {
+            const route = roleToRoute[role];
+
+            if (route) {
+                if (route === "/") {
+                    returnAV();  // Si la ruta es una cadena, navega a esa ruta
+                } else {
+                    router.push(route); // Si la ruta es una función (como returnAV), ejecútala
+                }
+                return;  // Detiene la ejecución una vez que se haya encontrado un rol válido
+            }
+        }
+
+        // Si no se encuentra ningún rol válido, redirige al login
+        router.push("/login");
+    };
+
+    // Llama a la función pasando el arreglo de roles del usuario
+    redirectToRoleRoute(user?.role || []);
 }

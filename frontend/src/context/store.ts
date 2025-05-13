@@ -78,8 +78,8 @@ export const useAuthStore = create<AuthState>()(
                             ...userData,
                             // Asegurar que role sea compatible con el tipo esperado
                             role: Array.isArray(userData.role)
-                                ? (userData.role[0] as "ROLE_ADMIN" | "ROLE_STUDENT" | "ROLE_TEACHER" | "ROLE_PARENT" | 
-                                    "ROLE_CASHER" | "ROLE_ADMIN_VC" | "ROLE_ADMIN_USERS"| "ROLE_ADMIN_COURSES")
+                                ? (userData.role as ["ROLE_ADMIN" | "ROLE_STUDENT" | "ROLE_TEACHER" | "ROLE_PARENT" | 
+                                    "ROLE_CASHER" | "ROLE_ADMIN_VC" | "ROLE_ADMIN_USERS"| "ROLE_ADMIN_COURSES"])
                                 : userData.role,
                         },
                         isAuthenticated: true,

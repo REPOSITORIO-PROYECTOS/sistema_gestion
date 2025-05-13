@@ -38,7 +38,7 @@ export default function Estadisticas() {
                 <div className="text-white text-4xl font-bold leading-relaxed">{cuotasVencidas30}</div>
             </div>
             <div className="w-full flex justify-between items-center h-24 px-6 rounded-md bg-[#0b90d1]" >
-                <div className="text-white text-lg font-bold leading-relaxed">Total coutas deudas </div>
+                <div className="text-white text-lg font-bold leading-relaxed">Total cuotas adeudadas </div>
                 <div className="text-white text-4xl font-bold leading-relaxed">{totalCuotasDeuda}</div>
             </div>
         </section>
