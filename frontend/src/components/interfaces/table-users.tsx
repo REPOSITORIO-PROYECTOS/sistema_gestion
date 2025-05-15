@@ -282,6 +282,7 @@ export default function TableUsers() {
     // Debounce function
     useEffect(() => {
         const handler = setTimeout(() => {
+            setData([]);
             setDebouncedSearchTerm(searchTerm);
         }, 300); // 300ms de retraso
 
@@ -350,7 +351,7 @@ export default function TableUsers() {
                 })
                 .filter(Boolean); // Filtrar elementos nulos
             setData(actual=>{
-                const newData = mappedData;//[...actual, ...mappedData];
+                const newData = [...actual, ...mappedData];
                 return newData;
             });
             setTotalElements(swrDataUsers.totalElements);
@@ -373,7 +374,7 @@ export default function TableUsers() {
                 })
                 .filter(Boolean); // Filtrar elementos nulos
             setData(actual=>{
-                const newData = mappedData;//[...actual, ...mappedData];
+                const newData = [...actual, ...mappedData];
                 return newData;
             });
             setTotalElements(swrDataTeachers.totalElements);
@@ -396,7 +397,7 @@ export default function TableUsers() {
                 })
                 .filter(Boolean); // Filtrar elementos nulos
             setData(actual=>{
-                const newData = mappedData;//[...actual, ...mappedData];
+                const newData = [...actual, ...mappedData];
                 return newData;
             });
             setTotalElements(swrDataParents.totalElements);

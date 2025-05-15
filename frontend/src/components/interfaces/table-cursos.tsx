@@ -291,7 +291,7 @@ export default function TablePerson() {
 
     useEffect(() => {
         if (swrData) {
-            if (user?.role.includes("ROLE_TEACHER")) {
+            if (user?.role.includes("ROLE_TEACHER")&& (!user?.role.includes("ROLE_ADMIN") && !user?.role.includes("ROLE_ADMIN_COURSES"))) {
                 setData(swrData);
             } else {
                 setData(swrData.content);
