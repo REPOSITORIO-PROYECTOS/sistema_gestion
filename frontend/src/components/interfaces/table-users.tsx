@@ -350,7 +350,7 @@ export default function TableUsers() {
                 })
                 .filter(Boolean); // Filtrar elementos nulos
             setData(actual=>{
-                const newData = [...actual, ...mappedData];
+                const newData = mappedData;//[...actual, ...mappedData];
                 return newData;
             });
             setTotalElements(swrDataUsers.totalElements);
@@ -373,7 +373,7 @@ export default function TableUsers() {
                 })
                 .filter(Boolean); // Filtrar elementos nulos
             setData(actual=>{
-                const newData = [...actual, ...mappedData];
+                const newData = mappedData;//[...actual, ...mappedData];
                 return newData;
             });
             setTotalElements(swrDataTeachers.totalElements);
@@ -396,7 +396,7 @@ export default function TableUsers() {
                 })
                 .filter(Boolean); // Filtrar elementos nulos
             setData(actual=>{
-                const newData = [...actual, ...mappedData];
+                const newData = mappedData;//[...actual, ...mappedData];
                 return newData;
             });
             setTotalElements(swrDataParents.totalElements);

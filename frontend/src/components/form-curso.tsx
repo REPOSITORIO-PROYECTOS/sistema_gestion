@@ -339,7 +339,7 @@ export default function FormCurso({
                                     </FormItem>
                                 )}
                             />
-                            {isLoading ? (
+                            {/* {isLoading ? (
                                 <Loader2Icon
                                     className="animate-spin"
                                     size={16}
@@ -386,7 +386,7 @@ export default function FormCurso({
                                         </FormItem>
                                     )}
                                 />
-                            )}
+                            )} */}
                             {isLoading ? (
                                 <Loader2Icon
                                     className="animate-spin"
@@ -408,7 +408,7 @@ export default function FormCurso({
                                                             (id: string) =>
                                                                 teacherOptions.find(
                                                                     (option) =>
-                                                                        option.value ===
+                                                                        option.label ===
                                                                         id
                                                                 ) || {
                                                                     value: id,

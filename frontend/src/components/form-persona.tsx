@@ -145,7 +145,7 @@ const formSchema = z.object({
             setIsLoading(true);
             try {
                 const response = await fetch({
-                    endpoint: "/cursos/paged?page=0&size=50",
+                    endpoint: "/cursos/paged?page=0&size=100",
                     method: "GET",
                     headers:{
                         "Content-Type": "application/json",
@@ -183,7 +183,7 @@ const formSchema = z.object({
             setIsLoading(true)
             try {
                 const response = await fetch({
-                    endpoint: '/padres/paged',
+                    endpoint: '/padres/paged?page=0&size=500',
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -580,7 +580,7 @@ const formSchema = z.object({
                                                     // @ts-ignore
                                                     selected={(field.value || []).map(
                                                         (id: string) =>
-                                                            parentsOptions.find((option) => option.value === id) || { value: id, label: id }
+                                                            parentsOptions.find((option) => option.label === id) || { value: id, label: id }
                                                     )}
                                                     onChange={(selected) => field.onChange(selected.map((option) => option.value))}
                                                     placeholder="Seleccionar padre..."
@@ -602,7 +602,7 @@ const formSchema = z.object({
                                                     // @ts-ignore
                                                     selected={(field.value || []).map(
                                                         (id: string) =>
-                                                            courseOptions.find((option) => option.value === id) || { value: id, label: id }
+                                                            courseOptions.find((option) => option.label === id) || { value: id, label: id }
                                                     )}
                                                     onChange={(selected) => field.onChange(selected.map((option) => option.value))}
                                                     placeholder="Seleccionar cursos..."

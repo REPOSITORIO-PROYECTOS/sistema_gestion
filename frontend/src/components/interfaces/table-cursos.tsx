@@ -264,7 +264,7 @@ export default function TablePerson() {
 
     const swrUrl = useMemo(() => {
         if (!user?.token) return null; // Evita llamada antes de que esté el user
-        if (user.role.includes("ROLE_TEACHER")) {
+        if (user.role.includes("ROLE_TEACHER") && (!user.role.includes("ROLE_ADMIN") && !user.role.includes("ROLE_ADMIN_COURSES"))) {
             return `/cursos/obtenerPorProfesor/${user.id}`;
         } else {
             return `/cursos/paged?page=${pagination.pageIndex}&size=${pagination.pageSize}&keyword=${debouncedSearchTerm}`;
