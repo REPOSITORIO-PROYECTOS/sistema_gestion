@@ -47,7 +47,7 @@ public class CashRegisterService {
 						})
 						.switchIfEmpty(
 							// Si no hay caja abierta, crear una nueva
-							Mono.defer(() -> {
+							Mono.<CashRegister>defer(() -> {
 								CashRegister newCashRegister = new CashRegister();
 								newCashRegister.setStartDate(LocalDateTime.now());
 								newCashRegister.setIsClosed(false);

@@ -108,7 +108,7 @@ type Item = {
     password: string;
     institution: string;
     roles: ('ROLE_ADMIN' | 'ROLE_CASHER' | 'ROLE_ADMIN_VC' | 'ROLE_ADMIN_USERS' | 
-        'ROLE_ADMIN_COURSES' | "ROLE_PARENT" | "ROLE_TEACHER" | undefined)[];
+        'ROLE_ADMIN_COURSES' | "ROLE_PARENT" | "ROLE_TEACHER")[];
 };
 
 // Custom filter function for multi-column searching
@@ -281,8 +281,8 @@ export default function TableUsers() {
 
     // Debounce function
     useEffect(() => {
+        setData([]);
         const handler = setTimeout(() => {
-            setData([]);
             setDebouncedSearchTerm(searchTerm);
         }, 300); // 300ms de retraso
 
@@ -970,7 +970,7 @@ export default function TableUsers() {
                                     size="icon"
                                     variant="outline"
                                     className="disabled:pointer-events-none disabled:opacity-50"
-                                    onClick={() => {setData([]); table.setPageIndex(0)}}
+                                    onClick={() => {/*setData([]); */ table.setPageIndex(0)}}
                                     disabled={!table.getCanPreviousPage()}
                                     aria-label="Go to first page"
                                 >

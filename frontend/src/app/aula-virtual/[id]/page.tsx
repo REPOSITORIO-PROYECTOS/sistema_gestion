@@ -126,7 +126,7 @@ export default function CourseDetail({ params }: { params: Promise<{ id: string 
             
             // Obtener las secciones del curso
             const sectionsResponse = await fetch(
-                `https://instituto.sistemataup.online/api/cursos/obtenerContenido/${id}`,
+                `https://instituto.sistemataup.online//api/cursos/obtenerContenido/${id}`,
                 {
                     headers: {
                         "Content-Type": "application/json",

@@ -113,8 +113,8 @@ public class ParentService {
 	}
 
 	private Mono<PagedResponse<Parent>> searchParents(String query, PageRequest pageRequest) {
-		Mono<Long> totalElementsMono = parentsRepository.countByDniOrSurname(query);
-		Flux<Parent> parentsFlux = parentsRepository.findByDniOrSurname(query, pageRequest);
+		Mono<Long> totalElementsMono = parentsRepository.countByKeyword(query);
+		Flux<Parent> parentsFlux = parentsRepository.findByKeywordPaged(query, pageRequest);
 
 		return Mono.zip(totalElementsMono, parentsFlux.collectList())
 				.map(tuple -> new PagedResponse<>(

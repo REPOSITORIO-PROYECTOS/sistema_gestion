@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
 
 import com.sistema.gestion.Models.Profiles.Parent;
+import com.sistema.gestion.Models.Profiles.User;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -32,6 +33,14 @@ public interface ParentsRepository extends ReactiveMongoRepository<Parent, Strin
     // Conteo de registros por DNI o Apellido
     @Query(value = "{ '$or': [ { 'dni': ?0 }, { 'surname': ?0 } ] }", count = true)
     Mono<Long> countByDniOrSurname(String query);
+
+    // Buscar usuarios por keyword en el título o descripción con paginación
+    @Query("{ $or: [ { 'name': { $regex: ?0, $options: 'i' } }, { 'surname': { $regex: ?0, $options: 'i' } } ] }")
+    Flux<Parent> findByKeywordPaged(String keyword, PageRequest pageRequest);
+
+    // Contar la cantidad de usuarios que coinciden con la keyword
+    @Query(value = "{ $or: [ { 'name': { $regex: ?0, $options: 'i' } }, { 'surname': { $regex: ?0, $options: 'i' } } ] }", count = true)
+    Mono<Long> countByKeyword(String keyword);
 
     // Busqueda de estudiantes por apellido con paginación
     @Query("{ 'surname' : ?0 }")

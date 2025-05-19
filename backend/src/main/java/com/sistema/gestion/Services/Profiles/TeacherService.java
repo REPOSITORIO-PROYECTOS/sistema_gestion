@@ -99,8 +99,8 @@ public class TeacherService {
 	}
 
 	private Mono<PagedResponse<Teacher>> searchTeachers(String query, PageRequest pageRequest) {
-		Mono<Long> totalElementsMono = teacherRepository.countByDniOrSurname(query);
-		Flux<Teacher> teachersFlux = teacherRepository.findByDniOrSurname(query, pageRequest);
+		Mono<Long> totalElementsMono = teacherRepository.countByKeyword(query);
+		Flux<Teacher> teachersFlux = teacherRepository.findByKeywordPaged(query, pageRequest);
 
 		return Mono.zip(totalElementsMono, teachersFlux.collectList())
 				.map(tuple -> new PagedResponse<>(

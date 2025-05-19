@@ -94,7 +94,7 @@ export default function UserForm({ isEditable = false, datos, mutate, onClose }:
             dni: datos?.dni || "",
             phone: datos?.phone || "",
             password: "",
-            roles: datos?.roles || [],
+            roles: datos?.roles !== undefined ? datos.roles : [],
         },
     });
     const rolesOptions = [

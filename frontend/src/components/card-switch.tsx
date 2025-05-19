@@ -98,7 +98,7 @@ export default function CardSwitch({
     // const handleConsultarEstado = async () => {
     //     try {
     //         const response = await fetch(
-    //             `https://instituto.sistemataup.online/api/caja/estado?operacion=consultar`,
+    //             `https://instituto.sistemataup.online//api/caja/estado?operacion=consultar`,
     //             {
     //                 method: "POST",
     //                 headers: {
