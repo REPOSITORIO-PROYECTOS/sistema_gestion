@@ -36,7 +36,7 @@ public class SpringSecurityConfig {
 	@Bean
 	public CorsWebFilter corsWebFilter() {
 		CorsConfiguration config = new CorsConfiguration();
-		config.setAllowedOrigins(List.of("https://institutosanpablo.netlify.app")); //"https://barker.netlify.app"
+		config.setAllowedOrigins(List.of("https://institutosanpablo.netlify.app"));
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 		config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 		config.setAllowCredentials(true);

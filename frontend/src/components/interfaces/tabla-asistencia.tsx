@@ -149,7 +149,7 @@ export function TablaAsistencia(props: TablaAsistenciaProps) {
 
     async function obtenerEstudiantesPorCursoId(courseId: string) {
         try {
-            const response = await fetch(`https://instituto.sistemataup.online//api/estudiantes/getStudentsByCourseId?courseId=${courseId}`, {
+            const response = await fetch(`https://instituto.sistemataup.online/api/estudiantes/getStudentsByCourseId?courseId=${courseId}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -194,7 +194,7 @@ export function TablaAsistencia(props: TablaAsistenciaProps) {
         };
       
         try {
-          const response = await fetch("https://instituto.sistemataup.online//api/asistencias/tomar-asistencia", {
+          const response = await fetch("https://instituto.sistemataup.online/api/asistencias/tomar-asistencia", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -224,7 +224,7 @@ export function TablaAsistencia(props: TablaAsistenciaProps) {
                 const year = currentDate.getFullYear();
     
                 // 1. Obtener alumnos
-                const studentsRes = await fetch(`https://instituto.sistemataup.online//api/estudiantes/getStudentsByCourseId?courseId=${id}&page=0&size=100`, {
+                const studentsRes = await fetch(`https://instituto.sistemataup.online/api/estudiantes/getStudentsByCourseId?courseId=${id}&page=0&size=100`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -238,7 +238,7 @@ export function TablaAsistencia(props: TablaAsistenciaProps) {
                 }
     
                 // 2. Obtener asistencias
-                const attendanceRes = await fetch(`https://instituto.sistemataup.online//api/asistencias/${id}?month=${month}&year=${year}`, {
+                const attendanceRes = await fetch(`https://instituto.sistemataup.online/api/asistencias/${id}?month=${month}&year=${year}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",

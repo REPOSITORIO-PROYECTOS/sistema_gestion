@@ -164,7 +164,7 @@ export default function EditCourseContentPage({
         const fetchTeachers = async () => {
             setIsLoading(true);
             try {
-                const teachersResponse = await fetch("https://instituto.sistemataup.online//api/profesores/paged?page=0&size=1000",{
+                const teachersResponse = await fetch("https://instituto.sistemataup.online/api/profesores/paged?page=0&size=1000",{
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -205,7 +205,7 @@ export default function EditCourseContentPage({
             
             // Obtener las secciones del curso
             const sectionsResponse = await fetch(
-                `https://instituto.sistemataup.online//api/cursos/obtenerContenido/${id}`,
+                `https://instituto.sistemataup.online/api/cursos/obtenerContenido/${id}`,
                 {
                     headers: {
                         "Content-Type": "application/json",
@@ -368,7 +368,7 @@ export default function EditCourseContentPage({
                     ),
                 });
                 const response = await fetch(
-                    `https://instituto.sistemataup.online//api/course-sections/update/${sectionForm.id}`,
+                    `https://instituto.sistemataup.online/api/course-sections/update/${sectionForm.id}`,
                     {
                         method: "PUT",
                         headers: {
@@ -389,7 +389,7 @@ export default function EditCourseContentPage({
             } else {
                 // Crear nueva sección
                 const response = await fetch(
-                    "https://instituto.sistemataup.online//api/course-sections/createSection",
+                    "https://instituto.sistemataup.online/api/course-sections/createSection",
                     {
                         method: "POST",
                         headers: {
@@ -465,7 +465,7 @@ export default function EditCourseContentPage({
                 ),
             });
             const response = await fetch(
-                `https://instituto.sistemataup.online//api/course-subsections/update/${subsectionForm.id}`,
+                `https://instituto.sistemataup.online/api/course-subsections/update/${subsectionForm.id}`,
                 {
                     method: "PUT",
                     headers: {
@@ -507,7 +507,7 @@ export default function EditCourseContentPage({
                 ),
             });
             const response = await fetch(
-                "https://instituto.sistemataup.online//api/course-subsections/create",
+                "https://instituto.sistemataup.online/api/course-subsections/create",
                 {
                     method: "POST",
                     headers: {
@@ -562,7 +562,7 @@ export default function EditCourseContentPage({
                 file: fileForm.file,
             });
 
-            const response = await fetch(`https://instituto.sistemataup.online//api/course-subsections/${activeSubsection}/addFile`, {
+            const response = await fetch(`https://instituto.sistemataup.online/api/course-subsections/${activeSubsection}/addFile`, {
                 method: "POST",
                 headers: {
                     // No es necesario agregar Content-Type, ya que lo manejará automáticamente FormData
@@ -594,7 +594,7 @@ export default function EditCourseContentPage({
             const formData = new FormData();
             formData.append("file", file);
             const response = await fetch(
-                `https://instituto.sistemataup.online//api/files/update/${fileId}`,
+                `https://instituto.sistemataup.online/api/files/update/${fileId}`,
                 {
                     method: "PUT",
                     headers: {
@@ -652,7 +652,7 @@ export default function EditCourseContentPage({
         if (!activeSection) return;
         try {
             const response = await fetch(
-                `https://instituto.sistemataup.online//api/course-sections/delete/${sectionId}`,
+                `https://instituto.sistemataup.online/api/course-sections/delete/${sectionId}`,
                 {
                     method: "DELETE",
                     headers: {
@@ -673,7 +673,7 @@ export default function EditCourseContentPage({
         if (!activeSection) return;
         try {
             const response = await fetch(
-                `https://instituto.sistemataup.online//api/course-subsections/delete/${subsectionId}`,
+                `https://instituto.sistemataup.online/api/course-subsections/delete/${subsectionId}`,
                 {
                     method: "DELETE",
                     headers: {
@@ -694,7 +694,7 @@ export default function EditCourseContentPage({
         if (!activeSubsection) return;
         try {
             const response = await fetch(
-                `https://instituto.sistemataup.online//api/files/delete/${linkId}`,
+                `https://instituto.sistemataup.online/api/files/delete/${linkId}`,
                 {
                     method: "DELETE",
                     headers: {
