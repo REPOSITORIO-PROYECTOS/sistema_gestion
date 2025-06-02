@@ -54,7 +54,7 @@ interface PersonaFormProps {
         phone: string;
         dateOfBirth: Date;
         ingressDate: Date;
-        parentId: string,
+        parentId: string[],
         cursesIds: string[];
     };
     mutate?: ScopedMutator | (() => void); // Acepta tanto ScopedMutator como una función sin argumentos
@@ -100,8 +100,10 @@ const formSchema = z.object({
     ingressDate: z.date({
         required_error: "La fecha de ingreso es requerida.",
     }),
-    parentId: z.array(z.string()).max(1, {
+    parentId: z.array(z.string()).min(1, {
         message: "Debe seleccionar al menos un padre.",
+    }).max(2, {
+        message: "No puede seleccionar más de dos padres.",
     }),
     cursesIds: z.array(z.string()).min(1, {
         message: "Debe seleccionar al menos un curso.",
@@ -133,12 +135,10 @@ const formSchema = z.object({
             ingressDate: datos?.ingressDate
                 ? parse(datos.ingressDate.toString(), "dd-MM-yyyy", new Date())
                 : undefined,
-            parentId: [datos?.parentId || ""],
+            parentId: datos?.parentId ? datos.parentId : [],
             cursesIds: datos?.cursesIds ?? [],
         },
     });
-
-    console.log(datos);
 
     useEffect(() => {
         const getCourseOptions = async () => {
@@ -227,7 +227,7 @@ const formSchema = z.object({
             password: data.password,
             dateOfBirth: formatDate(data.dateOfBirth),
             ingressDate: formatDate(data.ingressDate),
-            parentId: data.parentId[0],
+            parentId: data.parentId,
             cursesIds: data.cursesIds,
             roles: ["ROLE_STUDENT"]
         };
@@ -580,7 +580,7 @@ const formSchema = z.object({
                                                     // @ts-ignore
                                                     selected={(field.value || []).map(
                                                         (id: string) =>
-                                                            parentsOptions.find((option) => option.label === id) || { value: id, label: id }
+                                                            parentsOptions.find((option) => option.value === id) || { value: id, label: id }
                                                     )}
                                                     onChange={(selected) => field.onChange(selected.map((option) => option.value))}
                                                     placeholder="Seleccionar padre..."
@@ -602,7 +602,7 @@ const formSchema = z.object({
                                                     // @ts-ignore
                                                     selected={(field.value || []).map(
                                                         (id: string) =>
-                                                            courseOptions.find((option) => option.label === id) || { value: id, label: id }
+                                                            courseOptions.find((option) => option.value === id) || { value: id, label: id }
                                                     )}
                                                     onChange={(selected) => field.onChange(selected.map((option) => option.value))}
                                                     placeholder="Seleccionar cursos..."

@@ -109,7 +109,7 @@ type Item = {
     active: boolean,
     dateOfBirth: Date; // Se agrega esta propiedad
     ingressDate: Date; // Se agrega esta propiedad
-    parentId: string;
+    parentId: string[];
     cursesIds: string[];
 };
 

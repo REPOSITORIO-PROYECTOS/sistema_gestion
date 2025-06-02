@@ -24,7 +24,7 @@ public class Student extends ProfileClass {
 
     private String status;
 
-    private String parentId;
+    private Set<String> parentId;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate dateOfBirth;

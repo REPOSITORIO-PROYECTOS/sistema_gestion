@@ -327,9 +327,9 @@ export default function UserForm({ isEditable = false, datos, mutate, onClose }:
                                                     selected={
                                                         field.value?.map(
                                                             (id: string) =>
-                                                                ["administrador", "cajero/a", "gestion aula", "gestion usuarios", "gestion cursos"].find(
+                                                                rolesOptions.find(
                                                                     (option) =>
-                                                                        option ===
+                                                                        option.label ===
                                                                         id
                                                                 ) || {
                                                                     value: id,

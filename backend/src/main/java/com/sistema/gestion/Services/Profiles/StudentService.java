@@ -174,23 +174,26 @@ public class StudentService {
 	}
 
 	public Mono<Student> enrollStudentInParents(Student student) {
-    String parentId = student.getParentId();
+		Set<String> parentIds = student.getParentId();
 
-    if (parentId == null || parentId.isEmpty()) {
-        return Mono.just(student); // Si no hay padre asociado, devolver el estudiante sin cambios
-    }
+		if (parentIds == null || parentIds.isEmpty()) {
+			return Mono.just(student); // Si no hay padres asociados, devolver el estudiante sin cambios
+		}
 
-    return parentsRepository.findById(parentId)
-            .switchIfEmpty(Mono.error(new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Padre no encontrado: " + parentId)))
-            .flatMap(parent -> {
-                if (parent.getChildren() == null) {
-                    parent.setChildren(new HashSet<>());
-                }
-                parent.getChildren().add(student.getId());
-                return parentsRepository.save(parent);
-            })
-            .thenReturn(student); // Devolver el estudiante sin modificar
-}
+		// Para cada padre, buscarlo y agregar el ID del estudiante a su lista de hijos
+		return Flux.fromIterable(parentIds)
+				.flatMap(parentId -> parentsRepository.findById(parentId)
+					.switchIfEmpty(Mono.error(new ResponseStatusException(
+							HttpStatus.NOT_FOUND, "Padre no encontrado: " + parentId)))
+					.flatMap(parent -> {
+						if (parent.getChildren() == null) {
+							parent.setChildren(new HashSet<>());
+						}
+						parent.getChildren().add(student.getId());
+						return parentsRepository.save(parent);
+					})
+				)
+				.then(Mono.just(student)); // Devolver el estudiante sin modificar
+	}
 
 }
