@@ -317,7 +317,7 @@ public class PaymentService {
 	}
 
 	private boolean isStudentEnrolledInCourse(Student student, Course course) {
-		return student.getCoursesIds() != null && !student.getCoursesIds().isEmpty() && student.getCoursesIds().contains(course.getId());
+		return student.getCursesIds() != null && !student.getCursesIds().isEmpty() && student.getCursesIds().contains(course.getId());
 	}
 
 	private Payment createMonthlyPayment(Course course, Student student, LocalDate startOfMonth, String user) {

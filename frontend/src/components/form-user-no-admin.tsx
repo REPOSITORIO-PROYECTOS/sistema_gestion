@@ -88,18 +88,35 @@ export default function UserFormNoAdmin({ isEditable = false, datos, mutate, onC
 
     const getUserData = async () => {
         try {
-            const role = user?.role.includes("ROLE_TEACHER") ? "profesores" : 
-            user?.role.includes("ROLE_PARENT") ? "padres" : 
-            "usuarios"
-            const res = await fetch({endpoint:`/${role}/obtener/${user?.id}`,
+            let datos;
+            const res = await fetch({endpoint:`/usuarios/obtener/${user?.id}`,
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${user?.token}`,
                 }
             })
-            const datos = await res.user;
-            console.log("Datos del usuario: ", datos);
+            if(res){
+                datos = await res.user;
+            } else {
+                const res = await fetch({endpoint:`/profesores/obtener/${user?.id}`,
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user?.token}`,
+                }})
+                if(res){
+                    datos = await res.teacher;
+                } else {
+                    const res = await fetch({endpoint:`/padres/obtener/${user?.id}`,
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${user?.token}`,
+                    }})
+                    datos = await res.parent;
+                }
+            }
             
             form.setValue("id", datos?.id || datos?.id || "")
             form.setValue("name", datos?.name || datos?.name || "")

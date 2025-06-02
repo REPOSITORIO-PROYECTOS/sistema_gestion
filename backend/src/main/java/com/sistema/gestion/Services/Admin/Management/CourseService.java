@@ -109,10 +109,10 @@ public class CourseService {
 							}
 							enrolledStudents.add(studentId);
 
-							Set<String> studentCourses = student.getCoursesIds();
+							Set<String> studentCourses = student.getCursesIds();
 							if (studentCourses == null) {
 								studentCourses = new HashSet<>();
-								student.setCoursesIds(studentCourses);
+								student.setCursesIds(studentCourses);
 							}
 							studentCourses.add(courseId);
 
@@ -134,7 +134,7 @@ public class CourseService {
 					enrolledStudents.remove(studentId);
 					return studentRepo.findById(studentId)
 							.flatMap(student -> {
-								Set<String> studentCourses = student.getCoursesIds();
+								Set<String> studentCourses = student.getCursesIds();
 								if (studentCourses != null && studentCourses.contains(courseId)) {
 									studentCourses.remove(courseId);
 									return studentRepo.save(student);

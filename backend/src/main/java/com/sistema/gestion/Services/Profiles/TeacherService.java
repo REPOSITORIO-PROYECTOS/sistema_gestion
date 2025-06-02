@@ -10,6 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.sistema.gestion.DTO.PagedResponse;
 import com.sistema.gestion.Models.Profiles.Teacher;
+import com.sistema.gestion.Models.Profiles.User;
 import com.sistema.gestion.Repositories.Admin.Management.CourseRepository;
 import com.sistema.gestion.Repositories.Profiles.TeacherRepository;
 

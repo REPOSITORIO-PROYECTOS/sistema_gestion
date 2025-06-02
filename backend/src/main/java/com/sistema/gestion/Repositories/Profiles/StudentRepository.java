@@ -34,9 +34,9 @@ public interface StudentRepository extends ReactiveMongoRepository<Student, Stri
     @Query(value = "{ '$or': [ { 'dni': ?0 }, { 'surname': ?0 } ] }", count = true)
     Mono<Long> countByDniOrSurname(String query);
 
-    Mono<Long> countByCoursesIds(String courseId);
+    Mono<Long> countByCursesIds(String courseId);
 
-    Flux<Student> findByCoursesIds(String courseId, PageRequest pageRequest);
+    Flux<Student> findByCursesIds(String courseId, PageRequest pageRequest);
 
     // Busqueda de estudiantes por apellido con paginación
     @Query("{ 'surname' : ?0 }")
@@ -44,5 +44,5 @@ public interface StudentRepository extends ReactiveMongoRepository<Student, Stri
 
     // Busqueda de estudiantes por ID de curso
     @Query("{ 'coursesIds': ?0 }")
-    Flux<Student> findAllByCourseId(String courseId);
+    Flux<Student> findAllByCurseId(String courseId);
 }

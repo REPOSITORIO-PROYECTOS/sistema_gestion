@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.sistema.gestion.DTO.PagedResponse;
 import com.sistema.gestion.Models.Profiles.Parent;
 import com.sistema.gestion.Models.Profiles.Student;
+import com.sistema.gestion.Models.Profiles.Teacher;
 import com.sistema.gestion.Repositories.Admin.Management.CourseRepository;
 import com.sistema.gestion.Repositories.Profiles.ParentsRepository;
 import com.sistema.gestion.Repositories.Profiles.StudentRepository;

@@ -70,8 +70,8 @@ public class StudentService {
 
 	public Mono<PagedResponse<Student>> getStudentsByCourseId(String courseId, int page, int size) {
 		PageRequest pageRequest = PageRequest.of(page, size);
-		Mono<Long> totalElementsMono = studentRepository.countByCoursesIds(courseId);
-		Flux<Student> studentsFlux = studentRepository.findByCoursesIds(courseId, pageRequest);
+		Mono<Long> totalElementsMono = studentRepository.countByCursesIds(courseId);
+		Flux<Student> studentsFlux = studentRepository.findByCursesIds(courseId, pageRequest);
 
 		return Mono.zip(totalElementsMono, studentsFlux.collectList())
 				.map(tuple -> new PagedResponse<>(
@@ -156,7 +156,7 @@ public class StudentService {
 	}
 
 	public Mono<Student> enrollStudentInCourses(Student student) {
-		Set<String> courseIds = student.getCoursesIds();
+		Set<String> courseIds = student.getCursesIds();
 
 		if (courseIds == null || courseIds.isEmpty()) {
 			return Mono.just(student); // Si no hay cursos, devolver el estudiante sin cambios

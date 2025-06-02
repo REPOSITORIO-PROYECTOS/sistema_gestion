@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.sistema.gestion.Repositories.Profiles.ParentsRepository;
+import com.sistema.gestion.Repositories.Profiles.TeacherRepository;
 import com.sistema.gestion.Repositories.Profiles.UserRepository;
 
 import reactor.core.publisher.Mono;
@@ -20,6 +22,8 @@ import reactor.core.publisher.Flux;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final TeacherRepository teacherRepository;
+    private final ParentsRepository parentRepository;
 
     public Mono<PagedResponse<UserInfo>> getUsersPaged(int page, int size, String keyword) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -70,9 +74,28 @@ public class UserService {
 
     public Mono<User> getFullName(String email) {
         return userRepository.findByEmail(email)
+                .switchIfEmpty(
+                parentRepository.findByEmail(email)
+                        .map(parent -> {
+                        User user = new User();
+                        user.setName(parent.getName());
+                        user.setSurname(parent.getSurname());
+                        user.setInstitution(parent.getInstitution());
+                        return user;
+                        })
+                        .switchIfEmpty(
+                        teacherRepository.findByEmail(email)
+                                .map(teacher -> {
+                                User user = new User();
+                                user.setName(teacher.getName());
+                                user.setSurname(teacher.getSurname());
+                                user.setInstitution(teacher.getInstitution());
+                                return user;
+                                })
+                        )
+                )
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "No se encontró el usuario: " + email)))
-                .map(user -> user);
+                "No se encontró el usuario: " + email)));
     }
 
     // Método para crear un usuario

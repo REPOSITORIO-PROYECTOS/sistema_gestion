@@ -32,5 +32,5 @@ public class Student extends ProfileClass {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate ingressDate;
 
-    private Set<String> coursesIds;
+    private Set<String> cursesIds;
 }
