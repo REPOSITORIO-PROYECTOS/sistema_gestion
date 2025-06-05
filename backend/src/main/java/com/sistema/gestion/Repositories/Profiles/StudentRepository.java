@@ -27,11 +27,11 @@ public interface StudentRepository extends ReactiveMongoRepository<Student, Stri
     Mono<Long> countAll();
 
     // Busqueda por DNI o Apellido con paginación
-    @Query("{ '$or': [ { 'dni': ?0 }, { 'surname': ?0 } ] }")
+    @Query("{ '$or': [ { 'dni': { $regex: ?0, $options: 'i' } }, { 'surname': { $regex: ?0, $options: 'i' } } ] }")
     Flux<Student> findByDniOrSurname(String query, PageRequest pageRequest);
 
     // Conteo de registros por DNI o Apellido
-    @Query(value = "{ '$or': [ { 'dni': ?0 }, { 'surname': ?0 } ] }", count = true)
+    @Query(value = "{ '$or': [ { 'dni': { $regex: ?0, $options: 'i' } }, { 'surname': { $regex: ?0, $options: 'i' } } ] }", count = true)
     Mono<Long> countByDniOrSurname(String query);
 
     Mono<Long> countByCursesIds(String courseId);

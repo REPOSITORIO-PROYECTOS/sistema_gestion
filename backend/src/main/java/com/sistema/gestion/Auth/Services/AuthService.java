@@ -314,6 +314,7 @@ import reactor.core.publisher.Mono;
                 .onErrorMap(e -> new RuntimeException("Error al registrar el profesor"));
     }
 
+    //TODO unificar el flujo de eliminacion o ver como buscar en que coleccion esta el usuario a eliminar
     // Métodos para eliminar diferentes tipos de usuarios
     public Mono<Void> deleteUser(String userId) {
         return userRepository.findById(userId)
@@ -420,7 +421,6 @@ import reactor.core.publisher.Mono;
     }
 
     public Mono<UserCredentialsDTO> authenticateTeacher(Teacher user, String username, String password) {
-        System.out.println("Contraseña DESDE AUTHENTICATE TEACHER");
         if (passwordEncoder.matches(password, user.getPassword())) {
             String token = jwtUtil.generateToken(user.getEmail(),
                     user.getRoles().toArray(new String[0]));
@@ -431,7 +431,7 @@ import reactor.core.publisher.Mono;
                         credentialsDTO.setToken(token);
                         credentialsDTO.setName(name);
                         credentialsDTO.setUsername(username);
-                        credentialsDTO.setRole(new HashSet<>(Arrays.asList("ROLE_TEACHER")));
+                        credentialsDTO.setRole(user.getRoles());
                         return Mono.just(credentialsDTO);
                     });
         } else {

@@ -75,7 +75,7 @@ export default function LoginPage() {
             // Redireccionar según el rol si el login fue exitoso
             if (success) {
                 if (activeTab === "ROLE_ADMIN") {
-                    router.push("/admin");
+                    router.push("/");
                 } else {
                     router.push("/");
                 }
