@@ -30,7 +30,8 @@ export function Navbar() {
 
     let navItems = [];
 
-    (user?.role.includes("ROLE_ADMIN")) && navItems.push({ href: "/admin", label: "Home" });
+    (user?.role.includes("ROLE_ADMIN_USERS") || user?.role.includes("ROLE_ADMIN")) && 
+    navItems.push({ href: "/admin", label: "Home" });
 
     (user?.role.includes("ROLE_CASHER") || user?.role.includes("ROLE_ADMIN")) &&
     navItems.push({ href: "/admin/caja", label: "Caja" });
