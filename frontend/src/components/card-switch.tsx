@@ -95,37 +95,6 @@ export default function CardSwitch({
         }
     };
 
-    // const handleConsultarEstado = async () => {
-    //     try {
-    //         const response = await fetch(
-    //             `https://instituto.sistemataup.online/api/caja/estado?operacion=consultar`,
-    //             {
-    //                 method: "POST",
-    //                 headers: {
-    //                     "Content-Type": "application/json",
-    //                     Authorization: `Bearer ${user?.token}`,
-    //                 },
-    //                 body: JSON.stringify({ operacion: `consultar` }),
-    //                 // Importante: agregar esta opción si la API está en otro dominio
-    //                 //cache: "no-store",
-    //             }
-    //         );
-    //         const data = await response.json();
-            
-    //         if (!response.ok) {
-    //             throw new Error("Error al cambiar el estado de la caja");
-    //         }
-    
-    //         return { success: true, data };
-    //     } catch (error) {
-    //         console.error("Error en server action:", error);
-    //         return {
-    //             success: false,
-    //             error: "Error al cambiar el estado de la caja",
-    //         };
-    //     }
-    // }
-
     return (
         <div
             className={cn(
@@ -163,3 +132,37 @@ export default function CardSwitch({
         </div>
     );
 }
+
+
+// Componente viejo: 
+
+// const handleConsultarEstado = async () => {
+//     try {
+//         const response = await fetch(
+//             `https://instituto.sistemataup.online/api/caja/estado?operacion=consultar`,
+//             {
+//                 method: "POST",
+//                 headers: {
+//                     "Content-Type": "application/json",
+//                     Authorization: `Bearer ${user?.token}`,
+//                 },
+//                 body: JSON.stringify({ operacion: `consultar` }),
+//                 // Importante: agregar esta opción si la API está en otro dominio
+//                 //cache: "no-store",
+//             }
+//         );
+//         const data = await response.json();
+        
+//         if (!response.ok) {
+//             throw new Error("Error al cambiar el estado de la caja");
+//         }
+
+//         return { success: true, data };
+//     } catch (error) {
+//         console.error("Error en server action:", error);
+//         return {
+//             success: false,
+//             error: "Error al cambiar el estado de la caja",
+//         };
+//     }
+// }

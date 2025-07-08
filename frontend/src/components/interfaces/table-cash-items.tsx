@@ -349,24 +349,10 @@ export default function TableCashItems({
         console.log(swrData);
 
         if (swrData) {
-            // setData(actual=>{
-            //     for (let item of swrData){
-            //         const dateArray = item.date.split("T")[0].split("-");
-            //         const date = `${dateArray[2]}/${dateArray[1]}/${dateArray[0]}`
-            //         actual.push({
-            //             id: item.id,
-            //             titulo: item.title ? item.title : "",
-            //             descripcion: item.description ? item.description : "",
-            //             tipo: item.income ? "ingreso" : "egreso",
-            //             monto: item.amount,
-            //             fecha: date
-            //         })
-            //     }
-            //     return actual;
-            // });
             setData(swrData);
             setTotalElements(swrData.length);
         }
+        
     }, [swrData]);
 
     const handleDeleteRows = async () => {
@@ -600,6 +586,21 @@ export default function TableCashItems({
             await handleActualizarCosto(cuota);
         }
     };
+
+    // Fix para mostrar movimientos de los ultimos 30 dias
+    useEffect(() => {
+        if (!dateRange) {
+            const now = new Date();
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(now.getDate() - 30);
+
+            setDateRange({
+            from: thirtyDaysAgo,
+            to: now,
+            });
+        }
+    }, [dateRange]);
+
 
     return (
         <div className="container mx-auto my-10 space-y-4">

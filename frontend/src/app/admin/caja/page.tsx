@@ -5,21 +5,33 @@ import TableCashItems from "@/components/interfaces/table-cash-items";
 import { useState } from "react";
 
 export default function Page() {
+
     const [cajaActivaGeneral, setCajaActivaGeneral] = useState(false);
+
     return (
+
         <section className="container flex flex-col gap-12 mx-auto p-16">
+
             <div className="flex justify-between items-center">
+
+                {/* Cuadro Panel de Caja */}
                 <div className="flex flex-col items-start gap-4">
                     <h2 className="text-primary text-2xl font-semibold">
                         PANEL DE CAJA
                     </h2>
                     <DailyBalanceModal />
                 </div>
+
+                {/* Switch que Abre / Cierra Caja */}
                 <div className="w-full max-w-[300px] flex justify-end">
                     <CardSwitch setCajaActivaGeneral={setCajaActivaGeneral} />
                 </div>
+                
             </div>
+
+            {/* Tabla de Movimientos */}
             <TableCashItems cajaActivaGeneral={cajaActivaGeneral} />
+
         </section>
     );
 }
