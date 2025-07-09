@@ -259,7 +259,7 @@ export default function TableCashItems({
 }: {
     cajaActivaGeneral: boolean;
 }) {
-    const { cuotas } = useDebt();
+    const { cuotas, refetch } = useDebt();
     const { user } = useAuthStore();
     const fetcher = (url: string) =>
         fetch({
@@ -577,6 +577,7 @@ export default function TableCashItems({
         }
     };
 
+    // Se actualizó handlePago para mejoras en la seccion de cuotas
     const handlePago = async (cuota: any, tipoPago: string) => {
         if (tipoPago === "PARCIAL") {
             await handlePagoParcial(cuota);
@@ -585,6 +586,13 @@ export default function TableCashItems({
         } else if (tipoPago === "ACTUALIZAR") {
             await handleActualizarCosto(cuota);
         }
+
+        // Refrescar cuotas y cerrar modal
+        refetch(); // Actualiza la lista global de cuotas en cada cambio
+
+        setRegistrandoPago(false); // Cierra el modal
+
+        setTipoPago("");  // ?
     };
 
     // Fix para mostrar movimientos de los ultimos 30 dias
@@ -604,6 +612,7 @@ export default function TableCashItems({
 
     return (
         <div className="container mx-auto my-10 space-y-4">
+
             {/* Filters */}
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
