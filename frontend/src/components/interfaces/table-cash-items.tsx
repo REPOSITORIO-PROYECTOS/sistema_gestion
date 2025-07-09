@@ -587,12 +587,7 @@ export default function TableCashItems({
             await handleActualizarCosto(cuota);
         }
 
-        // Refrescar cuotas y cerrar modal
-        refetch(); // Actualiza la lista global de cuotas en cada cambio
-
-        setRegistrandoPago(false); // Cierra el modal
-
-        setTipoPago("");  // ?
+        setTipoPago(""); // Esto es lo que hace que se oculte el ModalPago (está bien)
     };
 
     // Fix para mostrar movimientos de los ultimos 30 dias
@@ -1296,6 +1291,7 @@ export default function TableCashItems({
                                             cuota={cuota}
                                             onSubmit={handlePago}
                                             setPago={setPago}
+                                            refetchCuotas={refetch} 
                                         />
                                     </div>
                                 </Card>
@@ -1310,6 +1306,7 @@ export default function TableCashItems({
                     cuota={cuota}
                     onSubmit={handlePago}
                     setPago={setPago}
+                    refetchCuotas={refetch} 
                 />
             )}
         </div>
