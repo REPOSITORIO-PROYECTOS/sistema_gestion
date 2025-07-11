@@ -217,14 +217,11 @@ const columns: ColumnDef<Item>[] = [
 
 
 export default function TableEstudents() {
-
     const { user } = useAuthStore();
-
     const fetcher = (url: string) => fetch({endpoint:url, method:"GET", headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${user?.token}`,
     }}).then((res) => res);
-
     const id = useId();
     const { finishLoading, loading, startLoading } = useLoading();
     const fetch = useFetch();
@@ -232,12 +229,10 @@ export default function TableEstudents() {
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
         {}
     );
-
     const [pagination, setPagination] = useState<PaginationState>({
         pageIndex: 0,
         pageSize: 5,
     });
-    
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("");
     const inputRef = useRef<HTMLInputElement>(null);
@@ -895,7 +890,6 @@ export default function TableEstudents() {
     );
 }
 
-/* En cada row, tenemos la opción de editar: */
 const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -918,19 +912,54 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                         </Button>
                     </div>
                 </DropdownMenuTrigger>
-
                 <DropdownMenuContent align="end">
-
                     <DropdownMenuGroup>
                         <DropdownMenuItem
                             onSelect={() => setIsEditDialogOpen(true)}
                         >
                             <span>Editar</span>
+                            <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                         </DropdownMenuItem>
+                        {/* <DropdownMenuItem>
+                            <span>Duplicar</span>
+                            <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
+                        </DropdownMenuItem> */}
+                    {/* </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuGroup>
+                        <DropdownMenuItem>
+                            <span>Archivar</span>
+                            <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
+                        </DropdownMenuItem>
+                        <DropdownMenuSub>
+                            <DropdownMenuSubTrigger>Mas</DropdownMenuSubTrigger>
+                            <DropdownMenuPortal>
+                                <DropdownMenuSubContent>
+                                    <DropdownMenuItem>
+                                        Ejemplo 1
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        Ejemplo 2
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem>
+                                        Ejemplo 3
+                                    </DropdownMenuItem>
+                                </DropdownMenuSubContent>
+                            </DropdownMenuPortal>
+                        </DropdownMenuSub> */}
                     </DropdownMenuGroup>
-
+                    {/* <DropdownMenuSeparator />
+                    <DropdownMenuGroup>
+                        <DropdownMenuItem>Enviar</DropdownMenuItem>
+                        <DropdownMenuItem>Imprimir</DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="text-destructive focus:text-destructive">
+                        <span>Borrar</span>
+                        <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
+                    </DropdownMenuItem> */}
                 </DropdownMenuContent>
-
             </DropdownMenu>
             {isEditDialogOpen && (
                 <PersonaForm

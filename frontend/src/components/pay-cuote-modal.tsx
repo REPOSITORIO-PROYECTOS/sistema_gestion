@@ -10,31 +10,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectTrigger,
-    SelectValue,
-    SelectContent,
-    SelectItem,
-} from "@/components/ui/select";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 type TipoPago = "PARCIAL" | "TOTAL" | "ACTUALIZAR";
 
-interface ModalPagoProps {
-    cuota: any;
-    onSubmit: (data: any, tipoPago: string) => void;
-    setPago: (data: any) => void;
-    refetchCuotas: () => void;
-}
-
-export function ModalPago({
-    cuota,
-    onSubmit,
-    setPago,
-    refetchCuotas,
-}: ModalPagoProps) {
+export function ModalPago({ cuota, onSubmit, setPago }: { cuota: any; onSubmit: (data: any, tipoPago:string) => void, setPago: (data: any) => void }) {
     const [open, setOpen] = useState(false);
     const [tipoPago, setTipoPago] = useState<TipoPago>("PARCIAL");
     const [monto, setMonto] = useState("");
@@ -53,52 +35,44 @@ export function ModalPago({
 
         if (tipoPago === "PARCIAL") {
             const paidAmount = cuota.paidAmount + parseFloat(monto);
-            const isPaid = paidAmount === cuota.paymentAmount;
+            const isPaid = paidAmount == cuota.paymentAmount;
             setPago(monto);
-            onSubmit(
-                {
-                    ...pago,
-                    title: cuota.studentName,
-                    description: "Pago parcial cuota",
-                    paidAmount,
-                    isPaid,
-                    hasDebt: !isPaid,
-                },
-                "PARCIAL"
-            );
+            onSubmit({
+                ...pago,
+                title: cuota.studentName,
+                courseId: pago.courseId,
+                description: "Pago parcial cuota",
+                paymentAmount: cuota.paymentAmount,
+                paidAmount,
+                isPaid,
+                hasDebt: !isPaid,
+            }, "PARCIAL");
         }
 
         if (tipoPago === "TOTAL") {
-            onSubmit(
-                {
-                    ...pago,
-                    title: cuota.studentName,
-                    description: "Pago cuota",
-                    paidAmount: cuota.paymentAmount,
-                    isPaid: true,
-                    hasDebt: false,
-                },
-                "TOTAL"
-            );
+            onSubmit({
+                ...pago,
+                title: cuota.studentName,
+                description: "Pago cuota",
+                paidAmount: cuota.paymentAmount,
+                isPaid: true,
+                hasDebt: false,
+            }, "TOTAL");
         }
 
         if (tipoPago === "ACTUALIZAR") {
             const porcentajeAplicado = parseFloat(porcentaje);
-            const nuevoMonto =
-                cuota.paymentAmount +
-                (cuota.paymentAmount * porcentajeAplicado) / 100;
-            onSubmit(
-                {
-                    ...pago,
-                    paidAmount: cuota.paidAmount,
-                    paymentAmount: nuevoMonto,
-                },
-                "ACTUALIZAR"
-            );
+            const nuevoMonto = cuota.paymentAmount + (cuota.paymentAmount * porcentajeAplicado) / 100;
+            //const fechaCorregida = cuota.paymentDueDate.split("T")[0].split("-").reverse().join("-");
+            onSubmit({
+                ...pago,
+                paidAmount: cuota.paidAmount,
+                paymentAmount: nuevoMonto,
+                //paymentDueDate: fechaCorregida,
+            }, "ACTUALIZAR");
         }
 
-        refetchCuotas(); // ✅ actualiza solo los datos
-        setOpen(false);   // ✅ cierra solo este modal
+        setOpen(false);
     };
 
     return (
@@ -117,10 +91,7 @@ export function ModalPago({
                 <div className="grid gap-4 py-4">
                     <div>
                         <Label>Tipo de operación</Label>
-                        <Select
-                            value={tipoPago}
-                            onValueChange={(val) => setTipoPago(val as TipoPago)}
-                        >
+                        <Select value={tipoPago} onValueChange={(val) => setTipoPago(val as TipoPago)}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Seleccione tipo de pago" />
                             </SelectTrigger>

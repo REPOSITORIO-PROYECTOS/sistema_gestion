@@ -259,7 +259,7 @@ export default function TableCashItems({
 }: {
     cajaActivaGeneral: boolean;
 }) {
-    const { cuotas, refetch } = useDebt();
+    const { cuotas } = useDebt();
     const { user } = useAuthStore();
     const fetcher = (url: string) =>
         fetch({
@@ -577,7 +577,6 @@ export default function TableCashItems({
         }
     };
 
-    // Se actualizó handlePago para mejoras en la seccion de cuotas
     const handlePago = async (cuota: any, tipoPago: string) => {
         if (tipoPago === "PARCIAL") {
             await handlePagoParcial(cuota);
@@ -586,8 +585,6 @@ export default function TableCashItems({
         } else if (tipoPago === "ACTUALIZAR") {
             await handleActualizarCosto(cuota);
         }
-
-        setTipoPago(""); // Esto es lo que hace que se oculte el ModalPago (está bien)
     };
 
     // Fix para mostrar movimientos de los ultimos 30 dias
@@ -607,15 +604,11 @@ export default function TableCashItems({
 
     return (
         <div className="container mx-auto my-10 space-y-4">
-
             {/* Filters */}
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-
-                    
+                    {/* Filter by title or description */}
                     <div className="relative">
-
-                        {/* Input de Búsqueda */}
                         <Input
                             id={`${id}-input`}
                             ref={inputRef}
@@ -627,11 +620,10 @@ export default function TableCashItems({
                             )}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Filtrar por Nombre o Apellido..."
+                            placeholder="Filtrar por título o descripción..."
                             type="text"
-                            aria-label="Filtrar por Nombre o Apellido..."
+                            aria-label="Filtrar por título o descripción"
                         />
-                        
                         <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
                             <ListFilter
                                 size={16}
@@ -661,12 +653,12 @@ export default function TableCashItems({
                         )}
                     </div>
 
-                    {/* Calendario y Busqueda por Fechas */}
+                    {/* Date Range Picker */}
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button
                                 variant="outline"
-                                className="min-w-[240px] justify-start text-left font-normal cursor-pointer"
+                                className="min-w-[240px] justify-start text-left font-normal"
                             >
                                 <Calendar className="mr-2 h-4 w-4" />
                                 {dateRange?.from ? (
@@ -718,12 +710,12 @@ export default function TableCashItems({
                         </PopoverContent>
                     </Popover>
 
-                    {/* Filtrado por tipo */}
+                    {/* Filter by tipo */}
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button variant="outline" className="cursor-pointer">
+                            <Button variant="outline">
                                 <Filter
-                                    className="-ms-1 me-2 opacity-60 "
+                                    className="-ms-1 me-2 opacity-60"
                                     size={16}
                                     strokeWidth={2}
                                     aria-hidden="true"
@@ -780,7 +772,7 @@ export default function TableCashItems({
                     {/* Toggle columns visibility */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="cursor-pointer">
+                            <Button variant="outline">
                                 <Columns3
                                     className="-ms-1 me-2 opacity-60"
                                     size={16}
@@ -1295,7 +1287,6 @@ export default function TableCashItems({
                                             cuota={cuota}
                                             onSubmit={handlePago}
                                             setPago={setPago}
-                                            refetchCuotas={refetch} 
                                         />
                                     </div>
                                 </Card>
@@ -1310,7 +1301,6 @@ export default function TableCashItems({
                     cuota={cuota}
                     onSubmit={handlePago}
                     setPago={setPago}
-                    refetchCuotas={refetch} 
                 />
             )}
         </div>
