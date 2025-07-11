@@ -19,8 +19,8 @@ interface CardSwitchProps {
 
 export default function CardSwitch({
     initialState = false,
-    sublabel = "(Sublabel)",
-    description = "A short description goes here.",
+    sublabel = "Abrir / Cerrar",
+    description = "Administrar cuentas de estudiantes.",
     onToggleSuccess,
     setCajaActivaGeneral
 }: CardSwitchProps) {
@@ -106,7 +106,7 @@ export default function CardSwitch({
         >
             <Switch
                 id={id}
-                className="order-1 h-4 w-6 after:absolute after:inset-0 [&_span]:size-3 [&_span]:data-[state=checked]:translate-x-2 rtl:[&_span]:data-[state=checked]:-translate-x-2"
+                className="order-1 h-4 w-6 cursor-pointer after:absolute after:inset-0 [&_span]:size-3 [&_span]:data-[state=checked]:translate-x-2 rtl:[&_span]:data-[state=checked]:-translate-x-2"
                 aria-describedby={`${id}-description`}
                 checked={optimisticCajaActiva}
                 onCheckedChange={handleToggle}
@@ -114,7 +114,7 @@ export default function CardSwitch({
             />
             <div className="grid grow gap-2">
                 <Label htmlFor={id}>
-                    <p>
+                    <p className="text-black">
                         Caja{" "}
                         <span className="text-muted-foreground text-xs leading-[inherit] font-normal">
                             {sublabel}

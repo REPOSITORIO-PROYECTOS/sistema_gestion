@@ -279,18 +279,6 @@ export default function TableEstudents() {
         }
     }, [swrData]);
 
-    // const handleDeleteRow = async (row: Row<Item>) => {
-    //   startLoading()
-    //   const updatedData = data.filter((item) => item.id !== row.original.id);
-    //   setData(updatedData);
-    //   await fetch({
-    //     endpoint: `/cursos/${row.original.id}`,
-    //     method: 'delete'
-    //   });
-    //   await mutate();
-    //   finishLoading()
-    // }
-
     const handleDeleteRows = async () => {
         try {
             startLoading();
@@ -918,47 +906,8 @@ const RowActions = React.memo(({ row }: { row: Row<Item> }) => {
                             onSelect={() => setIsEditDialogOpen(true)}
                         >
                             <span>Editar</span>
-                            <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
-                        </DropdownMenuItem>
-                        {/* <DropdownMenuItem>
-                            <span>Duplicar</span>
-                            <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
-                        </DropdownMenuItem> */}
-                    {/* </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                        <DropdownMenuItem>
-                            <span>Archivar</span>
-                            <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
-                        </DropdownMenuItem>
-                        <DropdownMenuSub>
-                            <DropdownMenuSubTrigger>Mas</DropdownMenuSubTrigger>
-                            <DropdownMenuPortal>
-                                <DropdownMenuSubContent>
-                                    <DropdownMenuItem>
-                                        Ejemplo 1
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        Ejemplo 2
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem>
-                                        Ejemplo 3
-                                    </DropdownMenuItem>
-                                </DropdownMenuSubContent>
-                            </DropdownMenuPortal>
-                        </DropdownMenuSub> */}
-                    </DropdownMenuGroup>
-                    {/* <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                        <DropdownMenuItem>Enviar</DropdownMenuItem>
-                        <DropdownMenuItem>Imprimir</DropdownMenuItem>
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive focus:text-destructive">
-                        <span>Borrar</span>
-                        <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
-                    </DropdownMenuItem> */}
+                        </DropdownMenuItem>                  
+                    </DropdownMenuGroup>                  
                 </DropdownMenuContent>
             </DropdownMenu>
             {isEditDialogOpen && (
