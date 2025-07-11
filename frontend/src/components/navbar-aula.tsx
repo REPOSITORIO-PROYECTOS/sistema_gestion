@@ -57,7 +57,7 @@ export default function NavbarAula() {
                     <Button
                         variant="ghost"
                         onClick={logout}
-                        className="text-sm font-semibold hover:bg-red-500  hover:text-white"
+                        className="text-sm font-semibold hover:bg-red-500 hover:text-white"
                     >
                         Cerrar sesión
                     </Button>
